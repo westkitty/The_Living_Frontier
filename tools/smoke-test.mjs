@@ -9,6 +9,19 @@ import { dirname, resolve } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(resolve(root, 'index.html'), 'utf8');
 
+// A test run that stops in the middle must never look like a pass. Node has
+// been seen to end this script quietly when something throws deep inside a
+// jsdom callback, so the run has to prove it reached its own last line.
+let COMPLETED = false;
+process.on('uncaughtException', (e) => { console.error('\n  uncaught exception:', e); process.exit(1); });
+process.on('unhandledRejection', (e) => { console.error('\n  unhandled rejection:', e); process.exit(1); });
+process.on('exit', () => {
+  if (!COMPLETED) {
+    console.error('\n SMOKE TEST ENDED EARLY — the run stopped before its final assertions\n');
+    process.exitCode = 1;
+  }
+});
+
 const dom = new JSDOM(html, { url: 'http://localhost/', pretendToBeVisual: true, runScripts: 'outside-only' });
 const { window } = dom;
 
@@ -368,13 +381,74 @@ game.ui.closeDialog();
   const same = JSON.stringify(back.history.slice(-5)) === JSON.stringify(st.history.slice(-5));
   log('  history survives save/load:', same ? '✓' : '✗', '| samples kept:', back.history.length);
   if (!same) errors.push('history did not survive the save');
-  for (let i = 0; i < 150; i++) st.recordHistory();
-  log('  history stays bounded at', st.history.length, 'samples');
-  if (st.history.length > 90) errors.push('history grows without bound');
+  const spare = new WS();                       // a throwaway world, so the live one keeps its real past
+  for (let i = 0; i < 150; i++) { spare.day++; spare.recordHistory(); }
+  log('  history stays bounded at', spare.history.length, 'samples after 150 days');
+  if (spare.history.length > 90) errors.push('history grows without bound');
+  if (spare.history[0][0] !== spare.day - 89) errors.push('history did not keep the most recent days');
   // the chart has an honest text alternative
   const desc = game.ui.describeHistory(st);
   log('  chart alt text:', JSON.stringify(desc.slice(0, 96) + '…'));
   if (!/days:/.test(desc) || !/herds/.test(desc)) errors.push('history chart has no usable alt text');
+}
+
+// ---- the chronicle chart can be read, day by day --------------------------
+{
+  game.ui.openPanel('world');
+  const cv = document.querySelector('#ws-chart');
+  const h = st.history;
+  // land on a day we know had something written in it
+  const written = st.journal.find(e => h.some(r => r[0] === e.day));
+  game.ui.chartDay = written ? written.day : h[Math.floor(h.length / 2)][0];
+  game.ui.drawHistoryChart(st);
+  const read = document.querySelector('#ws-read').textContent;
+  const row = h[game.ui.chartIndex(h)];
+  const okNums = read.includes(`Day ${row[0]}`) && read.includes(`${row[1]} herd animals`)
+    && read.includes(`${row[3]}% forest`);
+  const sameDay = st.journal.filter(e => e.day === row[0]);
+  const okJournal = !sameDay.length || read.includes(sameDay[0].text.slice(0, 24));
+  log(`chart readout for day ${row[0]}: numbers ${okNums ? '✓' : '✗'} | chronicle lines ${sameDay.length} ${okJournal ? '✓' : '✗'}`);
+  if (!okNums) errors.push('chart readout does not report the selected day honestly');
+  if (!okJournal) errors.push('chart readout does not surface that day\'s chronicle');
+
+  // arrow keys walk the selection, and stop at the ends
+  const before = game.ui.chartIndex(h);
+  cv.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  const left = game.ui.chartIndex(h);
+  cv.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+  const end = game.ui.chartIndex(h);
+  cv.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+  const past = game.ui.chartIndex(h);
+  log(`keyboard scrub: ${before} -> left ${left} -> End ${end} -> clamped ${past} of ${h.length - 1}`);
+  if (left !== before - 1 || end !== h.length - 1 || past !== h.length - 1) {
+    errors.push('keyboard scrubbing does not move or clamp correctly');
+  }
+  // and a pointer drag picks a different day than the keyboard left it on
+  cv.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 240, right: 720, bottom: 240 });
+  cv.dispatchEvent(new window.MouseEvent('pointerdown', { clientX: 20, bubbles: true }));
+  const dragged = game.ui.chartIndex(h);
+  log(`pointer at the left edge selects sample ${dragged} (day ${h[dragged][0]})`);
+  if (dragged !== 0) errors.push('dragging the chart does not select the day under the pointer');
+  // the panel refreshing must not throw the reader off their day
+  const held = game.ui.chartDay;
+  game.ui.renderWorldState();
+  if (game.ui.chartDay !== held) errors.push('refreshing the world screen loses the selected day');
+  // a chronicle entry is a door into the chart for that day
+  game.ui.showTab('journal');
+  const jumps = document.querySelectorAll('#journal-list .jday-btn');
+  const target = jumps.length ? Number(jumps[jumps.length - 1].textContent.match(/Day (\d+)/)[1]) : null;
+  if (!jumps.length) errors.push('no chronicle day can be opened on the chart');
+  else {
+    jumps[jumps.length - 1].click();
+    const landed = game.ui.chartDay === target && game.ui.panelOpen === "world";
+    log(`chronicle -> chart: clicked Day ${target}, chart now on day ${game.ui.chartDay},`,
+      `panel showing ${game.ui.panelOpen}`, landed ? '✓' : '✗');
+    if (!landed) errors.push('clicking a chronicle day does not open that day on the chart');
+    if (!document.querySelector('#ws-read').textContent.includes('Day ' + target)) {
+      errors.push('the chart readout does not follow the chronicle jump');
+    }
+  }
+  game.ui.closePanel();
 }
 
 // ---- the world is audible: beds and footfalls follow real state -----------
@@ -533,5 +607,6 @@ log('landmarks discoverable:', Object.keys(st.discovered).length, '/', LANDMARKS
 step(30);
 console.log('\n  errors:', errors.length ? errors : 'none');
 console.log('  frames drawn:', drawCalls);
+COMPLETED = true;
 console.log(errors.length ? '\n SMOKE TEST FAILED\n' : '\n SMOKE TEST PASSED\n');
 process.exit(errors.length ? 1 : 0);

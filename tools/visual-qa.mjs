@@ -110,6 +110,12 @@ png(document.querySelector('#bigmap'), 'bigmap.png');
 // the world screen's chronicle chart
 game.ui.openPanel ? game.ui.openPanel('world') : null;
 game.ui.renderWorldState();
+// park the reading cursor mid-history so the scrub state is captured too
+if (state.history.length > 4) {
+  game.ui.chartDay = state.history[Math.floor(state.history.length * 0.4)][0];
+  game.ui.drawHistoryChart(state);
+  console.log('  chart readout:', (document.querySelector('#ws-read') || {}).textContent);
+}
 const chart = document.querySelector('#ws-chart');
 if (chart) png(chart, 'ws-chart.png'); else console.log('  (no chronicle chart rendered)');
 

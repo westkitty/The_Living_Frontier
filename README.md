@@ -134,6 +134,14 @@ crashing or a burn scar spreading is visible as a shape rather than a number.
 The chart carries a plain-language summary as its accessible label, generated
 from the same rows it draws.
 
+It can be read, not just looked at. Drag across it — or focus it and use the
+arrow keys, Home and End — and a cursor lands on a day, reports that day's
+numbers, and lists what the chronicle recorded then. Days you have entries for
+are ticked along the axis, so the chart doubles as an index into the journal;
+and every day heading in the chronicle is a button that opens the chart on
+that day. The accessible label updates with the selected day, so the readout
+is available without seeing the drawing.
+
 ## Coming back
 
 Every save carries a snapshot of the frontier: each settlement's buildings,
@@ -163,7 +171,9 @@ src/structures.js   landmarks, villages, caves, camps, banners (merged meshes)
 src/entities.js     wildlife, villager routines, faction patrols and combat
 src/player.js       controller, spring camera, unified keyboard/touch input
 src/fx.js           sky, lights, weather, fire, smoke, sparks, birds
-src/ui.js           HUD, minimap, world map, panels, dialogue, touch stick
+src/ui.js           HUD, minimap, world map, panel shell, dialogue, touch stick
+src/panels.js       bag, chronicle, world screen and the readable history chart
+src/uikit.js        the shared icon helper and inventory icon table
 src/audio.js        fully procedural WebAudio: state-driven beds and effects
 src/interaction.js  what you are looking at, and what acting on it does
 src/dialogue.js     villagers, soldiers and settlement halls
@@ -197,7 +207,15 @@ the surveyed map and the ground memory round-trip byte-for-byte, that fire
 scars survive a save/load cycle, that Escape closes a conversation instead of
 opening the menu, that a destructive confirm does nothing unless it is held,
 that a save which cannot be written reports failure after retrying with a
-slimmer payload, and that preferences persist across sessions.
+slimmer payload, that the daily history matches the live simulation and stays
+bounded, that scrubbing the chart reports the selected day honestly and clamps
+at both ends, that footfalls change with the ground underfoot, and that
+preferences persist across sessions.
+
+The harness also proves it finished: if the run stops early — an exception in
+a jsdom callback used to end it quietly, which is how a missing import once
+slipped through — it prints `SMOKE TEST ENDED EARLY` and exits non-zero rather
+than looking like a pass.
 
 Known gap: there is no GPU in the build environment, so the WebGL render path
 itself is exercised against a stub renderer. Shaders are validated by parsing,

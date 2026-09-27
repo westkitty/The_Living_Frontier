@@ -302,6 +302,19 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
 .ws-block{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.03)}
 .ws-block h4{margin:0 0 9px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:500}
 .ws-block canvas{width:100%;height:120px;display:block;border-radius:8px;background:rgba(0,0,0,.25)}
+.jday-btn{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;min-height:30px}
+.jday-btn span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:0;color:var(--amber);transition:opacity .18s}
+.jday-btn:hover span,.jday-btn:focus-visible span{opacity:.9}
+.jday-btn:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+.ws-block canvas:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.ws-read{margin-top:9px;font-size:12px;color:var(--ink);line-height:1.55;min-height:34px}
+.ws-read b{font-weight:500;color:var(--amber);font-size:11.5px;letter-spacing:.02em}
+.ws-read ul{margin:5px 0 0;padding:0 0 0 14px}
+.ws-read li{color:var(--dim);margin-bottom:2px}
+.ws-read li.k-quest{color:#e0b661}.ws-read li.k-faction{color:#ef9a74}.ws-read li.k-good{color:#8fd6a0}
+.ws-read .none{color:var(--dim);opacity:.65;font-style:italic;font-size:11.5px}
+.ws-hint{margin:8px 0 0;font-size:11px;color:var(--dim);opacity:.75;line-height:1.5}
 .ws-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;font-size:11px;color:var(--dim)}
 .ws-legend span{display:inline-flex;align-items:center;gap:5px}
 .ws-legend i{width:11px;height:3px;border-radius:2px;display:inline-block}
