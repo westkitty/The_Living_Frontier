@@ -66,7 +66,6 @@ class Game {
     this.clock = new THREE.Clock();
     this.saveTimer = 25;
     this.groundTexTimer = 0;
-    this.fireCheckTimer = 0;
     this.interactTarget = null;
     this.timeScale = 1;
     this.frameTimes = [];
@@ -356,19 +355,6 @@ class Game {
       const k = st.vegDirtyKeys.values().next().value;
       st.vegDirtyKeys.delete(k);
       this.veg.rebuild(k);
-    }
-    this.fireCheckTimer -= dtRaw;
-    if (this.fireCheckTimer <= 0) {
-      this.fireCheckTimer = 3.0;
-      if (st.fireActive) {
-        // re-scatter vegetation near the closest fire so burnt trees appear
-        let best = null, bd = 1e9;
-        for (const c of st.burningList) {
-          const d = Math.hypot(c.x - this.player.pos.x, c.z - this.player.pos.z);
-          if (d < bd) { bd = d; best = [c.x, c.z]; }
-        }
-        if (best && bd < 260) this.veg.rebuild(this.chunkKeyAt(best[0], best[1]));
-      }
     }
 
     // Audio ambience

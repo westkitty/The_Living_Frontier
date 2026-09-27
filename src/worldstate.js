@@ -377,6 +377,11 @@ export class WorldState {
         this.paintGround(wxp, wzp, CH.LUSH, -dt * 0.5, WORLD.fireCell * 0.7);
         const reg = this.regions[regionIndex(wxp, wzp)];
         reg.trees = Math.max(0, reg.trees - dt * 0.004);
+        // Trees here are burning, so whatever is scattered in this chunk is
+        // now wrong. Mark it for re-scatter: the renderer drains this set, so
+        // the charred snags appear whether or not the player watched it burn,
+        // and a fire crossing a chunk seam marks both sides.
+        this.markVegDirty(wxp, wzp);
         reg.prey = Math.max(0, reg.prey - dt * 0.03);
         reg.pred = Math.max(0, reg.pred - dt * 0.006);
         // decay
@@ -683,6 +688,16 @@ export class WorldState {
       }
       if (empty) delete this.vegRemoved[key];
     }
+  }
+
+  // The vegetation renderer owns the meshes; the simulation only says which
+  // chunk stopped being true. Key format matches Terrain.keyOf.
+  markVegDirty(x, z) {
+    const i = Math.floor((x + WORLD.half) / WORLD.chunk);
+    const j = Math.floor((z + WORLD.half) / WORLD.chunk);
+    this.vegDirty = true;
+    this.vegDirtyKeys = this.vegDirtyKeys || new Set();
+    this.vegDirtyKeys.add(i + ',' + j);
   }
 
   // ------------------------------------------------------------------ quests

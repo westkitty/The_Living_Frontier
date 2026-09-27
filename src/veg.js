@@ -422,13 +422,4 @@ export class Vegetation {
     }
     return best;
   }
-
-  // Trees near a point (used by fire to char them visually)
-  refreshBurnt(x, z, radius = 40) {
-    for (const [key, c] of this.chunks) {
-      const r = c.rec;
-      const cx = r.ox + WORLD.chunk / 2, cz = r.oz + WORLD.chunk / 2;
-      if (Math.hypot(cx - x, cz - z) < radius + WORLD.chunk) this.rebuild(key);
-    }
-  }
 }

@@ -535,6 +535,95 @@ game.ui.closeDialog();
   game.ui.closePanel();
 }
 
+
+// ---- consequences you can see, not merely count ---------------------------
+// The premise of the game is that the world visibly remembers. These check the
+// scene graph itself, not the numbers that feed it.
+{
+  const { FACTIONS: FAC } = await import('../src/worldgen.js');
+  const { regionIndex: rIdx } = await import('../src/worldstate.js');
+
+  // 1. helping a village raises actual buildings in the scene.
+  //    Done the way a player does it: walk up and hand over goods, ten at a
+  //    time, then let the days run.
+  const si = 1, s = st.settlements[si];
+  const vertsBefore = game.settlementMeshes[si].mesh.geometry.attributes.position.count;
+  const bBefore = s.buildings;
+  for (let gift = 0; gift < 12; gift++) {
+    st.player.inv.wood = 5;
+    game.settlementDialog(s, si);
+    [...document.querySelectorAll('#dlg-options button')]
+      .find(b => /Give 5 wood/.test(b.textContent)).click();
+  }
+  game.ui.closeDialog();
+  log(`  gave 12 loads of timber to ${s.name}: goodwill ${s.rep}, supplies ${s.supplies.toFixed(2)}`);
+  for (let d = 0; d < 30 && st.settlements[si].buildings <= bBefore; d++) st.update(420);
+  game.frame();
+  // Vertex count alone is not proof: huts also gain and lose detail with
+  // prosperity. Compare the same village at the same prosperity with one
+  // building fewer, and check the scene is showing the richer one.
+  const { buildSettlementGeometry } = await import('../src/structures.js');
+  const liveVerts = game.settlementMeshes[si].mesh.geometry.attributes.position.count;
+  const nowGeo = buildSettlementGeometry(s, si).geo.attributes.position.count;
+  const minusOne = buildSettlementGeometry({ ...s, buildings: s.buildings - 1 }, si).geo.attributes.position.count;
+  log(`  ${s.name}: buildings ${bBefore} -> ${s.buildings} (geometry ${vertsBefore} -> ${liveVerts} vertices,`,
+    `one building fewer would be ${minusOne})`,
+    s.buildings > bBefore && liveVerts === nowGeo && nowGeo > minusOne ? '✓ built for real' : '✗');
+  if (s.buildings <= bBefore) errors.push('supplying a village never causes construction');
+  if (liveVerts !== nowGeo) errors.push('the settlement in the scene is stale — it does not match its own state');
+  if (nowGeo <= minusOne) errors.push('adding a building adds nothing to the settlement geometry');
+
+  // 2. a captured village changes the banner that flies over it
+  const rec = game.settlementMeshes[si];
+  const was = s.banner, now = (was + 1) % 3;
+  s.banner = now;
+  game.frame();
+  const cloth = rec.banner && rec.banner.userData.cloth.material.color.getHex();
+  log(`  banner over ${s.name}: ${FAC[was].name} -> ${FAC[now].name}, cloth colour 0x${(cloth || 0).toString(16)}`,
+    cloth === FAC[now].color ? '✓' : '✗');
+  if (cloth !== FAC[now].color) errors.push('capturing a settlement does not change its banner in the world');
+  s.banner = was; game.frame();
+
+  // 3. fire rebuilds the vegetation where it burned
+  const rebuilt = [];
+  const realRebuild = game.veg.rebuild.bind(game.veg);
+  game.veg.rebuild = (k) => { rebuilt.push(k); return realRebuild(k); };
+  let fx = p.pos.x, fz = p.pos.z, lit = false;
+  for (let ring = 0; ring < 40 && !lit; ring++) {          // find fuel near the player
+    fx = p.pos.x + Math.cos(ring) * (12 + ring * 3);
+    fz = p.pos.z + Math.sin(ring) * (12 + ring * 3);
+    lit = st.ignite(fx, fz, 1);
+  }
+  const treesBefore = st.regions[rIdx(fx, fz)].trees;
+  for (let i = 0; i < 120 && (st.fireActive || (st.vegDirtyKeys && st.vegDirtyKeys.size)); i++) {
+    st.update(1); game.frame();
+  }
+  log(`  fire lit ${Math.round(Math.hypot(fx - p.pos.x, fz - p.pos.z))} m from the player:`, lit ? 'caught' : 'no fuel');
+  if (!lit) errors.push('no ignitable vegetation anywhere near the player');
+  game.veg.rebuild = realRebuild;
+  const treesAfter = st.regions[rIdx(fx, fz)].trees;
+  log(`    forest there ${treesBefore.toFixed(3)} -> ${treesAfter.toFixed(3)},`,
+    `${rebuilt.length} vegetation chunks re-scattered`, treesAfter < treesBefore && rebuilt.length ? '✓' : '✗');
+  if (treesAfter >= treesBefore) errors.push('fire did not thin the forest it burned');
+  if (!rebuilt.length) errors.push('burned vegetation is never rebuilt, so the fire leaves no visible mark');
+
+  // 4. heavy hunting empties the country of animals
+  const aliveBefore = game.actors.animals.filter(a => a.alive).length;
+  let culled = 0;
+  for (const a of game.actors.animals) {
+    if (!a.alive) continue;
+    game.actors.killAnimal(a, true);      // the same path a struck animal takes
+    culled++;
+  }
+  const reg = st.regions[rIdx(p.pos.x, p.pos.z)];
+  reg.prey = 0;
+  for (let i = 0; i < 60; i++) game.frame();
+  const aliveAfter = game.actors.animals.filter(a => a.alive).length;
+  log(`  hunted out ${culled} animals: visible wildlife ${aliveBefore} -> ${aliveAfter}, hunted total ${st.player.stats.hunted}`,
+    aliveAfter < aliveBefore ? '✓ the country is emptier' : '✗');
+  if (aliveAfter >= aliveBefore) errors.push('killing every animal leaves the world just as full');
+}
+
 // ---- touch controls actually drive the game -------------------------------
 // The brief asks for excellent touch controls, and nothing else in this suite
 // had ever pressed one. These are the real listeners bound by UI.bind().

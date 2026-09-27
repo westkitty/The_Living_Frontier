@@ -240,8 +240,11 @@ and can isolate it, that the survey map's description matches what it draws
 and never names an unsurveyed place, that no two factions share a map
 silhouette, that the touch stick moves the player and releasing it stops them,
 that the touch look drag turns the camera and each on-screen action button
-feeds real input, that burn scars survive the save byte-for-byte, that
-footfalls change with the ground underfoot, and that preferences persist
+feeds real input, that burn scars survive the save byte-for-byte, that giving
+a village timber raises a real building in the scene geometry, that a captured
+settlement's banner cloth changes colour, that a fire re-scatters the
+vegetation it burned, that hunting a valley out leaves it visibly emptier,
+that footfalls change with the ground underfoot, and that preferences persist
 across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in
