@@ -109,8 +109,30 @@ quietly losing your frontier.
 
 The survey map supports drag to pan, scroll or pinch to zoom, arrow keys and
 `+` / `-` when focused, and tap-to-set-waypoint. Sound, detail level, look
-speed, inverted look and reduced motion are all remembered between sessions,
-separately from the world save.
+speed, volume, inverted look and reduced motion are all remembered between
+sessions, separately from the world save.
+
+Sound is fully procedural WebAudio — no audio files. The beds are driven by
+simulation state rather than by a playlist: wind and rain from the weather,
+fire from burning cells near you, water from the nearest shore or river bed,
+and a low hearth hum that rises as you approach a village that is doing well.
+Footfalls change with the ground you are standing on — ash crunches, packed
+village paths and worn trails ring harder, grass is soft.
+
+The title screen draws a portrait of the world you are about to return to,
+rendered from that save's own exploration plane: only the ground you actually
+surveyed, with your villages, your burn scars and where you stopped walking.
+
+## The world screen is a chart of what you did
+
+The frontier takes one compact reading of its own vital signs every in-world
+day — herd numbers, predator numbers, forest cover, scorched cells, faction
+territory and average village prosperity — and keeps the last 90 of them in
+the save (a few hundred bytes). The world screen draws them as a chronicle:
+five lines, each normalised against its own range, so an over-hunted herd
+crashing or a burn scar spreading is visible as a shape rather than a number.
+The chart carries a plain-language summary as its accessible label, generated
+from the same rows it draws.
 
 ## Coming back
 
@@ -142,8 +164,11 @@ src/entities.js     wildlife, villager routines, faction patrols and combat
 src/player.js       controller, spring camera, unified keyboard/touch input
 src/fx.js           sky, lights, weather, fire, smoke, sparks, birds
 src/ui.js           HUD, minimap, world map, panels, dialogue, touch stick
-src/audio.js        fully procedural WebAudio ambience and effects
-src/main.js         bootstrap, interaction system, quests, save loop
+src/audio.js        fully procedural WebAudio: state-driven beds and effects
+src/interaction.js  what you are looking at, and what acting on it does
+src/dialogue.js     villagers, soldiers and settlement halls
+src/quests.js       quests generated from world state, and their consequences
+src/main.js         bootstrap, systems wiring, discoveries, frame loop
 ```
 
 ## Development checks

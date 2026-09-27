@@ -107,6 +107,12 @@ game.ui.drawMinimap(p);
 png(document.querySelector('#minimap'), 'minimap.png');
 game.ui.drawBigMap();
 png(document.querySelector('#bigmap'), 'bigmap.png');
+// the world screen's chronicle chart
+game.ui.openPanel ? game.ui.openPanel('world') : null;
+game.ui.renderWorldState();
+const chart = document.querySelector('#ws-chart');
+if (chart) png(chart, 'ws-chart.png'); else console.log('  (no chronicle chart rendered)');
+
 // the title-screen portrait of this saved world, from the save itself
 state.save();
 const raw = JSON.parse(localStorage.getItem('living_frontier_save_v1'));

@@ -95,6 +95,8 @@ export class WorldState {
     this.groundStamp = 0;
     this.explored = new Uint8Array(XR * XR);
     this.exploredDirty = true;
+    // one compact sample per in-world day, so the world can show its own past
+    this.history = [];
     this.fuel = new Uint8Array(FR * FR);
     this.burning = new Float32Array(FR * FR);
     this.burnTimer = new Float32Array(FR * FR);
@@ -222,6 +224,26 @@ export class WorldState {
   // A compact photograph of the frontier, written into every save. When the
   // player returns it is compared against the world that kept running without
   // them, so "come back and see what changed" can actually be shown.
+  // A day's vital signs, quantised small enough to keep 90 of them in the save.
+  // This is what lets the world draw its own biography on the world screen.
+  recordHistory() {
+    let prey = 0, pred = 0, trees = 0;
+    for (const r of this.regions) { prey += r.prey; pred += r.pred; trees += r.trees; }
+    const n = this.regions.length;
+    let alive = 0, pros = 0;
+    for (const s of this.settlements) { if (!s.abandoned) { alive++; pros += s.prosperity; } }
+    this.history.push([
+      this.day,
+      Math.round(prey),
+      Math.round(pred),
+      Math.round((trees / n) * 100),
+      this.scorchedCells(),
+      this.factions[0].territory, this.factions[1].territory, this.factions[2].territory,
+      Math.round((alive ? pros / alive : 0) * 100),
+    ]);
+    if (this.history.length > 90) this.history.splice(0, this.history.length - 90);
+  }
+
   snapshot() {
     let prey = 0, pred = 0, trees = 0;
     for (const r of this.regions) { prey += r.prey; pred += r.pred; trees += r.trees; }
@@ -719,7 +741,11 @@ export class WorldState {
   update(dt, fast = false) {
     this.elapsed += dt;
     this.time += dt / DAY_LENGTH;
-    while (this.time >= 1) { this.time -= 1; this.day++; this.onNewDay && this.onNewDay(this.day); }
+    while (this.time >= 1) {
+      this.time -= 1; this.day++;
+      this.recordHistory();
+      this.onNewDay && this.onNewDay(this.day);
+    }
     this.tickWeather(dt);
     this._fireAcc = (this._fireAcc || 0) + dt;
     if (this._fireAcc > 0.25) { this.tickFire(this._fireAcc); this._fireAcc = 0; }
@@ -757,6 +783,7 @@ export class WorldState {
       quests: this.quests,
       player: this.player,
       snap: this.snapshot(),
+      history: this.history.slice(-90),
     };
   }
 
@@ -775,6 +802,9 @@ export class WorldState {
     });
     if (obj.settlements) obj.settlements.forEach((o, i) => { if (s.settlements[i]) Object.assign(s.settlements[i], o); });
     if (obj.factions) obj.factions.forEach((o, i) => { if (s.factions[i]) Object.assign(s.factions[i], o); });
+    if (Array.isArray(obj.history)) {
+      s.history = obj.history.filter(h => Array.isArray(h) && h.length >= 9 && Number.isFinite(h[0])).slice(-90);
+    }
     if (obj.explored) {
       s.explored = rleDecode(obj.explored, XR * XR);
     } else {

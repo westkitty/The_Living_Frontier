@@ -301,6 +301,11 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
 #world-state{display:flex;flex-direction:column;gap:14px}
 .ws-block{border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(255,255,255,.03)}
 .ws-block h4{margin:0 0 9px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.ws-block canvas{width:100%;height:120px;display:block;border-radius:8px;background:rgba(0,0,0,.25)}
+.ws-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;font-size:11px;color:var(--dim)}
+.ws-legend span{display:inline-flex;align-items:center;gap:5px}
+.ws-legend i{width:11px;height:3px;border-radius:2px;display:inline-block}
+.ws-empty{margin:0;font-size:12.5px;color:var(--dim);line-height:1.6}
 .frow{display:flex;align-items:center;gap:9px;margin-bottom:7px;font-size:12.5px}
 .frow .nm{flex:0 0 132px}
 .meter{flex:1;height:7px;border-radius:999px;background:rgba(0,0,0,.45);overflow:hidden}

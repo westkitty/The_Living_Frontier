@@ -788,6 +788,77 @@ export class UI {
     }
   }
 
+  // A plain-language reading of the same data the chart draws, so the chart is
+  // not the only way to get at it.
+  describeHistory(st) {
+    const h = st.history, a = h[0], b = h[h.length - 1];
+    const dir = (from, to, noun) => {
+      const d = to - from;
+      if (Math.abs(d) < Math.max(1, from * 0.08)) return `${noun} steady`;
+      return `${noun} ${d > 0 ? 'up' : 'down'} from ${from} to ${to}`;
+    };
+    return `Over ${b[0] - a[0]} days: ${dir(a[1], b[1], 'herds')}, ${dir(a[2], b[2], 'predators')}, `
+      + `${dir(a[3], b[3], 'forest cover')}, ${dir(a[4], b[4], 'scorched cells')}, `
+      + `${dir(a[8], b[8], 'village prosperity')}.`;
+  }
+
+  // The world's own biography: one line per tracked quantity, normalised
+  // against its own range so a crash in the herds is visible even when the
+  // absolute numbers are large.
+  drawHistoryChart(st) {
+    const cv = document.getElementById('ws-chart');
+    if (!cv || st.history.length < 2) return;
+    const g = cv.getContext('2d');
+    if (!g) return;
+    const W = cv.width, H = cv.height, pad = 16, foot = 26;   // foot leaves room for labels
+    g.clearRect(0, 0, W, H);
+    g.fillStyle = '#12150f';
+    g.fillRect(0, 0, W, H);
+    const h = st.history;
+    const x = (i) => pad + (i / (h.length - 1)) * (W - pad * 2);
+
+    // day gridlines every 5 in-world days
+    g.strokeStyle = 'rgba(226,208,164,.09)'; g.lineWidth = 1;
+    for (let i = 0; i < h.length; i++) {
+      if (h[i][0] % 5) continue;
+      g.beginPath(); g.moveTo(x(i), pad * 0.4); g.lineTo(x(i), H - foot); g.stroke();
+    }
+
+    const series = [
+      { k: 1, c: '#9ec98a' },   // prey
+      { k: 2, c: '#ef6a54' },   // predators
+      { k: 3, c: '#68d18a' },   // forest
+      { k: 4, c: '#8a6a4a' },   // scorched
+      { k: 8, c: '#e0b661' },   // prosperity
+    ];
+    for (const s of series) {
+      let lo = Infinity, hi = -Infinity;
+      for (const row of h) { lo = Math.min(lo, row[s.k]); hi = Math.max(hi, row[s.k]); }
+      const range = hi - lo;
+      const top = pad, bot = H - foot;
+      const y = (v) => range < 1e-6 ? (top + bot) / 2 : bot - ((v - lo) / range) * (bot - top);
+      g.beginPath();
+      for (let i = 0; i < h.length; i++) {
+        const px = x(i), py = y(h[i][s.k]);
+        i ? g.lineTo(px, py) : g.moveTo(px, py);
+      }
+      g.strokeStyle = s.c; g.lineWidth = 2; g.lineJoin = 'round';
+      g.globalAlpha = range < 1e-6 ? 0.35 : 1;
+      g.stroke();
+      // a dot on today's value, so the present is findable at a glance
+      g.beginPath(); g.arc(x(h.length - 1), y(h[h.length - 1][s.k]), 3, 0, Math.PI * 2);
+      g.fillStyle = s.c; g.fill();
+      g.globalAlpha = 1;
+    }
+    // day labels at the ends
+    g.strokeStyle = 'rgba(226,208,164,.18)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(pad, H - foot + 6); g.lineTo(W - pad, H - foot + 6); g.stroke();
+    g.fillStyle = 'rgba(226,208,164,.55)'; g.font = '14px system-ui, sans-serif';
+    g.fillText('day ' + h[0][0], pad, H - 6);
+    const last = 'day ' + h[h.length - 1][0];
+    g.fillText(last, W - pad - g.measureText(last).width, H - 6);
+  }
+
   renderWorldState() {
     const st = this.state;
     const el = $('#world-state');
@@ -800,7 +871,26 @@ export class UI {
 
     const bar = (v, color) => `<div class="meter"><i style="width:${clamp(v, 0, 1) * 100}%;background:${color}"></i></div>`;
 
-    let html = `<div class="ws-block"><h4>Factions</h4>`;
+    let html = '';
+    if (st.history.length >= 2) {
+      const span = st.history[st.history.length - 1][0] - st.history[0][0];
+      html += `<div class="ws-block"><h4>The last ${span} days</h4>
+        <canvas id="ws-chart" width="720" height="240" role="img"
+          aria-label="${this.describeHistory(st)}"></canvas>
+        <div class="ws-legend">
+          <span><i style="background:#9ec98a"></i>herds</span>
+          <span><i style="background:#ef6a54"></i>predators</span>
+          <span><i style="background:#68d18a"></i>forest</span>
+          <span><i style="background:#8a6a4a"></i>scorched</span>
+          <span><i style="background:#e0b661"></i>prosperity</span>
+        </div></div>`;
+    } else {
+      html += `<div class="ws-block"><h4>The last days</h4>
+        <p class="ws-empty">The frontier has not lived long enough to have a history yet.
+        Come back after a couple of days and this becomes a chart of everything you changed.</p></div>`;
+    }
+
+    html += `<div class="ws-block"><h4>Factions</h4>`;
     for (let i = 0; i < 3; i++) {
       const f = st.factions[i];
       html += `<div class="frow"><span class="nm" style="color:${FACTIONS[i].accent}">${FACTIONS[i].name}</span>
@@ -844,6 +934,7 @@ export class UI {
     }
     html += `</div>`;
     el.innerHTML = html;
+    this.drawHistoryChart(st);
   }
 
   // ------------------------------------------------------------ hud tick

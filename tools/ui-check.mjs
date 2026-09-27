@@ -54,8 +54,15 @@ for (const [file, code] of Object.entries(src)) {
   for (const m of code.matchAll(/getElementById\('([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
   for (const m of code.matchAll(/querySelector\('#([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
 }
-const idSet = new Set(ids);
+// ids the code itself injects into the DOM (template markup) count as real
+const jsIds = new Set();
+for (const code of Object.values(src)) {
+  for (const m of code.matchAll(/id="([A-Za-z0-9_-]+)"/g)) jsIds.add(m[1]);
+  for (const m of code.matchAll(/\.id = '([A-Za-z0-9_-]+)'/g)) jsIds.add(m[1]);
+}
+const idSet = new Set([...ids, ...jsIds]);
 const dangling = [...selectors].map(s => s.split('\u0000')).filter(([id]) => !idSet.has(id));
+if (jsIds.size) ok(`${jsIds.size} ids are created at runtime by the code itself`);
 if (dangling.length) problems.push('code queries elements that do not exist: ' + dangling.map(([i, f]) => `#${i} (${f})`).join(', '));
 else ok(`${selectors.size} element lookups in src/ all resolve`);
 

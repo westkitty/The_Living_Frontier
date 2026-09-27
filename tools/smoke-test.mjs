@@ -348,6 +348,35 @@ game.ui.closeDialog();
   p.hp = p.maxHp; p.stamina = 100;
 }
 
+// ---- the world keeps its own biography ------------------------------------
+{
+  const d0 = st.day, n0 = st.history.length;
+  st.fastForward(60 * 60 * 3);                       // three real hours away
+  const grew = st.history.length - n0;
+  log(`history: ${st.day - d0} days passed, ${grew} daily samples recorded`);
+  if (grew !== st.day - d0) errors.push('history did not record one sample per day');
+  const row = st.history[st.history.length - 1];
+  const live = (() => { let prey = 0; for (const r of st.regions) prey += r.prey; return Math.round(prey); })();
+  log(`  last sample: day ${row[0]} herds ${row[1]} vs live ${live}`);
+  if (row[0] !== st.day || Math.abs(row[1] - live) > Math.max(3, live * 0.05)) {
+    errors.push('history sample does not match the live simulation');
+  }
+  // it survives the save, and it is bounded
+  st.save();
+  const { WorldState: WS } = await import('../src/worldstate.js');
+  const back = WS.load();
+  const same = JSON.stringify(back.history.slice(-5)) === JSON.stringify(st.history.slice(-5));
+  log('  history survives save/load:', same ? '✓' : '✗', '| samples kept:', back.history.length);
+  if (!same) errors.push('history did not survive the save');
+  for (let i = 0; i < 150; i++) st.recordHistory();
+  log('  history stays bounded at', st.history.length, 'samples');
+  if (st.history.length > 90) errors.push('history grows without bound');
+  // the chart has an honest text alternative
+  const desc = game.ui.describeHistory(st);
+  log('  chart alt text:', JSON.stringify(desc.slice(0, 96) + '…'));
+  if (!/days:/.test(desc) || !/herds/.test(desc)) errors.push('history chart has no usable alt text');
+}
+
 // ---- the world is audible: beds and footfalls follow real state -----------
 {
   const { AudioEngine } = await import('../src/audio.js');
