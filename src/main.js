@@ -906,6 +906,9 @@ async function boot() {
         'Your map is blank until you walk it. Climb high ground to see further.',
       ];
       tips.forEach((t, i) => setTimeout(() => game.ui.toast(t), 1600 + i * 4200));
+    } else if (state.homecoming && state.homecoming.length) {
+      for (const l of state.homecoming.slice().reverse()) state.note(l.text, l.kind === 'faction' ? 'faction' : 'world');
+      setTimeout(() => game.ui.showHomecoming(state.homecoming, state.homecomingDays, state.awaySeconds), 900);
     } else if (loadStatus === 'damaged') {
       setTimeout(() => game.ui.toast('That saved world could not be read — a new frontier was raised in its place.', 'bad'), 1200);
     } else if (state.awaySeconds > 60) {

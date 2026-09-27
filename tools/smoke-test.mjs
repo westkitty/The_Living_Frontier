@@ -348,6 +348,48 @@ game.ui.closeDialog();
   p.hp = p.maxHp; p.stamina = 100;
 }
 
+// ---- the account of what happened while you were away ----------------------
+{
+  const { WorldState } = await import('../src/worldstate.js');
+  const before = st.snapshot();
+  // a controlled set of changes the report must notice
+  const a = st.settlements[0], b = st.settlements[1], c = st.settlements[2];
+  a.buildings += 2; a.population += 4;
+  b.abandoned = true;
+  c.banner = (c.banner + 1) % 3;
+  st.factions[0].territory += 5;
+  st.day += 3;
+  const lines = WorldState.diffSnapshots(before, st.snapshot(), 7200);
+  const text = lines.map(l => l.text).join(' | ');
+  const saw = {
+    built: /raised 2 new buildings/.test(text),
+    lost: new RegExp(`${b.name} was abandoned`).test(text),
+    banner: new RegExp(`${c.name} now flies a different banner`).test(text),
+    land: /pushed into 5 more regions/.test(text),
+  };
+  log('homecoming report notices:', Object.entries(saw).map(([k, v]) => `${k}${v ? '✓' : '✗'}`).join(' '));
+  for (const [k, v] of Object.entries(saw)) if (!v) errors.push(`homecoming report missed the ${k} change`);
+  log('  e.g. "' + (lines[0] && lines[0].text) + '"');
+  // and it renders
+  game.ui.showHomecoming(lines, 3, 7200);
+  const rendered = document.querySelectorAll('#rep-list li').length;
+  log('report renders', rendered, 'entries and pauses the world:', game.ui.blocking ? '✓' : '✗');
+  if (rendered !== lines.length) errors.push('homecoming report did not render every line');
+  if (!game.ui.blocking) errors.push('homecoming report does not pause the world');
+  window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+  log('  Escape dismisses the report:', !game.ui.reportOpen ? '✓' : '✗');
+  if (game.ui.reportOpen) { errors.push('Escape did not close the homecoming report'); game.ui.closeHomecoming(); }
+  // an unchanged world says so rather than inventing drama
+  const still = JSON.parse(JSON.stringify(before)); still.day = before.day + 2;
+  const quiet = WorldState.diffSnapshots(before, still, 7200);
+  log('an unchanged frontier reports:', JSON.stringify(quiet.map(l => l.text)));
+  if (quiet.length !== 1 || !/quietly/.test(quiet[0].text)) errors.push('unchanged world produced a noisy report');
+  if (WorldState.diffSnapshots(before, before, 7200).length) errors.push('report invented news when no time passed');
+  // restore
+  a.buildings -= 2; a.population -= 4; b.abandoned = false; c.banner = (c.banner + 2) % 3;
+  st.factions[0].territory -= 5; st.day -= 3;
+}
+
 // ---- a damaged save is reported, not silently discarded ---------------------
 {
   const { WorldState } = await import('../src/worldstate.js');

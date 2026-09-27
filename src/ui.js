@@ -92,12 +92,15 @@ export class UI {
         () => { try { localStorage.removeItem('living_frontier_save_v1'); } catch (e) { } location.reload(); });
     });
     this.bindConfirm();
+    $('#rep-close').addEventListener('click', () => this.closeHomecoming());
+    $('#report').addEventListener('click', (e) => { if (e.target.id === 'report') this.closeHomecoming(); });
     $('#dlg-close').addEventListener('click', () => this.closeDialog());
 
     addEventListener('keydown', (e) => {
-      if (e.code === 'Escape') {
+      if (e.code === 'Escape' || e.key === 'Escape') {
         // close the top-most surface first, only then reach for the menu
-        if (this.confirmOpen) this.closeConfirm();
+        if (this.reportOpen) this.closeHomecoming();
+        else if (this.confirmOpen) this.closeConfirm();
         else if (this.dialogOpen) this.closeDialog();
         else if (this.panelOpen) this.closePanel();
         else if (!$('#menu').classList.contains('hidden')) this.closeMenu();
@@ -307,6 +310,29 @@ export class UI {
     if (sens) { sens.value = String(Settings.get('sensitivity')); $('#m-sens-out').textContent = Number(sens.value).toFixed(1) + '×'; }
   }
 
+  // The account of everything that happened without you. Shown once, on
+  // return, and also written into the chronicle so it is never lost.
+  showHomecoming(lines, days, awaySeconds) {
+    if (!lines || !lines.length) return false;
+    const hrs = awaySeconds / 3600;
+    const real = hrs < 1 ? `${Math.max(1, Math.round(awaySeconds / 60))} minutes` : `${hrs.toFixed(1)} hours`;
+    $('#rep-sub').textContent = `${real} away · ${days} day${days === 1 ? '' : 's'} passed on the frontier`;
+    const list = $('#rep-list');
+    list.innerHTML = '';
+    for (const l of lines) {
+      const li = document.createElement('li');
+      li.className = l.kind || 'world';
+      li.textContent = l.text;
+      if (l.faction !== undefined) li.style.borderLeftColor = FACTIONS[l.faction].accent;
+      if (l.banner !== undefined) li.style.borderLeftColor = FACTIONS[l.banner].accent;
+      list.appendChild(li);
+    }
+    this.reportOpen = true;
+    this.openSheet('#report');
+    return true;
+  }
+  closeHomecoming() { this.reportOpen = false; this.closeSheet('#report'); }
+
   // ----------------------------------------------- destructive confirmation
   // A native confirm() is silently suppressed inside sandboxed frames, so the
   // game asks for itself — and asks the player to hold, not just tap.
@@ -375,7 +401,7 @@ export class UI {
 
   // Keeps Tab inside whichever modal surface is open.
   trapFocus(e) {
-    const host = this.confirmOpen ? $('#confirm') : this.dialogOpen ? $('#dialog')
+    const host = this.reportOpen ? $('#report') : this.confirmOpen ? $('#confirm') : this.dialogOpen ? $('#dialog')
       : this.panelOpen ? $('#panel') : !$('#menu').classList.contains('hidden') ? $('#menu') : null;
     if (!host) return;
     const items = [...host.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
@@ -436,7 +462,7 @@ export class UI {
     this.dialogOpen = false;
     this.closeSheet('#dialog');
   }
-  get blocking() { return this.panelOpen !== null || this.dialogOpen || this.confirmOpen || !$('#menu').classList.contains('hidden'); }
+  get blocking() { return this.panelOpen !== null || this.dialogOpen || this.confirmOpen || this.reportOpen || !$('#menu').classList.contains('hidden'); }
 
   // ---------------------------------------------------------------- toasts
   toast(text, kind = '') {

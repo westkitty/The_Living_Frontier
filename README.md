@@ -112,6 +112,18 @@ The survey map supports drag to pan, scroll or pinch to zoom, arrow keys and
 speed, inverted look and reduced motion are all remembered between sessions,
 separately from the world save.
 
+## Coming back
+
+Every save carries a snapshot of the frontier: each settlement's buildings,
+walls, banner and standing, faction territory, herd and pack numbers, forest
+cover and burn scars. When you return after more than two minutes away, the
+world is fast-forwarded and the new snapshot is compared against the old one,
+and you are handed a short report of what actually changed while you were
+gone — villages that grew or emptied, banners that flipped, land that was
+taken, woods that thinned. The lines are derived from the simulation, not
+written in advance; a frontier that genuinely did nothing says so. Every line
+is also filed in the journal.
+
 ## Project layout
 
 ```

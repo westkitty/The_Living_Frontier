@@ -323,6 +323,28 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
 .set-row input[type=range]{flex:0 0 130px;accent-color:var(--amber);height:24px}
 .set-row output{font-size:12px;color:var(--amber-2);min-width:34px;text-align:right}
 
+/* ---- homecoming report ---- */
+.report-card{max-width:440px}
+.rep-sub{font-size:12px;color:var(--amber);letter-spacing:.04em;margin:0 0 12px;
+  text-transform:uppercase;opacity:.9}
+.rep-list{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:2px}
+.rep-list li{font-size:13px;line-height:1.55;padding:8px 10px 8px 13px;border-left:2px solid var(--line);
+  background:rgba(255,255,255,.025);border-radius:0 8px 8px 0;
+  animation:repIn .5s cubic-bezier(.2,.9,.2,1) both}
+.rep-list li:nth-child(1){animation-delay:.04s}
+.rep-list li:nth-child(2){animation-delay:.1s}
+.rep-list li:nth-child(3){animation-delay:.16s}
+.rep-list li:nth-child(4){animation-delay:.22s}
+.rep-list li:nth-child(5){animation-delay:.28s}
+.rep-list li:nth-child(6){animation-delay:.34s}
+.rep-list li:nth-child(7){animation-delay:.4s}
+.rep-list li:nth-child(8){animation-delay:.46s}
+.rep-list li.good{border-left-color:rgba(104,209,138,.65)}
+.rep-list li.bad{border-left-color:rgba(239,106,84,.65)}
+.rep-list li.faction{border-left-color:rgba(224,182,97,.7)}
+.rep-list li.world{border-left-color:rgba(226,208,164,.3)}
+@keyframes repIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+
 /* ---- destructive confirmation ---- */
 .cfm-actions{display:flex;gap:10px;margin-top:6px}
 .cfm-actions .btn{flex:1;position:relative;overflow:hidden;text-align:center}
