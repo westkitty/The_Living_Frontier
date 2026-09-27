@@ -5,7 +5,7 @@ import { Cartographer } from './cartography.js';
 import { Settings } from './settings.js';
 import { CH, regionIndex, regionCenter, DAY_LENGTH } from './worldstate.js';
 import { PanelsMixin } from './panels.js';
-import { $, icon, ITEM_ICONS } from './uikit.js';
+import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export { icon, ITEM_ICONS } from './uikit.js';
 
@@ -335,9 +335,14 @@ export class UI {
     for (const l of lines) {
       const li = document.createElement('li');
       li.className = l.kind || 'world';
-      li.textContent = l.text;
-      if (l.faction !== undefined) li.style.borderLeftColor = FACTIONS[l.faction].accent;
-      if (l.banner !== undefined) li.style.borderLeftColor = FACTIONS[l.banner].accent;
+      const fi = l.banner !== undefined ? l.banner : l.faction;
+      if (fi !== undefined && FACTIONS[fi]) {
+        li.style.borderLeftColor = FACTIONS[fi].accent;
+        li.innerHTML = crest(fi, FACTIONS[fi].name, FACTIONS[fi].accent) + '<span></span>';
+        li.lastChild.textContent = l.text;          // text stays text, never markup
+      } else {
+        li.textContent = l.text;
+      }
       list.appendChild(li);
     }
     this.reportOpen = true;
@@ -456,8 +461,17 @@ export class UI {
   closeMenu() { this.closeSheet('#menu'); }
 
   // -------------------------------------------------------------- dialogue
-  openDialog(name, text, options) {
-    $('#dlg-name').textContent = name;
+  openDialog(name, text, options, faction) {
+    const nameEl = $('#dlg-name');
+    nameEl.textContent = name;
+    // who you are speaking for, shown as heraldry and said in words
+    if (faction !== undefined && FACTIONS[faction]) {
+      const f = FACTIONS[faction];
+      nameEl.insertAdjacentHTML('afterbegin', crest(faction, f.name, f.accent, `Under the ${f.name} banner. `));
+      nameEl.style.color = f.accent;
+    } else {
+      nameEl.style.color = '';
+    }
     $('#dlg-text').textContent = text;
     const box = $('#dlg-options');
     box.innerHTML = '';
@@ -636,6 +650,33 @@ export class UI {
     const v = this.mapView;
     return { cx: v.cx, cz: v.cz, span: v.span };
   }
+  // The survey map is a picture; this says out loud what the picture shows —
+  // where the view sits, how much of it you have actually surveyed, what is
+  // inside the frame, and which way your waypoint lies.
+  describeMapView() {
+    const st = this.state, p = this.world.player;
+    const v = this.mapWindow();
+    const half = v.span / 2;
+    const inView = [];
+    for (const s of st.settlements) {
+      if (Math.abs(s.x - v.cx) > half || Math.abs(s.z - v.cz) > half) continue;
+      if (st.exploredAt(s.x, s.z) < 0.25) continue;         // still unsurveyed: not on this map
+      inView.push(`${s.name}, ${s.abandoned ? 'abandoned' : s.status}, under ${FACTIONS[s.banner].name}`);
+    }
+    const compass = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+    let wp = '';
+    if (this.waypoint) {
+      const dx = this.waypoint.x - p.pos.x, dz = this.waypoint.z - p.pos.z;
+      const b = this.bearingTo(dx, dz);
+      const dir = compass[Math.round(b / (Math.PI / 4)) % 8];
+      wp = ` Waypoint ${this.waypoint.name ? `"${this.waypoint.name}" ` : ''}lies ${Math.round(Math.hypot(dx, dz))} metres ${dir}.`;
+    }
+    return `Survey map. View ${Math.round(v.span)} metres across. `
+      + `${Math.round(st.exploredFraction() * 100)} per cent of the frontier surveyed. `
+      + (inView.length ? `In view: ${inView.join('; ')}.` : 'No surveyed settlement in view.')
+      + wp;
+  }
+
   drawBigMap() {
     const c = $('#bigmap');
     this._saveViewT = (this._saveViewT || 0);
@@ -720,6 +761,7 @@ export class UI {
       this._saveViewT = now;
       Settings.set('mapView', { cx: Math.round(v.cx), cz: Math.round(v.cz), span: Math.round(v.span) });
     }
+    c.setAttribute('aria-label', this.describeMapView());
   }
 
   // ---------------------------------------------------------------- views

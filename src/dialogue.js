@@ -78,7 +78,7 @@ export const DialogueMixin = {
         }
       },
       { label: 'Leave' },
-    ]);
+    ], a.faction);
   },
 
   settlementDialog(s, i) {
@@ -125,6 +125,6 @@ export const DialogueMixin = {
         }
       },
       { label: 'Leave' },
-    ]);
+    ], s.banner);
   },
 };

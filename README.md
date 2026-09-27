@@ -142,6 +142,22 @@ and every day heading in the chronicle is a button that opens the chart on
 that day. The accessible label updates with the selected day, so the readout
 is available without seeing the drawing.
 
+## Heraldry, and never colour alone
+
+The three factions have crests drawn in the same line-art family as the rest of
+the sprite: the Verdant Pact a warded shield with a sprig, the Ashen Legion an
+iron shield and spear, the Hollow Kin two standing stones under a moon. They
+appear wherever allegiance matters — the world screen, each settlement's entry,
+the standing line in the bag, the homecoming report and the header of any
+conversation held under a banner. Every crest ships with the faction's name in
+text for assistive technology, so ownership is never signalled by colour alone.
+
+The survey map describes itself too: its aria-label reports how wide the view
+is, how much of the frontier you have surveyed, the settlements inside the
+frame with their standing and banner — never one you have not found yet — and
+the distance and bearing to your waypoint, using the same bearing maths as the
+compass pips.
+
 ## Coming back
 
 Every save carries a snapshot of the frontier: each settlement's buildings,
@@ -209,7 +225,9 @@ opening the menu, that a destructive confirm does nothing unless it is held,
 that a save which cannot be written reports failure after retrying with a
 slimmer payload, that the daily history matches the live simulation and stays
 bounded, that scrubbing the chart reports the selected day honestly and clamps
-at both ends, that footfalls change with the ground underfoot, and that
+at both ends, that the chart legend reports each line's true value and range
+and can isolate it, that the survey map's description matches what it draws and
+never names an unsurveyed place, that footfalls change with the ground underfoot, and that
 preferences persist across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in

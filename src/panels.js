@@ -3,7 +3,7 @@
 // Mixed onto UI.prototype in ui.js.
 import { FACTIONS, LANDMARKS } from './worldgen.js';
 import { clamp } from './rng.js';
-import { $, icon, ITEM_ICONS } from './uikit.js';
+import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export const PanelsMixin = {
   renderBag() {
@@ -31,7 +31,7 @@ export const PanelsMixin = {
     const st = this.state.player.stats;
     const rep = this.state.player.rep;
     $('#bag-stats').innerHTML = `
-      <div><b>Standing</b> — ${FACTIONS.map((f, i) => `${f.name}: <b style="color:${f.accent}">${Math.round(rep[i])}</b>`).join(' &nbsp;·&nbsp; ')}</div>
+      <div><b>Standing</b> — ${FACTIONS.map((f, i) => `${crest(i, f.name, f.accent)}${f.name}: <b style="color:${f.accent}">${Math.round(rep[i])}</b>`).join(' &nbsp;·&nbsp; ')}</div>
       <div><b>Travelled</b> ${(st.distance / 1000).toFixed(2)} km &nbsp;·&nbsp; <b>Trees felled</b> ${st.felled} &nbsp;·&nbsp; <b>Animals taken</b> ${st.hunted}</div>
       <div><b>Fires lit</b> ${st.fires} &nbsp;·&nbsp; <b>Saplings planted</b> ${st.planted} &nbsp;·&nbsp; <b>Tasks done</b> ${st.quests} &nbsp;·&nbsp; <b>Aid given</b> ${st.helped}</div>
       <div><b>Day</b> ${this.state.day} &nbsp;·&nbsp; <b>Discoveries</b> ${Object.keys(this.state.discovered).length}/${LANDMARKS.length}</div>`;
@@ -175,6 +175,50 @@ export const PanelsMixin = {
     return text + (events.length ? `. Chronicle: ${events.slice(0, 4).map(e => e.text).join(' ')}` : '. Nothing recorded.');
   },
 
+  // The five tracked quantities, in one place so the chart, the legend and the
+  // readout can never disagree about what is being drawn.
+  chartSeries() {
+    return [
+      { k: 1, c: '#9ec98a', label: 'herds', fmt: (v) => String(v) },
+      { k: 2, c: '#ef6a54', label: 'predators', fmt: (v) => String(v) },
+      { k: 3, c: '#68d18a', label: 'forest', fmt: (v) => v + '%' },
+      { k: 4, c: '#8a6a4a', label: 'scorched', fmt: (v) => v + ' cells' },
+      { k: 8, c: '#e0b661', label: 'prosperity', fmt: (v) => (v / 100).toFixed(2) },
+    ];
+  },
+
+  chartHiddenSet() {
+    if (!this._chartHidden) this._chartHidden = new Set();
+    return this._chartHidden;
+  },
+
+  // Each line is normalised to its own range, which makes shapes comparable
+  // but hides scale — so the legend carries the value at the cursor and the
+  // range it is drawn against, and doubles as the isolate control.
+  updateChartLegend(st, h, ci) {
+    const box = $('#ws-legend');
+    if (!box) return;
+    const hidden = this.chartHiddenSet();
+    box.innerHTML = '';
+    for (const s of this.chartSeries()) {
+      let lo = Infinity, hi = -Infinity;
+      for (const row of h) { lo = Math.min(lo, row[s.k]); hi = Math.max(hi, row[s.k]); }
+      const off = hidden.has(s.k);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'leg' + (off ? ' off' : '');
+      b.dataset.k = String(s.k);
+      b.setAttribute('aria-pressed', off ? 'false' : 'true');
+      b.innerHTML = `<i style="background:${s.c}"></i><b>${s.label}</b>`
+        + `<span>${s.fmt(h[ci][s.k])}</span><em>${s.fmt(lo)}–${s.fmt(hi)}</em>`;
+      b.addEventListener('click', () => {
+        if (hidden.has(s.k)) hidden.delete(s.k); else hidden.add(s.k);
+        this.drawHistoryChart(this.state);
+      });
+      box.appendChild(b);
+    }
+  },
+
   drawHistoryChart(st) {
     const cv = document.getElementById('ws-chart');
     if (!cv || st.history.length < 2) return;
@@ -195,13 +239,7 @@ export const PanelsMixin = {
       g.beginPath(); g.moveTo(x(i), pad * 0.4); g.lineTo(x(i), H - foot); g.stroke();
     }
 
-    const series = [
-      { k: 1, c: '#9ec98a' },   // prey
-      { k: 2, c: '#ef6a54' },   // predators
-      { k: 3, c: '#68d18a' },   // forest
-      { k: 4, c: '#8a6a4a' },   // scorched
-      { k: 8, c: '#e0b661' },   // prosperity
-    ];
+    const series = this.chartSeries().filter(s => !this.chartHiddenSet().has(s.k));
     for (const s of series) {
       let lo = Infinity, hi = -Infinity;
       for (const row of h) { lo = Math.min(lo, row[s.k]); hi = Math.max(hi, row[s.k]); }
@@ -243,6 +281,7 @@ export const PanelsMixin = {
       g.fillStyle = '#12150f'; g.fill();
       g.lineWidth = 2; g.strokeStyle = s.c; g.stroke();
     }
+    this.updateChartLegend(st, h, ci);
     const read = this.renderChartReadout(st, h[ci]);
     if (read) cv.setAttribute('aria-label', this.describeHistory(st) + ' Selected: ' + read);
 
@@ -274,14 +313,8 @@ export const PanelsMixin = {
         <canvas id="ws-chart" width="720" height="240" role="img" tabindex="0"
           aria-label="${this.describeHistory(st)}"></canvas>
         <div id="ws-read" class="ws-read" aria-live="polite"></div>
-        <div class="ws-legend">
-          <span><i style="background:#9ec98a"></i>herds</span>
-          <span><i style="background:#ef6a54"></i>predators</span>
-          <span><i style="background:#68d18a"></i>forest</span>
-          <span><i style="background:#8a6a4a"></i>scorched</span>
-          <span><i style="background:#e0b661"></i>prosperity</span>
-        </div>
-        <p class="ws-hint">Drag across the chart — or focus it and use the arrow keys — to read any
+        <div class="ws-legend" id="ws-legend" role="group" aria-label="Chart series — toggle to isolate one"></div>
+        <p class="ws-hint">Toggle a line to isolate it. Drag across the chart — or focus it and use the arrow keys — to read any
         day, and see what you wrote in the chronicle that day.</p></div>`;
     } else {
       html += `<div class="ws-block"><h4>The last days</h4>
@@ -292,7 +325,7 @@ export const PanelsMixin = {
     html += `<div class="ws-block"><h4>Factions</h4>`;
     for (let i = 0; i < 3; i++) {
       const f = st.factions[i];
-      html += `<div class="frow"><span class="nm" style="color:${FACTIONS[i].accent}">${FACTIONS[i].name}</span>
+      html += `<div class="frow"><span class="nm" style="color:${FACTIONS[i].accent}">${crest(i, FACTIONS[i].name, FACTIONS[i].accent)}${FACTIONS[i].name}</span>
         ${bar(f.territory / totalRegions * 2.2, FACTIONS[i].accent)}
         <span class="vv">${Math.round(f.territory / totalRegions * 100)}% land</span></div>
         <div class="frow"><span class="nm" style="opacity:.6;font-size:11px">your standing</span>
@@ -304,7 +337,8 @@ export const PanelsMixin = {
     html += `<div class="ws-block"><h4>Settlements</h4>`;
     for (const s of st.settlements) {
       const cls = s.abandoned ? 'abandoned' : s.status;
-      html += `<div class="vil"><span>${s.name} <span style="color:${FACTIONS[s.banner].accent};font-size:10px">◆</span>
+      html += `<div class="vil"><span>${s.name} ${crest(s.banner, FACTIONS[s.banner].name, FACTIONS[s.banner].accent,
+        `flies the ${FACTIONS[s.banner].name} banner`)}
         <span style="color:var(--dim);font-size:11px"> · ${Math.round(s.population)} souls · ${s.buildings} buildings${s.walls ? ` · walls ${s.walls}/3` : ''}</span></span>
         <span class="tag ${cls}">${s.abandoned ? 'abandoned' : s.status}</span></div>`;
     }

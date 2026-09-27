@@ -230,6 +230,12 @@ game.ui.toast('test'); game.ui.discovery('Test Landmark');
 const npc = game.actors.npcs[0];
 if (npc) { game.talkNPC(npc); log('dialogue opened:', document.querySelector('#dlg-name').textContent); game.ui.closeDialog(); }
 game.settlementDialog(st.settlements[0], 0);
+{
+  const head = document.querySelector('#dlg-name');
+  const ok = head.querySelector('.crest') && /Verdant Pact|Ashen Legion|Hollow Kin/.test(head.textContent);
+  log('settlement dialogue names the banner it flies:', ok ? '✓' : '✗', JSON.stringify(head.textContent.slice(0, 40)));
+  if (!ok) errors.push('settlement dialogue does not identify the faction in text');
+}
 const opts = document.querySelectorAll('#dlg-options .btn');
 st.player.inv.wood += 20;
 opts[0].click();
@@ -433,6 +439,68 @@ game.ui.closeDialog();
   const held = game.ui.chartDay;
   game.ui.renderWorldState();
   if (game.ui.chartDay !== held) errors.push('refreshing the world screen loses the selected day');
+  // the legend reports real scale and can isolate a line
+  {
+    const hh = st.history, ci = game.ui.chartIndex(hh);
+    const legs = document.querySelectorAll('#ws-legend .leg');
+    const first = legs[0];
+    const shownVal = first.querySelector('span').textContent;
+    const shownRange = first.querySelector('em').textContent;
+    let lo = Infinity, hi = -Infinity;
+    for (const row of hh) { lo = Math.min(lo, row[1]); hi = Math.max(hi, row[1]); }
+    const okScale = shownVal === String(hh[ci][1]) && shownRange === `${lo}–${hi}`;
+    log(`legend scale: herds ${shownVal} of range ${shownRange} ${okScale ? '✓' : '✗'}`);
+    if (!okScale) errors.push('chart legend does not report the real value and range');
+    first.click();
+    const hiddenNow = game.ui.chartHiddenSet().has(1)
+      && document.querySelector('#ws-legend .leg').getAttribute('aria-pressed') === 'false';
+    log('  isolating a line:', hiddenNow ? 'hidden and announced ✓' : '✗');
+    if (!hiddenNow) errors.push('toggling a chart series does not hide it');
+    // hiding everything must not break the drawing
+    for (const s2 of game.ui.chartSeries()) game.ui.chartHiddenSet().add(s2.k);
+    game.ui.drawHistoryChart(st);
+    log('  all five lines hidden: chart still renders ✓');
+    game.ui.chartHiddenSet().clear();
+    game.ui.drawHistoryChart(st);
+  }
+
+  // the survey map says what it is showing
+  {
+    game.ui.showTab('map');
+    game.ui.mapView.cx = st.settlements[0].x; game.ui.mapView.cz = st.settlements[0].z;
+    game.ui.mapView.span = 900;
+    game.ui.waypoint = { x: p.pos.x, z: p.pos.z + 300, name: 'the ford' };   // due south of the player
+    game.ui.drawBigMap();
+    const label = document.querySelector('#bigmap').getAttribute('aria-label');
+    const names = st.settlements.filter(s2 => Math.abs(s2.x - game.ui.mapView.cx) <= 450
+      && Math.abs(s2.z - game.ui.mapView.cz) <= 450 && st.exploredAt(s2.x, s2.z) >= 0.25).map(s2 => s2.name);
+    const okSpan = label.includes('900 metres across');
+    const okNames = names.every(n => label.includes(n));
+    // the spoken bearing must agree with the compass pips, which use bearingTo
+    const compass = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+    const expectDir = compass[Math.round(game.ui.bearingTo(0, 300) / (Math.PI / 4)) % 8];
+    const okWp = new RegExp(`Waypoint "the ford" lies (29[5-9]|30[0-5]) metres ${expectDir}\\.`).test(label);
+    log('survey map describes itself:', JSON.stringify(label.slice(0, 120) + '…'));
+    log('  waypoint phrase:', (label.match(/Waypoint[^.]*\./) || ['(none)'])[0]);
+    log(`  span ${okSpan ? '✓' : '✗'} | ${names.length} surveyed places named ${okNames ? '✓' : '✗'} | waypoint bearing ${okWp ? '✓' : '✗'}`);
+    if (!okSpan || !okNames || !okWp) errors.push('the survey map description does not match what it draws');
+    // unsurveyed places must not be leaked by the description
+    const hidden = st.settlements.find(s2 => st.exploredAt(s2.x, s2.z) < 0.25);
+    if (hidden && label.includes(hidden.name)) errors.push('map description reveals an unsurveyed settlement');
+    game.ui.waypoint = null;
+    game.ui.showTab('world');
+  }
+
+  // every faction cue carries its name, not just a colour
+  {
+    const crests = document.querySelectorAll('#world-state .crest');
+    const names = [...document.querySelectorAll('#world-state .sr-only')].map(e => e.textContent);
+    const named = names.some(t => /flies the .* banner/.test(t)) && names.some(t => /Verdant Pact/.test(t));
+    log(`heraldry: ${crests.length} crests drawn, ${names.length} carry a readable name`, named ? '✓' : '✗');
+    if (!crests.length || crests.length !== names.length) errors.push('faction crests are not paired with text alternatives');
+    if (!named) errors.push('banner ownership is still conveyed by colour alone');
+  }
+
   // a chronicle entry is a door into the chart for that day
   game.ui.showTab('journal');
   const jumps = document.querySelectorAll('#journal-list .jday-btn');
