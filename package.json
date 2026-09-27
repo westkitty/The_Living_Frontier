@@ -7,9 +7,14 @@
   "scripts": {
     "start": "python3 -m http.server 8080",
     "smoke": "node tools/smoke-test.mjs",
-    "shaders": "node tools/shader-check.mjs"
+    "shaders": "node tools/shader-check.mjs",
+    "ui": "node tools/ui-check.mjs",
+    "visual": "node tools/visual-qa.mjs",
+    "perf": "node tools/perf-probe.mjs",
+    "check": "npm run ui && npm run shaders && npm run smoke"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
     "@shaderfrog/glsl-parser": "^7.0.1",
     "jsdom": "^24.1.0",
     "three": "0.160.1"

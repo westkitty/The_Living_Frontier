@@ -18,6 +18,8 @@ export class Input {
     this.touch = false;
     this.dom = dom;
     this.lookScale = 1;
+    this.sensitivity = 1;
+    this.invertY = false;
     this._bind();
   }
   _bind() {
@@ -144,6 +146,8 @@ export class Player {
     this.stamina = p.stamina ?? 100;
     this.phase = 0;
     this.swing = 0;
+    this.shake = 0;
+    this.shakeScale = 1;
     this.crouched = false;
     this.speedMul = 1;
     this.camTarget = new THREE.Vector3();
@@ -158,6 +162,7 @@ export class Player {
   }
 
   damage(amount, source) {
+    this.addShake(0.2 + Math.min(0.6, amount / 40));
     if (this.dead) return;
     this.hp = clamp(this.hp - amount, 0, this.maxHp);
     this.world.ui.damageFlash();
@@ -188,8 +193,9 @@ export class Player {
     const sprinting = (sprintKey || input.sprint) && moveLen > 0.4 && this.stamina > 2 && !this.crouched;
 
     // --- camera orientation from look input
-    this.camYaw -= input.look.x;
-    this.camPitch = clamp(this.camPitch + input.look.y, -0.45, 1.15);
+    const sens = input.sensitivity || 1;
+    this.camYaw -= input.look.x * sens;
+    this.camPitch = clamp(this.camPitch + input.look.y * sens * (input.invertY ? -1 : 1), -0.45, 1.15);
     input.look.set(0, 0);
     if (input.zoom) { this.camDistTarget = clamp(this.camDistTarget + input.zoom, 3.2, 16); input.zoom = 0; }
 
@@ -297,6 +303,8 @@ export class Player {
   }
 
   attack() { this.swing = 1; }
+  // Impact kick. Scaled (or silenced) by the reduce-motion preference.
+  addShake(amount) { this.shake = Math.min(1.2, this.shake + amount * this.shakeScale); }
 
   respawn() {
     const st = this.state;
@@ -332,6 +340,15 @@ export class Player {
     this.camPos.lerp(want, 1 - Math.exp(-9 * dt));
     if (!this._camInit) { this.camPos.copy(want); this._camInit = true; }
     camera.position.copy(this.camPos);
+    // impact kick: a short, decaying shove that never fights the look controls
+    if (this.shake > 0.001) {
+      const t = this._shakeT = (this._shakeT || 0) + dt * 34;
+      const k = this.shake * this.shake * 0.55;
+      camera.position.x += Math.sin(t * 1.7) * k;
+      camera.position.y += Math.sin(t * 2.3 + 1.1) * k * 0.8;
+      camera.position.z += Math.cos(t * 1.9 + 0.4) * k;
+      this.shake = Math.max(0, this.shake - dt * 4.2);
+    }
     camera.lookAt(this.camTarget);
   }
 }

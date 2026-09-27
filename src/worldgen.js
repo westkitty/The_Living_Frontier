@@ -7,11 +7,13 @@ export const WORLD = {
   water: 0.0,          // sea / river level
   chunk: 180,          // chunk size in world units
   stateRes: 512,       // resolution of the persistent ground-state texture
+  exploreRes: 128,     // resolution of the player's remembered map (fog of war)
   fireRes: 96,         // resolution of the fire/fuel grid
   regionRes: 12,       // ecology / faction region grid
 };
 WORLD.size = WORLD.half * 2;
 WORLD.stateCell = WORLD.size / WORLD.stateRes;
+WORLD.exploreCell = WORLD.size / WORLD.exploreRes;
 WORLD.fireCell = WORLD.size / WORLD.fireRes;
 WORLD.regionCell = WORLD.size / WORLD.regionRes;
 

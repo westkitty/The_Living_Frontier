@@ -223,6 +223,179 @@ opts[0].click();
 log('gave wood to', st.settlements[0].name, '-> supplies', st.settlements[0].supplies.toFixed(2), 'rep', st.settlements[0].rep);
 game.ui.closeDialog();
 
+// ---- the map you make by walking -------------------------------------------
+{
+  const fresh0 = st.exploredFraction();
+  const { heightAt } = await import('../src/worldgen.js');
+  // a walk across unknown country
+  const sx = 300, sz = -300;
+  for (let i = 0; i < 120; i++) {
+    p.pos.set(sx + i * 6, heightAt(sx + i * 6, sz), sz);
+    game.sightTimer = 0; game.updateSight(0.4);
+  }
+  const afterWalk = st.exploredFraction();
+  log('surveyed by walking:', (fresh0 * 100).toFixed(1) + '%', '->', (afterWalk * 100).toFixed(1) + '%',
+    afterWalk > fresh0 ? '✓' : '✗');
+  if (afterWalk <= fresh0) errors.push('walking did not reveal any map');
+
+  // standing on a peak must survey more ground than standing in a hollow
+  // find the most and least prominent ground: prominence is what the sight
+  // model actually keys on, so that is what the test must vary
+  const prom = (x, z) => heightAt(x, z) -
+    (heightAt(x + 210, z) + heightAt(x - 210, z) + heightAt(x, z + 210) + heightAt(x, z - 210)) / 4;
+  const lowPos = [0, 0], peak = [0, 0];
+  let lowest = 1e9, highest = -1e9;
+  for (let x = -1000; x <= 1000; x += 60) for (let z = -1000; z <= 1000; z += 60) {
+    if (heightAt(x, z) < 2) continue;
+    const pr = prom(x, z);
+    if (pr > highest) { highest = pr; peak[0] = x; peak[1] = z; }
+    if (pr < lowest) { lowest = pr; lowPos[0] = x; lowPos[1] = z; }
+  }
+  const measure = (x, z) => {
+    p.pos.set(x, heightAt(x, z), z);
+    game.sightTimer = 0; game.updateSight(0.4);
+    return game.sightRadius;
+  };
+  const rLow = measure(lowPos[0], lowPos[1]);
+  const rHigh = measure(peak[0], peak[1]);
+  log(`sight from a hollow (prominence ${Math.round(lowest)} m): ${Math.round(rLow)} m | from a ridge (prominence ${Math.round(highest)} m): ${Math.round(rHigh)} m`,
+    rHigh > rLow * 1.3 ? '✓ climbing pays' : '✗');
+  if (rHigh <= rLow * 1.3) errors.push('high ground does not extend the survey');
+
+  // fog survives the save
+  const snap = st.explored.slice();
+  const round = (await import('../src/worldstate.js')).WorldState.deserialize(JSON.parse(JSON.stringify(st.serialize())));
+  const same = round.explored.every((v, i) => v === snap[i]);
+  log('remembered map survives save/load:', same ? '✓' : '✗');
+  if (!same) errors.push('explored map lost on save/load');
+}
+
+// ---- waypoints & compass ----------------------------------------------------
+{
+  const ui = game.ui;
+  ui.mapView = { cx: 0, cz: 0, span: 2300 };
+  ui.tapMap({ x: 420, z: -180 });
+  const w = ui.waypoint;
+  log('waypoint set:', w ? `${w.x},${w.z}` : 'none', w && st.player.waypoint ? '✓ saved with the player' : '✗');
+  if (!w || !st.player.waypoint) errors.push('waypoint not stored in player state');
+  // a target dead ahead of the camera must sit at the centre of the compass
+  p.pos.set(0, 0, 0); p.camYaw = 0;
+  const ahead = { x: 0, z: -400 };            // camera at +Z looks toward -Z
+  const heading = ((-p.camYaw + Math.PI) % 6.283185 + 6.283185) % 6.283185;
+  let delta = ui.bearingTo(ahead.x, ahead.z) - heading;
+  while (delta > Math.PI) delta -= 6.283185;
+  while (delta < -Math.PI) delta += 6.283185;
+  log('compass bearing error for a target straight ahead:', (delta * 57.3).toFixed(1) + '°', Math.abs(delta) < 0.02 ? '✓' : '✗');
+  if (Math.abs(delta) > 0.02) errors.push('compass pips point the wrong way');
+  ui.updateCompassPips(p);
+  ui.tapMap({ x: 420, z: -180 });             // tapping it again lifts it
+  if (ui.waypoint) errors.push('tapping a waypoint again did not lift it');
+}
+
+// ---- preferences persist ----------------------------------------------------
+{
+  const { Settings } = await import('../src/settings.js');
+  Settings.load();
+  Settings.set('quality', 'low');
+  Settings.set('sensitivity', 1.6);
+  Settings.set('muted', true);
+  const again = Object.assign({}, Settings.values);
+  Settings.values = {};
+  Settings.load();
+  const ok = Settings.get('quality') === 'low' && Settings.get('sensitivity') === 1.6 && Settings.get('muted') === true;
+  log('preferences persist across sessions:', ok ? '✓' : '✗', JSON.stringify(Settings.values));
+  if (!ok) errors.push('settings did not round-trip');
+  game.setQuality('low');
+  const lowRadius = game.chunks.radius;
+  game.setQuality('high');
+  log('quality switch changes streaming radius:', lowRadius, '->', game.chunks.radius, game.chunks.radius > lowRadius ? '✓' : '✗');
+  if (game.chunks.radius <= lowRadius) errors.push('setQuality had no effect');
+  Settings.set('quality', 'high'); Settings.set('muted', false); Settings.set('sensitivity', 1);
+}
+
+// ---- modal stack, focus and destructive confirmation ------------------------
+{
+  const ui = game.ui;
+  const esc = () => window.dispatchEvent(new window.KeyboardEvent('keydown', { code: 'Escape', bubbles: true }));
+  game.talkNPC(game.actors.npcs[0] || { name: 'x', role: 'farmer', settlement: st.settlements[0], pos: p.pos, faction: 0 });
+  esc();
+  const menuOpen = !document.querySelector('#menu').classList.contains('hidden');
+  log('Escape closes the conversation instead of opening the menu:', !ui.dialogOpen && !menuOpen ? '✓' : '✗');
+  if (ui.dialogOpen || menuOpen) errors.push('Escape stack is wrong with a dialogue open');
+
+  let erased = false;
+  ui.confirmAction('Erase this world?', 'test', 'Hold to erase', () => { erased = true; });
+  log('confirm sheet blocks the world while open:', ui.blocking ? '✓' : '✗');
+  if (!ui.blocking) errors.push('confirm sheet does not pause the game');
+  ui.closeConfirm();
+  log('dismissing the confirm did not erase anything:', !erased ? '✓' : '✗');
+  if (erased) errors.push('confirm fired without being held');
+}
+
+// ---- reaching for food without opening the bag ------------------------------
+{
+  const ui = game.ui, inv = st.player.inv;
+  p.hp = 40; p.stamina = 20;
+  inv.berry = 0; inv.herb = 0; inv.hide = 0;
+  const empty = ui.quickRestore();
+  log('quick restore with an empty bag:', empty === false ? '✓ refuses' : '✗');
+  if (empty !== false) errors.push('quickRestore consumed nothing but claimed success');
+  inv.berry = 2;
+  const hp0 = p.hp;
+  const used = ui.quickRestore();
+  log('quick restore eats a berry:', hp0, '->', p.hp, '| berries', inv.berry, used && p.hp > hp0 && inv.berry === 1 ? '✓' : '✗');
+  if (!(used && p.hp > hp0 && inv.berry === 1)) errors.push('quickRestore did not consume and heal');
+  p.hp = p.maxHp; p.stamina = 100;
+}
+
+// ---- a damaged save is reported, not silently discarded ---------------------
+{
+  const { WorldState } = await import('../src/worldstate.js');
+  st.save();                                   // make sure a healthy save exists
+  const good = localStorage.getItem('living_frontier_save_v1');
+  localStorage.setItem('living_frontier_save_v1', '{"day":3,"ground":["AAA');   // truncated
+  const res = WorldState.loadResult();
+  log('truncated save detected as:', res.status, res.status === 'damaged' && !res.state ? '✓' : '✗');
+  if (res.status !== 'damaged') errors.push('a corrupt save was not reported as damaged');
+  const kept = localStorage.getItem('living_frontier_save_v1_damaged');
+  log('unreadable save kept aside for inspection:', kept ? '✓' : '✗');
+  if (!kept) errors.push('corrupt save was thrown away');
+  localStorage.removeItem('living_frontier_save_v1_damaged');
+  localStorage.setItem('living_frontier_save_v1', good);
+  const back = WorldState.loadResult();
+  log('a healthy save still loads:', back.status === 'ok' ? '✓' : '✗');
+  if (back.status !== 'ok') errors.push('loadResult broke the normal load path');
+}
+
+// ---- impact feedback --------------------------------------------------------
+{
+  p.shake = 0; p.shakeScale = 1;
+  p.addShake(0.4);
+  const kicked = p.shake;
+  for (let i = 0; i < 40; i++) p.updateCamera(0.033, game.camera, game.input);
+  log('impact kick decays away:', kicked.toFixed(2), '->', p.shake.toFixed(2), p.shake === 0 && kicked > 0 ? '✓' : '✗');
+  if (!(kicked > 0 && p.shake === 0)) errors.push('camera shake did not decay');
+  p.shakeScale = 0.15; p.shake = 0; p.addShake(0.4);
+  log('reduce-motion damps it to', p.shake.toFixed(3), p.shake < 0.1 ? '✓' : '✗');
+  if (p.shake >= 0.1) errors.push('reduce-motion does not damp camera shake');
+  p.shakeScale = 1; p.shake = 0;
+}
+
+// ---- a save that cannot be written is reported, not swallowed ---------------
+{
+  // jsdom's localStorage is a Proxy, so patch the prototype, not the instance
+  const proto = Object.getPrototypeOf(localStorage);
+  const realSet = proto.setItem;
+  let calls = 0;
+  proto.setItem = function () { calls++; const e = new Error('quota'); e.name = 'QuotaExceededError'; throw e; };
+  const ok = st.save();
+  proto.setItem = realSet;
+  log('save under a full quota:', ok ? 'claimed success' : 'reported failure', ok ? '✗' : '✓', `(retried ${calls}x)`);
+  if (ok) errors.push('save() lied about a failed write');
+  if (calls < 2) errors.push('save() did not retry with a slimmer payload');
+  log('and the world still saves normally afterwards:', st.save() ? '✓' : '✗');
+}
+
 // ---- save / load round-trip ------------------------------------------------
 st.player.inv.relic = 7;
 const saved = st.save();

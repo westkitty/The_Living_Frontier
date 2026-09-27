@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, CAMPS, heightAt, settlementGroundY, caveFloor, placeOnLand } from './worldgen.js';
 import { clamp, lerp } from './rng.js';
 import { WorldState, CH, regionIndex, SAVE_KEY, DAY_LENGTH } from './worldstate.js';
+import { Settings } from './settings.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
 import { Vegetation } from './veg.js';
 import { buildLandmarks, buildSettlementGeometry, makeStructureMaterial, makeBanner, buildCaveGlow, buildCampGeometry } from './structures.js';
@@ -95,7 +96,11 @@ class Game {
 
   cycleQuality() {
     const order = ['high', 'medium', 'low'];
-    this.quality = order[(order.indexOf(this.quality) + 1) % 3];
+    return this.setQuality(order[(order.indexOf(this.quality) + 1) % 3]);
+  }
+
+  setQuality(q) {
+    this.quality = ['high', 'medium', 'low'].includes(q) ? q : 'high';
     if (this.quality === 'high') {
       this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       this.renderer.shadowMap.enabled = true; this.chunks.radius = 3; this.actors.maxAnimals = 16;
@@ -389,6 +394,7 @@ class Game {
   strike() {
     this.player.attack();
     this.audio.play('hit');
+    this.player.addShake(0.16);
     const t = this.interactTarget;
     const p = this.player.pos;
     if (t && t.type === 'veg' && t.alt === 'Set alight') {
@@ -405,6 +411,8 @@ class Game {
       a.hp -= 30 + Math.random() * 20;
       a.fleeing = 25;
       this.fx.hitSpark(a.pos);
+      this.player.addShake(0.3);
+      this.hitStop = 0.05;
       for (const n of this.actors.npcs) if (n.home === s && n.pos.distanceTo(a.pos) < 60) n.fleeing = 25;
       if (a.hp <= 0) {
         a.alive = false; a.deadTime = 0; a.group.rotation.z = 1.5;
@@ -425,6 +433,8 @@ class Game {
       const a = t.actor;
       a.hp -= 26 + Math.random() * 14;
       this.fx.hitSpark(a.pos);
+      this.player.addShake(0.3);
+      this.hitStop = 0.05;
       if (a.def && a.def.aggressive) a.angry = true;
       if (a.hp <= 0) {
         if (t.type === 'animal') this.actors.killAnimal(a, true);
@@ -634,6 +644,35 @@ class Game {
     }
   }
 
+  // Reveals the remembered map around the player. Sight carries further from
+  // high, exposed ground, so a ridge line is worth climbing.
+  updateSight(dt) {
+    this.sightTimer = (this.sightTimer || 0) - dt;
+    if (this.sightTimer > 0) return;
+    this.sightTimer = 0.35;
+    const p = this.player.pos;
+    // prominence: how far above the surrounding land the player stands
+    const around = (heightAt(p.x + 210, p.z) + heightAt(p.x - 210, p.z) +
+      heightAt(p.x, p.z + 210) + heightAt(p.x, p.z - 210)) / 4;
+    const prominence = Math.max(0, p.y - around);
+    const weather = this.state.weather;
+    const murk = (weather.type === 'fogbank' ? 0.45 : weather.type === 'storm' ? 0.65 :
+      weather.type === 'rain' ? 0.8 : weather.type === 'snow' ? 0.75 : 1);
+    const night = (this.state.time < 0.22 || this.state.time > 0.82) ? 0.55 : 1;
+    const radius = clamp((105 + prominence * 2.6) * murk * night, 55, 430);
+    this.sightRadius = radius;
+    const changed = this.state.markExplored(p.x, p.z, radius);
+    if (changed > 0) {
+      this.newGround = (this.newGround || 0) + changed;
+      // a quiet, earned reward for pushing into genuinely unknown country
+      if (this.newGround > 900) {
+        this.newGround = 0;
+        this.ui.toast('New country mapped', 'good');
+        this.audio.play('discover');
+      }
+    }
+  }
+
   // ---------------------------------------------------------------- loop
   start() {
     this.renderer.setAnimationLoop(() => this.frame());
@@ -642,7 +681,10 @@ class Game {
   frame() {
     const dtRaw = Math.min(this.clock.getDelta(), 0.05);
     const blocking = this.ui.blocking;
-    const dt = blocking ? dtRaw * 0.15 : dtRaw;
+    // a few frames of slow-motion on a landed blow: the hit gets weight
+    let impact = 1;
+    if (this.hitStop > 0) { this.hitStop -= dtRaw; impact = 0.25; }
+    const dt = (blocking ? dtRaw * 0.15 : dtRaw) * impact;
     const st = this.state;
 
     st.update(dt * this.timeScale);
@@ -663,6 +705,7 @@ class Game {
     this.fx.update(dtRaw, this.camera, this.player.pos);
     this.syncStructures(dt);
     this.checkDiscoveries();
+    this.updateSight(dtRaw);
 
     // Ground memory texture upload (throttled)
     this.groundTexTimer -= dtRaw;
@@ -709,7 +752,7 @@ class Game {
       this.interactTarget = this.findTarget();
       if (this.interactTarget) {
         const t = this.interactTarget;
-        this.ui.setPrompt(t.alt ? `${t.label}   ·   F ${t.alt}` : t.label, 'E');
+        this.ui.setPrompt(t.label, 'E', t.alt || null, 'F');
       } else this.ui.setPrompt(null);
     }
 
@@ -717,7 +760,17 @@ class Game {
 
     // autosave
     this.saveTimer -= dtRaw;
-    if (this.saveTimer <= 0) { this.saveTimer = 30; st.save(); }
+    if (this.saveTimer <= 0) {
+      this.saveTimer = 30;
+      const ok = st.save();
+      if (!ok && !this._saveWarned) {
+        this._saveWarned = true;
+        this.ui.toast('The frontier cannot be written to storage — progress will be lost.', 'bad');
+      } else if (ok && this._saveWarned) {
+        this._saveWarned = false;
+        this.ui.toast('Storage recovered — the world is being remembered again.', 'good');
+      }
+    }
 
     this.renderer.render(this.scene, this.camera);
 
@@ -794,19 +847,34 @@ async function boot() {
       fatal('WebGL is not available in this browser.', 'Try a different browser, or enable hardware acceleration.');
       return;
     }
-    let state;
+    let state, loadStatus = 'new';
     try {
       if (fresh) { localStorage.removeItem(SAVE_KEY); state = new WorldState(); }
-      else state = WorldState.load() || new WorldState();
-    } catch (e) { state = new WorldState(); }
+      else {
+        const res = WorldState.loadResult();
+        loadStatus = res.status;
+        state = res.state || new WorldState();
+      }
+    } catch (e) { state = new WorldState(); loadStatus = 'damaged'; }
 
     let game;
     try { game = new Game(state); }
     catch (e) { fatal('The frontier failed to load.', e && e.message); throw e; }
     window.GAME = game;
+
+    // restore how this player likes to play
+    const prefs = Settings.load();
+    Settings.applyDocument();
+    game.audio.setMuted(prefs.muted);
+    game.setQuality(prefs.quality);
+    game.input.sensitivity = prefs.sensitivity;
+    game.input.invertY = prefs.invertY;
+    game.player.shakeScale = Settings.motionReduced ? 0.15 : 1;
+    game.ui.syncSettingsUI();
+
     $('#boot-status').textContent = 'Drawing the map…';
     await new Promise(r => setTimeout(r, 20));
-    game.ui.buildBaseMap(200);
+    game.ui.buildBaseMap(288);
     $('#boot-status').textContent = 'Growing the forests…';
     await new Promise(r => setTimeout(r, 20));
     // pre-stream the chunks around the player before revealing the world
@@ -831,12 +899,15 @@ async function boot() {
         target: 'greenhollow', x: SETTLEMENTS[0].x, z: SETTLEMENTS[0].z,
         progress: 0, expires: state.elapsed + 1e9, done: false,
       });
+      const touch = document.body.classList.contains('touch');
       const tips = [
         'Everything you do here leaves a mark. Leave, come back, and see.',
-        'E interacts · F strikes or sets fire · hold Shift to sprint.',
-        'Open the world screen (V) to watch the frontier change.',
+        touch ? 'Hand button acts · blade strikes · » to run.' : 'E acts · F strikes or sets alight · Shift runs · H for help.',
+        'Your map is blank until you walk it. Climb high ground to see further.',
       ];
       tips.forEach((t, i) => setTimeout(() => game.ui.toast(t), 1600 + i * 4200));
+    } else if (loadStatus === 'damaged') {
+      setTimeout(() => game.ui.toast('That saved world could not be read — a new frontier was raised in its place.', 'bad'), 1200);
     } else if (state.awaySeconds > 60) {
       const recent = state.journal.slice(0, 3).map(j => j.text);
       setTimeout(() => game.ui.toast(`While you were gone: ${recent[0] || 'the seasons turned.'}`), 1400);

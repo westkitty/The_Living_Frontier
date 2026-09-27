@@ -5,8 +5,11 @@ One seamless wilderness of forests, rivers, mountains, ruins, caves, villages an
 contested territory — and **the world remembers what you do in it**.
 
 Everything is procedural: terrain, vegetation, creatures, buildings, landmarks,
-weather, audio. There are no downloaded assets, no textures, no model files.
-The only dependency is a vendored copy of Three.js (`vendor/three.module.js`).
+weather, audio and maps. There are no downloaded assets, no texture files and
+no model files; the interface iconography is a hand-drawn inline SVG family
+defined once in `index.html`. The only third-party code is a vendored copy of
+Three.js (`vendor/three.module.js`, MIT — see `vendor/README.md`), so the game
+has no network dependency at all.
 
 ```
 open index.html through any static server, e.g.
@@ -76,9 +79,18 @@ Crater, Fort Ashken, the Hollow Giant, plus three real, walkable caves carved
 into hillsides with glowing crystals. Each is built from procedural geometry and
 merged into a single mesh.
 
-**Persistence** — the whole world (including the ground memory map, run-length
-encoded per channel) is saved to `localStorage` in about 30 KB. On return, the
-simulation fast-forwards through the time you were away.
+**The map you make yourself** — the world starts as blank paper. Land is inked
+in only where you have actually been, and how far you can survey depends on
+where you stand: from a ridge you can map several hundred metres, from a hollow
+almost nothing, and rain, fog and darkness close it in further. The survey is
+persistent, so the map is a record of your own travels. Tap it to plant a
+waypoint; it rides the compass until you arrive.
+
+**Persistence** — the whole world (ground memory, surveyed map, waypoint,
+plantings, quests, chronicle) is saved to `localStorage` in under 40 KB, all
+run-length encoded. On return, the simulation fast-forwards through the time
+you were away. If storage is full or blocked the game says so instead of
+quietly losing your frontier.
 
 ## Controls
 
@@ -90,8 +102,15 @@ simulation fast-forwards through the time you were away.
 | Jump | Space | `⤒` |
 | Interact | E | `E` |
 | Strike / set fire | F or right-click | `✦` |
+| Mend yourself | Q | tap an item in the bag |
 | Map / Bag / Journal / World | M / I / J / V | HUD icons |
+| Help | H | Menu → Controls |
 | Menu | Esc | ☰ |
+
+The survey map supports drag to pan, scroll or pinch to zoom, arrow keys and
+`+` / `-` when focused, and tap-to-set-waypoint. Sound, detail level, look
+speed, inverted look and reduced motion are all remembered between sessions,
+separately from the world save.
 
 ## Project layout
 
@@ -100,6 +119,8 @@ index.html          shell, HUD markup, import map
 styles.css          all UI styling and transitions
 vendor/three.module.js
 src/rng.js          seeded hashing, value noise, fBm, ridged noise
+src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs
+src/settings.js     player preferences, stored apart from the world
 src/worldgen.js     heightfield, biomes, rivers, landmark & settlement siting
 src/worldstate.js   the persistent simulation + save/load + fast-forward
 src/terrain.js      chunk streaming, LOD, ground-memory shader, water
@@ -120,14 +141,28 @@ for manual testing:
 
 ```
 npm install
-npm run smoke      # boots the whole game in jsdom with a stub renderer:
-                   # streaming, controls, harvesting, fire, ecology, factions,
-                   # dialogue, UI panels and a save/load round-trip
+npm run check      # ui + shaders + smoke, in that order
+npm run ui         # wiring & accessibility gate: dangling selectors, missing
+                   # icons, duplicate ids, unnamed buttons, modal semantics,
+                   # live regions, unstyled classes, touch target sizes
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
+npm run smoke      # boots the whole game in jsdom with a stub renderer
+npm run visual     # renders the real map code with a real rasteriser and
+                   # writes PNGs to /tmp/lf-visual for inspection
+npm run perf       # chunk streaming cost, draw calls and triangle counts
 ```
 
-`npm run smoke` asserts, among other things, that forward/strafe movement stays
-camera-relative, that the player and camera never sink through terrain, that
-fire leaves scars that survive a save/load cycle, and that the ground memory map
-round-trips byte-for-byte.
+`npm run smoke` asserts behaviour, not just absence of crashes: that forward
+and strafe stay camera-relative, that the player and camera never sink through
+terrain, that walking reveals map and a ridge reveals more than a hollow, that
+the surveyed map and the ground memory round-trip byte-for-byte, that fire
+scars survive a save/load cycle, that Escape closes a conversation instead of
+opening the menu, that a destructive confirm does nothing unless it is held,
+that a save which cannot be written reports failure after retrying with a
+slimmer payload, and that preferences persist across sessions.
+
+Known gap: there is no GPU in the build environment, so the WebGL render path
+itself is exercised against a stub renderer. Shaders are validated by parsing,
+the 2D map surfaces are validated by rasterising them for real, and everything
+else is validated by running it.

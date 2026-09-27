@@ -7,13 +7,54 @@
 <meta name="description" content="THE LIVING FRONTIER - an open-world survival sandbox where the world remembers what you do." />
 <title>THE LIVING FRONTIER</title>
 <link rel="stylesheet" href="./styles.css" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🏕️</text></svg>" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171b18'/%3E%3Cg fill='none' stroke='%23e0b661' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 22 L12 9 L19 22Z'/%3E%3Cpath d='M16 22 L22 12 L28 22Z' stroke='%2368d18a'/%3E%3Cpath d='M3 26h26' stroke='%23a99f8c'/%3E%3C/g%3E%3C/svg%3E" />
 <script type="importmap">
 { "imports": { "three": "./vendor/three.module.js" } }
 </script>
 </head>
 <body>
 <canvas id="gl"></canvas>
+
+<!-- ---- inline icon sprite: one hand-drawn family, no network requests ---- -->
+<svg id="icons" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+<defs>
+<g id="_s" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></g>
+</defs>
+<symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/><path d="M11.4 9.2c1.6-1 3.2.2 3.2 1.6 0 1.5-2.1 3-3.2 4-1.1-1-3.2-2.5-3.2-4 0-1.4 1.6-2.6 3.2-1.6z" opacity=".55"/></g></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9h12l1.2 10.2a1.6 1.6 0 0 1-1.6 1.8H6.4a1.6 1.6 0 0 1-1.6-1.8z"/><path d="M9 9V6.4A3 3 0 0 1 15 6.4V9"/><path d="M5.2 13.4h13.6" opacity=".6"/><path d="M12 12.4v3" opacity=".8"/></g></symbol>
+<symbol id="i-journal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h11.5A2.5 2.5 0 0 1 19 7v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H19"/><path d="M8.5 8h7M8.5 11h5" opacity=".65"/></g></symbol>
+<symbol id="i-world" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M3.8 12h16.4"/><path d="M12 3.8c2.4 2.4 3.6 5.2 3.6 8.2s-1.2 5.8-3.6 8.2c-2.4-2.4-3.6-5.2-3.6-8.2S9.6 6.2 12 3.8z"/></g></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4.5 7h15M4.5 12h15M4.5 17h15"/></g></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></g></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7"/></g></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14.6A7.8 7.8 0 0 1 9.4 5a7.8 7.8 0 1 0 9.6 9.6z"/></g></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.4 18h9.4a3.6 3.6 0 0 0 .3-7.2A5.2 5.2 0 0 0 7 9.4a3.9 3.9 0 0 0 .4 8.6z"/></g></symbol>
+<symbol id="i-rain" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 15h9a3.4 3.4 0 0 0 .3-6.8A5 5 0 0 0 7.2 6.8 3.7 3.7 0 0 0 7.6 15z"/><path d="M9 18l-.8 2.4M13 18l-.8 2.4M17 18l-.8 2.4"/></g></symbol>
+<symbol id="i-storm" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 14.4h9a3.4 3.4 0 0 0 .3-6.8A5 5 0 0 0 7.2 6.2a3.7 3.7 0 0 0 .4 8.2z"/><path d="M13.6 15.6 10 19.6h3.2l-1.6 3.2" stroke-width="1.7"/></g></symbol>
+<symbol id="i-fog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 9.5h13M7 13h13M4 16.5h11"/></g></symbol>
+<symbol id="i-snow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3.5v17M4.6 7.8l14.8 8.4M19.4 7.8L4.6 16.2"/><path d="M12 7l-2 -2M12 7l2-2M12 17l-2 2M12 17l2 2" opacity=".7"/></g></symbol>
+<symbol id="i-wood" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="13.6" width="18.4" height="6.2" rx="3.1"/><path d="M5.9 13.6a3.1 3.1 0 0 0 0 6.2"/><circle cx="5.9" cy="16.7" r="1.1" opacity=".65"/><rect x="5.6" y="5.4" width="14" height="6.2" rx="3.1" transform="rotate(-8 12 8.5)"/><circle cx="8" cy="8.9" r="1.1" opacity=".65"/></g></symbol>
+<symbol id="i-stone" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 14.6 8 7.4l6.6-1.8 5 5.4-2 7-10.2 1z"/><path d="M8 7.4l3.4 5.2 3.2-7M11.4 12.6l6.2-1.6M11.4 12.6l-4 6.4" opacity=".55"/></g></symbol>
+<symbol id="i-hide" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 3.4c1.6 1.2 1.4 3 .6 4.2 2.2 1 3.4 1 5.6 0-.8-1.2-1-3 .6-4.2 1 2 2.8 2.6 4.6 2.2-1.4 2-1.2 3.6 0 5.4 1.4 2-.2 4-2.2 4.6.6 1.8.2 3.4-1.2 4.8-1.2-1.4-2.6-1.8-4.4-1.4-1.8-.4-3.2 0-4.4 1.4-1.4-1.4-1.8-3-1.2-4.8-2-.6-3.6-2.6-2.2-4.6 1.2-1.8 1.4-3.4 0-5.4 1.8.4 3.6-.2 4.2-2.2z"/></g></symbol>
+<symbol id="i-herb" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c0-5.4.6-9.4 2-12.6"/><path d="M12 14.6c-2.6.4-4.6-.8-5.6-3.4 2.8-.8 4.8 0 5.6 3.4z"/><path d="M13.4 10.4c2-1.6 2.6-3.8 1.8-6.4-2.6 1.2-3.4 3.2-1.8 6.4z"/><path d="M14.6 15c2.2.2 3.8-.8 4.8-3-2.4-.8-4.2 0-4.8 3z"/></g></symbol>
+<symbol id="i-ore" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.4 7.4 9l7.2-2.6 4.4 5.6-1.6 7.4-9.8 1z"/><path d="M10.2 7.6l1.6 4.4 4.6-.6M11.8 12l-2 6.8" opacity=".5"/><path d="M13.4 13.8l2.6 1.6M9.2 11.4l-2.4-.4" opacity=".5"/></g></symbol>
+<symbol id="i-berry" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.2" cy="15.4" r="3.6"/><circle cx="15.6" cy="16.4" r="2.8"/><path d="M9.2 11.8c0-3 1.2-5 3.6-6.2M12.8 5.6c2.2-.4 3.6.4 4.4 2.4-2.2.8-3.6.2-4.4-2.4z"/></g></symbol>
+<symbol id="i-relic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.6h6l-.6 2.6c2.4 1.4 3.8 3.8 3.8 6.6 0 4-2.8 6.6-6.2 6.6S5.8 16.8 5.8 12.8c0-2.8 1.4-5.2 3.8-6.6z"/><path d="M8.4 6.2 5.6 9M15.6 6.2 18.4 9" opacity=".6"/><path d="M9.4 13.6c1.6 1.4 3.6 1.4 5.2 0" opacity=".7"/></g></symbol>
+<symbol id="i-sapling" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8.4"/><path d="M12 14.4c-2.4 0-4-1.4-4.4-4 2.8-.4 4.4 1 4.4 4z"/><path d="M12 12.8c.2-3 1.8-4.6 4.6-4.8-.2 3-1.8 4.6-4.6 4.8z"/><path d="M8.4 21h7.2" opacity=".55"/></g></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.2-4.4-7.2-9.4A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 7.2 2.6C19.2 15.6 12 20 12 20z"/></g></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2.8 6 13.4h5l-.6 7.8L18 10.6h-5.2z"/></g></symbol>
+<symbol id="i-hand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.4V5.6a1.6 1.6 0 0 1 3.2 0v5"/><path d="M12.2 10.6V4.8a1.6 1.6 0 0 1 3.2 0v5.8"/><path d="M15.4 11V7.4a1.5 1.5 0 0 1 3 0v7.2c0 3.4-2.2 6-5.8 6-3 0-4.6-1.2-6-3.6l-2.2-3.8a1.6 1.6 0 0 1 2.7-1.7L9 13.4"/></g></symbol>
+<symbol id="i-strike" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 19.4 15 9"/><path d="M12.6 6.6c2.4-2.4 5.2-3 6.8-1.4s1 4.4-1.4 6.8z"/><path d="M4 20l2.6-.6-2-2z"/></g></symbol>
+<symbol id="i-jump" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.6V4.8M7.8 9 12 4.8 16.2 9"/><path d="M5 19.4h14" opacity=".7"/></g></symbol>
+<symbol id="i-sprint" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 6.5 11 12l-5.5 5.5M12.5 6.5 18 12l-5.5 5.5"/></g></symbol>
+<symbol id="i-locate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.4"/><path d="M12 2.6v3.2M12 18.2v3.2M2.6 12h3.2M18.2 12h3.2"/></g></symbol>
+<symbol id="i-expand" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></g></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></g></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 12h12"/></g></symbol>
+<symbol id="i-waypoint" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.6v4.2M12 17.2v4.2M2.6 12h4.2M17.2 12h4.2"/></g></symbol>
+<symbol id="i-sound-on" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5z"/><path d="M15.4 9.4a3.8 3.8 0 0 1 0 5.2M17.8 7a7 7 0 0 1 0 10"/></g></symbol>
+<symbol id="i-sound-off" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5z"/><path d="M16 9.6l4.4 4.8M20.4 9.6 16 14.4"/></g></symbol>
+</svg>
 
 <!-- ------------------------------------------------------------ BOOT ---- -->
 <div id="boot" class="screen">
@@ -29,8 +70,9 @@
       <button id="btn-new" class="btn">New World</button>
     </div>
     <div class="boot-help">
-      <div><b>Move</b> WASD / left stick &nbsp;·&nbsp; <b>Look</b> drag or mouse &nbsp;·&nbsp; <b>Sprint</b> Shift</div>
-      <div><b>Interact</b> E &nbsp;·&nbsp; <b>Act / strike</b> F &nbsp;·&nbsp; <b>Jump</b> Space &nbsp;·&nbsp; <b>Map</b> M &nbsp;·&nbsp; <b>Bag</b> I &nbsp;·&nbsp; <b>World</b> V</div>
+      <div><b>Move</b> WASD / left stick &nbsp;·&nbsp; <b>Look</b> drag or mouse &nbsp;·&nbsp; <b>Sprint</b> Shift &nbsp;·&nbsp; <b>Jump</b> Space</div>
+      <div><b>Act</b> E &nbsp;·&nbsp; <b>Strike / set alight</b> F &nbsp;·&nbsp; <b>Map</b> M &nbsp;·&nbsp; <b>Bag</b> I &nbsp;·&nbsp; <b>World</b> V &nbsp;·&nbsp; <b>Help</b> H</div>
+      <div class="boot-note">Your map begins blank. It is drawn by walking — and the high ground shows you more.</div>
     </div>
     <div id="boot-status" class="boot-status">Shaping the frontier…</div>
   </div>
@@ -41,6 +83,7 @@
 
   <div id="compass">
     <div id="compass-strip"></div>
+    <div id="compass-pips"></div>
     <div class="compass-needle"></div>
   </div>
 
@@ -49,102 +92,157 @@
       <span id="day-label">Day 1</span>
       <span id="time-label">06:42</span>
     </div>
-    <div class="weather-row"><span id="weather-icon">☀</span><span id="weather-label">Clear</span><span id="temp-dot"></span></div>
+    <div class="weather-row"><svg class="ic sm" id="weather-icon" aria-hidden="true"><use href="#i-sun"/></svg><span id="weather-label">Clear</span><span id="temp-dot"></span></div>
   </div>
 
   <div id="top-right">
-    <canvas id="minimap" width="150" height="150"></canvas>
+    <canvas id="minimap" width="150" height="150" role="img" aria-label="Local map"></canvas>
     <div class="icon-row">
-      <button class="icon-btn" data-panel="map" title="Map (M)">🗺</button>
-      <button class="icon-btn" data-panel="bag" title="Inventory (I)">🎒</button>
-      <button class="icon-btn" data-panel="journal" title="Journal (J)">📓</button>
-      <button class="icon-btn" data-panel="world" title="World state (V)">🌍</button>
-      <button class="icon-btn" id="btn-menu" title="Menu (Esc)">☰</button>
+      <button class="icon-btn" data-panel="map" title="Survey map (M)" aria-label="Survey map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg></button>
+      <button class="icon-btn" data-panel="bag" title="Bag (I)" aria-label="Bag and standing"><svg class="ic" aria-hidden="true"><use href="#i-bag"/></svg></button>
+      <button class="icon-btn" data-panel="journal" title="Journal (J)" aria-label="Journal"><svg class="ic" aria-hidden="true"><use href="#i-journal"/></svg></button>
+      <button class="icon-btn" data-panel="world" title="State of the world (V)" aria-label="State of the world"><svg class="ic" aria-hidden="true"><use href="#i-world"/></svg></button>
+      <button class="icon-btn" id="btn-menu" title="Menu (Esc)" aria-label="Menu"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
     </div>
   </div>
 
   <div id="quest-tracker"></div>
 
-  <div id="toasts"></div>
+  <div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
 
-  <div id="vitals">
-    <div class="bar hp"><i id="hp-fill"></i><span>❤</span></div>
-    <div class="bar st"><i id="st-fill"></i><span>⚡</span></div>
+  <div id="vitals" role="group" aria-label="Condition">
+    <div class="bar hp" role="progressbar" id="hp-bar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="hp-fill"></i><svg class="ic vi" aria-hidden="true"><use href="#i-heart"/></svg><b id="hp-num">100</b></div>
+    <div class="bar st" role="progressbar" id="st-bar" aria-label="Stamina" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><i id="st-fill"></i><svg class="ic vi" aria-hidden="true"><use href="#i-bolt"/></svg><b id="st-num">100</b></div>
   </div>
 
-  <div id="prompt" class="hidden"><b id="prompt-key">E</b><span id="prompt-text">Interact</span></div>
+  <div id="prompt" class="hidden" aria-live="polite">
+    <b id="prompt-key">E</b><span id="prompt-text">Interact</span>
+    <span id="prompt-alt" class="hidden"><b class="alt" id="prompt-alt-key">F</b><span id="prompt-alt-text"></span></span>
+  </div>
 
   <div id="touch-left" class="touch-only">
     <div id="stick-base"><div id="stick-knob"></div></div>
   </div>
   <div id="touch-right" class="touch-only">
-    <button id="tb-interact" class="tbtn big">E</button>
-    <button id="tb-attack" class="tbtn">✦</button>
-    <button id="tb-jump" class="tbtn">⤒</button>
-    <button id="tb-sprint" class="tbtn">»</button>
+    <button id="tb-interact" class="tbtn big" aria-label="Interact"><svg class="ic" aria-hidden="true"><use href="#i-hand"/></svg></button>
+    <button id="tb-attack" class="tbtn" aria-label="Strike"><svg class="ic" aria-hidden="true"><use href="#i-strike"/></svg></button>
+    <button id="tb-jump" class="tbtn" aria-label="Jump"><svg class="ic" aria-hidden="true"><use href="#i-jump"/></svg></button>
+    <button id="tb-sprint" class="tbtn" aria-label="Sprint" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-sprint"/></svg></button>
   </div>
 
   <div id="damage-flash"></div>
   <div id="vignette"></div>
-  <div id="discovery-banner"><div class="db-sub">Discovered</div><div class="db-title"></div></div>
+  <div id="discovery-banner" role="status" aria-live="assertive"><div class="db-sub">Discovered</div><div class="db-title"></div></div>
 </div>
 
 <!-- ---------------------------------------------------------- PANELS ---- -->
-<div id="panel" class="panel hidden">
+<div id="panel" class="panel hidden" role="dialog" aria-modal="true" aria-label="Field records">
   <div class="panel-card">
     <div class="panel-head">
-      <div class="tabs">
-        <button class="tab" data-tab="map">Map</button>
-        <button class="tab" data-tab="bag">Bag</button>
-        <button class="tab" data-tab="journal">Journal</button>
-        <button class="tab" data-tab="world">World</button>
+      <div class="tabs" role="tablist">
+        <button class="tab" data-tab="map" role="tab" aria-selected="false" aria-controls="view-map">Map</button>
+        <button class="tab" data-tab="bag" role="tab" aria-selected="false" aria-controls="view-bag">Bag</button>
+        <button class="tab" data-tab="journal" role="tab" aria-selected="false" aria-controls="view-journal">Journal</button>
+        <button class="tab" data-tab="world" role="tab" aria-selected="false" aria-controls="view-world">World</button>
       </div>
-      <button id="panel-close" class="icon-btn">✕</button>
+      <button id="panel-close" class="icon-btn" aria-label="Close panel"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
     </div>
     <div class="panel-body">
-      <section data-view="map" class="view">
-        <canvas id="bigmap" width="512" height="512"></canvas>
+      <section data-view="map" class="view" id="view-map" role="tabpanel" tabindex="-1">
+        <div class="map-wrap">
+          <canvas id="bigmap" width="512" height="512" tabindex="0"
+            role="img" aria-label="Survey map of the frontier"></canvas>
+          <div class="map-tools">
+            <button class="map-btn" id="map-in" aria-label="Zoom in" title="Zoom in"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            <button class="map-btn" id="map-out" aria-label="Zoom out" title="Zoom out"><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <button class="map-btn" id="map-me" aria-label="Centre on me" title="Centre on me"><svg class="ic" aria-hidden="true"><use href="#i-locate"/></svg></button>
+            <button class="map-btn" id="map-all" aria-label="Fit the whole frontier" title="Fit the whole frontier"><svg class="ic" aria-hidden="true"><use href="#i-expand"/></svg></button>
+          </div>
+          <div class="map-hint" id="map-hint">drag to pan · pinch or scroll to zoom · tap to set a waypoint</div>
+        </div>
         <div class="map-legend">
           <span><i style="background:#68d18a"></i>Verdant Pact</span>
           <span><i style="background:#ef7a54"></i>Ashen Legion</span>
           <span><i style="background:#a08ef0"></i>Hollow Kin</span>
-          <span><i style="background:#d9c27a"></i>You</span>
           <span><i style="background:#3d2a22"></i>Burn scar</span>
+          <span><i style="background:#86704a"></i>Your trails</span>
+          <span><i class="unknown"></i>Unsurveyed</span>
         </div>
       </section>
-      <section data-view="bag" class="view">
+      <section data-view="bag" class="view" id="view-bag" role="tabpanel" tabindex="-1">
         <div id="bag-grid"></div>
         <div id="bag-stats"></div>
       </section>
-      <section data-view="journal" class="view">
+      <section data-view="journal" class="view" id="view-journal" role="tabpanel" tabindex="-1">
         <div id="quest-list"></div>
         <h3>Chronicle</h3>
         <div id="journal-list"></div>
       </section>
-      <section data-view="world" class="view">
+      <section data-view="world" class="view" id="view-world" role="tabpanel" tabindex="-1">
         <div id="world-state"></div>
       </section>
     </div>
   </div>
 </div>
 
-<div id="menu" class="panel hidden">
+<div id="menu" class="panel hidden" role="dialog" aria-modal="true" aria-label="Menu">
   <div class="panel-card small">
-    <div class="panel-head"><h2>Frontier</h2><button id="menu-close" class="icon-btn">✕</button></div>
+    <div class="panel-head"><h2>Frontier</h2><button id="menu-close" class="icon-btn" aria-label="Close menu"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div>
     <div class="panel-body menu-body">
-      <button class="btn wide" id="m-resume">Resume</button>
+      <button class="btn wide primary" id="m-resume">Resume</button>
       <button class="btn wide" id="m-save">Save now</button>
-      <button class="btn wide" id="m-mute">Sound: on</button>
-      <button class="btn wide" id="m-quality">Quality: high</button>
-      <button class="btn wide danger" id="m-reset">Erase world &amp; restart</button>
+
+      <div class="set-row">
+        <label for="m-mute">Sound</label>
+        <button class="seg-btn" id="m-mute" aria-pressed="true">On</button>
+      </div>
+      <div class="set-row">
+        <span id="lbl-quality">Detail</span>
+        <div class="seg" role="group" aria-labelledby="lbl-quality">
+          <button class="seg-btn" data-q="low">Low</button>
+          <button class="seg-btn" data-q="medium">Medium</button>
+          <button class="seg-btn" data-q="high">High</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label for="m-sens">Look speed</label>
+        <input type="range" id="m-sens" min="0.4" max="2" step="0.1" value="1" />
+        <output id="m-sens-out">1.0×</output>
+      </div>
+      <div class="set-row">
+        <label for="m-motion">Reduce motion</label>
+        <button class="seg-btn" id="m-motion" aria-pressed="false">Off</button>
+      </div>
+      <div class="set-row">
+        <label for="m-invert">Invert look</label>
+        <button class="seg-btn" id="m-invert" aria-pressed="false">Off</button>
+      </div>
+
+      <button class="btn wide" id="m-help">Controls &amp; how the world works</button>
+      <button class="btn wide danger" id="m-reset">Erase this world…</button>
       <p class="hint">The world keeps simulating while you are away. Come back later and it will have moved on without you.</p>
     </div>
   </div>
 </div>
 
-<div id="dialog" class="panel hidden">
+<div id="confirm" class="panel hidden" role="alertdialog" aria-modal="true" aria-labelledby="cfm-title" aria-describedby="cfm-text">
+  <div class="panel-card small">
+    <div class="panel-head"><h2 id="cfm-title">Are you sure?</h2></div>
+    <div class="panel-body">
+      <p id="cfm-text"></p>
+      <div class="cfm-actions">
+        <button class="btn" id="cfm-no">Keep it</button>
+        <button class="btn danger" id="cfm-yes">
+          <span class="cfm-fill"></span><span class="cfm-label">Hold to confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dialog" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="dlg-name">
   <div class="panel-card small dialog-card">
-    <div class="panel-head"><h2 id="dlg-name">Villager</h2><button id="dlg-close" class="icon-btn">✕</button></div>
+    <div class="panel-head"><h2 id="dlg-name">Villager</h2><button id="dlg-close" class="icon-btn" aria-label="End conversation"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button></div>
     <div class="panel-body">
       <p id="dlg-text"></p>
       <div id="dlg-options"></div>

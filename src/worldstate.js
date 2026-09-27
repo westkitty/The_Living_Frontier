@@ -6,6 +6,7 @@ import { clamp, lerp, mulberry32, hash2i } from './rng.js';
 export const SAVE_KEY = 'living_frontier_save_v1';
 export const DAY_LENGTH = 420;       // real seconds for a full day/night cycle
 const R = WORLD.stateRes, FR = WORLD.fireRes, RR = WORLD.regionRes;
+const XR = WORLD.exploreRes;
 
 // ---------------------------------------------------------------------------
 // Compression helpers (RLE + base64) so a 256KB ground map fits in localStorage
@@ -90,6 +91,10 @@ export class WorldState {
     this.savedAt = Date.now();
 
     this.ground = new Uint8Array(R * R * 4);
+    // The map the player has personally earned. 0 = never seen, 255 = walked it.
+    this.groundStamp = 0;
+    this.explored = new Uint8Array(XR * XR);
+    this.exploredDirty = true;
     this.fuel = new Uint8Array(FR * FR);
     this.burning = new Float32Array(FR * FR);
     this.burnTimer = new Float32Array(FR * FR);
@@ -192,7 +197,7 @@ export class WorldState {
     const i = worldToState(x, z) * 4 + ch;
     const v = clamp(this.ground[i] / 255 + amt, 0, 1);
     this.ground[i] = Math.round(v * 255);
-    this.groundDirty = true;
+    this.groundDirty = true; this.groundStamp++;
   }
   paintGround(x, z, ch, amt, radius) {
     const cells = Math.max(0, Math.round(radius / WORLD.stateCell));
@@ -210,7 +215,43 @@ export class WorldState {
         this.ground[k] = Math.round(v * 255);
       }
     }
-    this.groundDirty = true;
+    this.groundDirty = true; this.groundStamp++;
+  }
+
+  // -------------------------------------------------------------- discovery
+  // Reveals the map around a point. Sight reaches further from high ground, so
+  // climbing a ridge genuinely rewards you with more of the world.
+  markExplored(x, z, radius = 110) {
+    const cell = WORLD.exploreCell;
+    const cells = Math.max(1, Math.round(radius / cell));
+    const ci = Math.floor((x + WORLD.half) / cell);
+    const cj = Math.floor((z + WORLD.half) / cell);
+    let changed = 0;
+    for (let j = -cells; j <= cells; j++) {
+      for (let i = -cells; i <= cells; i++) {
+        const ii = ci + i, jj = cj + j;
+        if (ii < 0 || jj < 0 || ii >= XR || jj >= XR) continue;
+        const d = Math.hypot(i, j) / cells;
+        if (d > 1) continue;
+        // hard core, soft rim: the edge of vision is remembered vaguely
+        const v = d < 0.62 ? 255 : Math.round(255 * (1 - (d - 0.62) / 0.38) * 0.72 + 40);
+        const k = jj * XR + ii;
+        if (this.explored[k] < v) { this.explored[k] = v; changed++; }
+      }
+    }
+    if (changed) this.exploredDirty = true;
+    return changed;
+  }
+  exploredAt(x, z) {
+    const cell = WORLD.exploreCell;
+    const i = clamp(Math.floor((x + WORLD.half) / cell), 0, XR - 1);
+    const j = clamp(Math.floor((z + WORLD.half) / cell), 0, XR - 1);
+    return this.explored[j * XR + i] / 255;
+  }
+  exploredFraction() {
+    let n = 0;
+    for (let i = 0; i < this.explored.length; i++) if (this.explored[i] > 90) n++;
+    return n / this.explored.length;
   }
 
   // ------------------------------------------------------------------- fire
@@ -534,7 +575,7 @@ export class WorldState {
       if (trailFade && g[i + 1]) g[i + 1] = Math.max(0, g[i + 1] - trailFade);
       if (lushGain && g[i + 2] < 255 && g[i] < 40) g[i + 2] = Math.min(255, g[i + 2] + lushGain);
     }
-    this.groundDirty = true;
+    this.groundDirty = true; this.groundStamp++;
     // fuel regrowth follows region tree health
     for (let j = 0; j < FR; j++) for (let i = 0; i < FR; i++) {
       const idx = j * FR + i;
@@ -641,6 +682,7 @@ export class WorldState {
       regions: this.regions.map(r => [+r.prey.toFixed(2), +r.pred.toFixed(2), r.cap, +r.trees.toFixed(3), Math.round(r.ore), r.owner, r.pressure.map(p => Math.round(p)), +r.heat.toFixed(2)]),
       settlements: this.settlements,
       factions: this.factions,
+      explored: rleEncode(this.explored),
       vegRemoved: this.vegRemoved,
       plantings: this.plantings || [],
       discovered: this.discovered,
@@ -665,6 +707,17 @@ export class WorldState {
     });
     if (obj.settlements) obj.settlements.forEach((o, i) => { if (s.settlements[i]) Object.assign(s.settlements[i], o); });
     if (obj.factions) obj.factions.forEach((o, i) => { if (s.factions[i]) Object.assign(s.factions[i], o); });
+    if (obj.explored) {
+      s.explored = rleDecode(obj.explored, XR * XR);
+    } else {
+      // Saves from before the map existed: reconstruct the remembered map from
+      // the trails the player actually wore into the ground.
+      for (let j = 0; j < XR; j++) for (let i = 0; i < XR; i++) {
+        const x = (i + 0.5) * WORLD.exploreCell - WORLD.half;
+        const z = (j + 0.5) * WORLD.exploreCell - WORLD.half;
+        if (s.getGround.call(s, x, z, 1) > 0.12) s.markExplored(x, z, 130);
+      }
+    }
     s.vegRemoved = obj.vegRemoved || {};
     s.plantings = obj.plantings || [];
     s.discovered = obj.discovered || {};
@@ -679,24 +732,60 @@ export class WorldState {
   }
 
   save() {
+    let payload;
     try {
-      const data = this.serialize();
-      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      payload = JSON.stringify(this.serialize());
+    } catch (e) {
+      console.warn('could not serialise world', e);
+      this.saveError = 'serialise';
+      return false;
+    }
+    try {
+      localStorage.setItem(SAVE_KEY, payload);
       this.lastSave = Date.now();
+      this.saveBytes = payload.length;
+      this.saveError = null;
       return true;
-    } catch (e) { console.warn('save failed', e); return false; }
+    } catch (e) {
+      // Quota or a blocked storage partition. Try once more without the
+      // chronicle, which is the largest expendable part of the save.
+      this.saveError = (e && e.name) || 'blocked';
+      try {
+        const slim = this.serialize();
+        slim.journal = slim.journal.slice(0, 10);
+        localStorage.setItem(SAVE_KEY, JSON.stringify(slim));
+        this.lastSave = Date.now();
+        this.saveError = null;
+        return true;
+      } catch (e2) {
+        console.warn('save failed', e2);
+        return false;
+      }
+    }
   }
 
-  static load() {
+  // Returns { state, status } so the caller can tell the player the truth:
+  //   'new'      no save present
+  //   'ok'       loaded
+  //   'damaged'  a save existed but could not be read — a fresh world is given
+  static loadResult() {
+    let raw = null;
+    try { raw = localStorage.getItem(SAVE_KEY); }
+    catch (e) { return { state: null, status: 'new', reason: 'storage-blocked' }; }
+    if (!raw) return { state: null, status: 'new' };
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return null;
       const obj = JSON.parse(raw);
       const s = WorldState.deserialize(obj);
       const away = Math.max(0, (Date.now() - (obj.savedAt || Date.now())) / 1000);
       s.awaySeconds = away;
       if (away > 30) s.fastForward(Math.min(away * 6, 60 * 60 * 6));
-      return s;
-    } catch (e) { console.warn('load failed', e); return null; }
+      return { state: s, status: 'ok' };
+    } catch (e) {
+      console.warn('load failed', e);
+      // keep the unreadable save aside rather than overwriting it immediately
+      try { localStorage.setItem(SAVE_KEY + '_damaged', raw.slice(0, 200000)); } catch (e2) { }
+      return { state: null, status: 'damaged', reason: (e && e.message) || 'unreadable' };
+    }
   }
+  static load() { return WorldState.loadResult().state; }
 }
