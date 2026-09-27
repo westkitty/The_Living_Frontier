@@ -152,6 +152,11 @@ the standing line in the bag, the homecoming report and the header of any
 conversation held under a banner. Every crest ships with the faction's name in
 text for assistive technology, so ownership is never signalled by colour alone.
 
+On the maps the same rule holds in pixels: each faction owns a silhouette as
+well as a colour — the Pact round, the Legion square, the Kin triangular — used
+for both settlements and patrols, with a key printed under the survey map. A
+greyscale screenshot still tells you who holds what.
+
 The survey map describes itself too: its aria-label reports how wide the view
 is, how much of the frontier you have surveyed, the settlements inside the
 frame with their standing and banner — never one you have not found yet — and
@@ -204,7 +209,10 @@ for manual testing:
 
 ```
 npm install
-npm run check      # ui + shaders + smoke, in that order
+npm run check      # arch + ui + shaders + smoke, in that order
+npm run arch       # module boundaries: no import cycles, no upward imports,
+                   #   the simulation core stays DOM-free, one entry point,
+                   #   no orphaned modules
 npm run ui         # wiring & accessibility gate: dangling selectors, missing
                    # icons, duplicate ids, unnamed buttons, modal semantics,
                    # live regions, unstyled classes, touch target sizes
@@ -227,7 +235,7 @@ slimmer payload, that the daily history matches the live simulation and stays
 bounded, that scrubbing the chart reports the selected day honestly and clamps
 at both ends, that the chart legend reports each line's true value and range
 and can isolate it, that the survey map's description matches what it draws and
-never names an unsurveyed place, that footfalls change with the ground underfoot, and that
+never names an unsurveyed place, that no two factions share a map silhouette, that footfalls change with the ground underfoot, and that
 preferences persist across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in

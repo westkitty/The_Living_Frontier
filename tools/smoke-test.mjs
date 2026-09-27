@@ -491,6 +491,22 @@ game.ui.closeDialog();
     game.ui.showTab('world');
   }
 
+  // allegiance has a silhouette, not only a colour
+  {
+    const shapes = {};
+    for (const f of [0, 1, 2]) {
+      const ops = [];
+      const rec = new Proxy({}, {
+        get: (t, k) => (...a) => { ops.push(k + (k === 'rect' || k === 'arc' ? ':' + a.length : '')); },
+      });
+      game.ui.carto.factionPath(rec, f, 5);
+      shapes[f] = ops.join('|');
+    }
+    const distinct = new Set(Object.values(shapes)).size;
+    log('faction map silhouettes:', JSON.stringify(shapes), distinct === 3 ? '✓ all different' : '✗');
+    if (distinct !== 3) errors.push('two factions share a map silhouette — colour is still the only cue');
+  }
+
   // every faction cue carries its name, not just a colour
   {
     const crests = document.querySelectorAll('#world-state .crest');

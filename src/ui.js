@@ -607,8 +607,12 @@ export class UI {
     for (const a of this.world.actors.soldiers) {
       if (!a.alive) continue;
       const [x, y] = toXY(a.pos.x, a.pos.z);
+      ctx.save();
+      ctx.translate(x, y);
       ctx.fillStyle = FACTIONS[a.faction].accent;
-      ctx.fillRect(x - 1.7 * s, y - 1.7 * s, 3.4 * s, 3.4 * s);
+      this.carto.factionPath(ctx, a.faction, 2 * s);   // shape, not just colour
+      ctx.fill();
+      ctx.restore();
     }
     for (const q of st.quests) {
       if (q.done) continue;

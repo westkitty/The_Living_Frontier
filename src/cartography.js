@@ -341,6 +341,23 @@ export class Cartographer {
     ctx.fillText(text, x, y);
   }
 
+  // Allegiance must survive a colour-blind reader and a greyscale print: each
+  // faction owns a silhouette as well as a colour. Pact = round, Legion =
+  // square, Kin = triangle — the same shapes on every map surface.
+  factionPath(ctx, faction, r) {
+    ctx.beginPath();
+    if (faction === 1) {                      // Ashen Legion: hard square
+      ctx.rect(-r * 0.86, -r * 0.86, r * 1.72, r * 1.72);
+    } else if (faction === 2) {               // Hollow Kin: standing triangle
+      ctx.moveTo(0, -r * 1.08);
+      ctx.lineTo(r * 0.98, r * 0.8);
+      ctx.lineTo(-r * 0.98, r * 0.8);
+      ctx.closePath();
+    } else {                                  // Verdant Pact: round
+      ctx.arc(0, 0, r, 0, 6.283);
+    }
+  }
+
   // A settlement drawn as its own state: size = prosperity, ring = walls,
   // hollow = abandoned, colour = the banner that currently flies over it.
   settlementGlyph(ctx, s, x, y, scale = 1) {
@@ -360,7 +377,7 @@ export class Cartographer {
       ctx.stroke();
     } else {
       ctx.fillStyle = accent;
-      ctx.arc(0, 0, r, 0, 6.283); ctx.fill();
+      this.factionPath(ctx, s.banner, r); ctx.fill();
       ctx.strokeStyle = 'rgba(8,10,9,.7)'; ctx.lineWidth = 1.2 * scale; ctx.stroke();
       if (s.smoke > 0.02) {   // hearth smoke = the village is alive right now
         ctx.strokeStyle = 'rgba(240,232,210,.5)'; ctx.lineWidth = 1 * scale;

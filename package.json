@@ -11,7 +11,8 @@
     "ui": "node tools/ui-check.mjs",
     "visual": "node tools/visual-qa.mjs",
     "perf": "node tools/perf-probe.mjs",
-    "check": "npm run ui && npm run shaders && npm run smoke"
+    "check": "npm run arch && npm run ui && npm run shaders && npm run smoke",
+    "arch": "node tools/arch-check.mjs"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^1.0.9",
