@@ -242,8 +242,9 @@ silhouette, that the touch stick moves the player and releasing it stops them,
 that the touch look drag turns the camera and each on-screen action button
 feeds real input, that burn scars survive the save byte-for-byte, that giving
 a village timber raises a real building in the scene geometry, that a captured
-settlement's banner cloth changes colour, that a fire re-scatters the
-vegetation it burned, that hunting a valley out leaves it visibly emptier,
+settlement's banner cloth changes colour, that setting a wooded chunk alight
+turns standing trees into charred snags in the scene without re-scattering
+that chunk every frame, that hunting a valley out leaves it visibly emptier,
 that footfalls change with the ground underfoot, and that preferences persist
 across sessions.
 

@@ -388,6 +388,11 @@ export class Vegetation {
     const c = this.chunks.get(key);
     if (!c) return;
     const rec = c.rec, ring = c.ring;
+    // Distant chunks keep the trees they were built with — buildChunk refuses
+    // to scatter beyond ring 1, so re-scattering one here would delete its
+    // forest and leave bare ground until the terrain LOD changes. It gets a
+    // fresh scatter, burn scars and all, when the player comes closer.
+    if (ring > 1) return;
     this.removeChunk(key);
     this.buildChunk(key, rec, ring);
   }

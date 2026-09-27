@@ -693,11 +693,22 @@ export class WorldState {
   // The vegetation renderer owns the meshes; the simulation only says which
   // chunk stopped being true. Key format matches Terrain.keyOf.
   markVegDirty(x, z) {
-    const i = Math.floor((x + WORLD.half) / WORLD.chunk);
-    const j = Math.floor((z + WORLD.half) / WORLD.chunk);
+    // Same mapping Terrain.keyOf uses — world metres divided by chunk size,
+    // with no half-world offset. Getting this wrong points at chunks that are
+    // never loaded, and the re-scatter silently does nothing.
+    const i = Math.floor(x / WORLD.chunk);
+    const j = Math.floor(z / WORLD.chunk);
+    const key = i + ',' + j;
+    // A fire re-marks the same chunk on every tick. Re-scattering a chunk is
+    // real work, so hold each one to roughly one refresh per burning second:
+    // the snags still appear while you watch, without rebuilding the same
+    // trees sixty times a second.
+    this._vegMarked = this._vegMarked || new Map();
+    if ((this._vegMarked.get(key) || -1e9) > this.elapsed - 1.0) return;
+    this._vegMarked.set(key, this.elapsed);
     this.vegDirty = true;
     this.vegDirtyKeys = this.vegDirtyKeys || new Set();
-    this.vegDirtyKeys.add(i + ',' + j);
+    this.vegDirtyKeys.add(key);
   }
 
   // ------------------------------------------------------------------ quests

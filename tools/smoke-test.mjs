@@ -536,6 +536,7 @@ game.ui.closeDialog();
 }
 
 
+
 // ---- consequences you can see, not merely count ---------------------------
 // The premise of the game is that the world visibly remembers. These check the
 // scene graph itself, not the numbers that feed it.
@@ -587,23 +588,59 @@ game.ui.closeDialog();
   // 3. fire rebuilds the vegetation where it burned
   const rebuilt = [];
   const realRebuild = game.veg.rebuild.bind(game.veg);
-  game.veg.rebuild = (k) => { rebuilt.push(k); return realRebuild(k); };
-  let fx = p.pos.x, fz = p.pos.z, lit = false;
-  for (let ring = 0; ring < 40 && !lit; ring++) {          // find fuel near the player
-    fx = p.pos.x + Math.cos(ring) * (12 + ring * 3);
-    fz = p.pos.z + Math.sin(ring) * (12 + ring * 3);
-    lit = st.ignite(fx, fz, 1);
+  // only count re-scatters that actually landed on a loaded chunk: a wrong
+  // key would still "call rebuild" and prove nothing
+  game.veg.rebuild = (k) => { if (game.veg.chunks.has(k)) rebuilt.push(k); return realRebuild(k); };
+  // burn a chunk that actually has trees standing in it, so "the forest
+  // burned" can be checked against the scene rather than against a number
+  let fx = 0, fz = 0, lit = false, burntKey = null;
+  for (const [key, c] of game.veg.chunks) {
+    if (c.ring > 1) continue;                    // only chunks close enough to re-scatter
+    const standing = (c.meshes.pine ? c.meshes.pine.count : 0) + (c.meshes.broad ? c.meshes.broad.count : 0);
+    if (standing < 12) continue;          // enough trees that losing some is unambiguous
+    const trees = c.items.filter(it => it.type === 'pine' || it.type === 'broad');
+    if (!trees.length) continue;
+    // set several trees alight so the burn covers a real patch of the chunk,
+    // instead of a single cell that may char nothing visible
+    let caught = 0;
+    for (const t of trees.slice(0, 8)) if (st.ignite(t.x, t.z, 1)) caught++;
+    if (caught) { fx = trees[0].x; fz = trees[0].z; burntKey = key; lit = true; break; }
   }
   const treesBefore = st.regions[rIdx(fx, fz)].trees;
+  const countOf = (key, type) => {
+    const c = game.veg.chunks.get(key);
+    return c && c.meshes[type] ? c.meshes[type].count : 0;
+  };
+  const standingBefore = countOf(burntKey, 'pine') + countOf(burntKey, 'broad');
+  const charredBefore = countOf(burntKey, 'charred');
   for (let i = 0; i < 120 && (st.fireActive || (st.vegDirtyKeys && st.vegDirtyKeys.size)); i++) {
     st.update(1); game.frame();
   }
-  log(`  fire lit ${Math.round(Math.hypot(fx - p.pos.x, fz - p.pos.z))} m from the player:`, lit ? 'caught' : 'no fuel');
-  if (!lit) errors.push('no ignitable vegetation anywhere near the player');
+  log(`  fire lit in chunk ${burntKey}, ${Math.round(Math.hypot(fx - p.pos.x, fz - p.pos.z))} m from the player:`,
+    lit ? 'caught' : 'no fuel');
+  if (!lit) errors.push('no wooded chunk near the player could be set alight');
   game.veg.rebuild = realRebuild;
   const treesAfter = st.regions[rIdx(fx, fz)].trees;
+  const liveKeys = [...new Set(rebuilt)].filter(k => game.veg.chunks.has(k));
+  // and the re-scatter must not run away: a burning chunk re-marks itself
+  // every tick, so the simulation holds each chunk to about one refresh per
+  // second instead of rebuilding the same trees every frame
+  const framesBurning = 120;
+  const churn = rebuilt.length / framesBurning;
+  log(`    re-scatter churn: ${rebuilt.length} rebuilds over ${framesBurning} fire frames (${(churn * 100).toFixed(0)}% of frames)`,
+    churn < 0.25 ? '✓ bounded' : '✗ runaway');
+  if (churn >= 0.25) errors.push('burning chunks are re-scattered far too often');
   log(`    forest there ${treesBefore.toFixed(3)} -> ${treesAfter.toFixed(3)},`,
-    `${rebuilt.length} vegetation chunks re-scattered`, treesAfter < treesBefore && rebuilt.length ? '✓' : '✗');
+    `${rebuilt.length} re-scatters across ${liveKeys.length} loaded chunks ${liveKeys.join(' ')}`,
+    treesAfter < treesBefore && liveKeys.length ? '✓' : '✗');
+  if (!liveKeys.length) errors.push('the chunks marked for re-scatter are not the chunks that are loaded');
+  // the point of all this: live trees become charred snags in the scene
+  const standingAfter = countOf(burntKey, 'pine') + countOf(burntKey, 'broad');
+  const charredAfter = countOf(burntKey, 'charred');
+  log(`    chunk ${burntKey}: standing trees ${standingBefore} -> ${standingAfter}, charred snags ${charredBefore} -> ${charredAfter}`,
+    charredAfter > charredBefore && standingAfter < standingBefore ? '✓ the burn is visible' : '✗');
+  if (charredAfter <= charredBefore) errors.push('burning a forest produces no charred snags in the scene');
+  if (standingAfter >= standingBefore) errors.push('burning a forest removes no standing trees from the scene');
   if (treesAfter >= treesBefore) errors.push('fire did not thin the forest it burned');
   if (!rebuilt.length) errors.push('burned vegetation is never rebuilt, so the fire leaves no visible mark');
 
@@ -615,9 +652,10 @@ game.ui.closeDialog();
     game.actors.killAnimal(a, true);      // the same path a struck animal takes
     culled++;
   }
-  const reg = st.regions[rIdx(p.pos.x, p.pos.z)];
-  reg.prey = 0;
-  for (let i = 0; i < 60; i++) game.frame();
+  // with the herds gone from the whole neighbourhood, nothing should walk
+  // back in: this is the "hunted valleys empty out" promise
+  for (const r of st.regions) { r.prey = 0; r.pred = 0; }
+  for (let i = 0; i < 120; i++) game.frame();
   const aliveAfter = game.actors.animals.filter(a => a.alive).length;
   log(`  hunted out ${culled} animals: visible wildlife ${aliveBefore} -> ${aliveAfter}, hunted total ${st.player.stats.hunted}`,
     aliveAfter < aliveBefore ? '✓ the country is emptier' : '✗');
