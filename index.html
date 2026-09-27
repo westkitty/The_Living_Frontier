@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0d1210" />
+<meta name="description" content="THE LIVING FRONTIER - an open-world survival sandbox where the world remembers what you do." />
+<title>THE LIVING FRONTIER</title>
+<link rel="stylesheet" href="./styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🏕️</text></svg>" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<!-- ------------------------------------------------------------ BOOT ---- -->
+<div id="boot" class="screen">
+  <div class="boot-bg"></div>
+  <div class="boot-inner">
+    <div class="title-mark">
+      <div class="title-sub">an open world that remembers</div>
+      <h1>THE LIVING<span>FRONTIER</span></h1>
+    </div>
+    <div id="save-summary" class="save-summary"></div>
+    <div class="boot-actions">
+      <button id="btn-continue" class="btn primary">Continue</button>
+      <button id="btn-new" class="btn">New World</button>
+    </div>
+    <div class="boot-help">
+      <div><b>Move</b> WASD / left stick &nbsp;·&nbsp; <b>Look</b> drag or mouse &nbsp;·&nbsp; <b>Sprint</b> Shift</div>
+      <div><b>Interact</b> E &nbsp;·&nbsp; <b>Act / strike</b> F &nbsp;·&nbsp; <b>Jump</b> Space &nbsp;·&nbsp; <b>Map</b> M &nbsp;·&nbsp; <b>Bag</b> I &nbsp;·&nbsp; <b>World</b> V</div>
+    </div>
+    <div id="boot-status" class="boot-status">Shaping the frontier…</div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------- HUD ---- -->
+<div id="hud" class="hidden">
+
+  <div id="compass">
+    <div id="compass-strip"></div>
+    <div class="compass-needle"></div>
+  </div>
+
+  <div id="top-left" class="glass">
+    <div class="clock-row">
+      <span id="day-label">Day 1</span>
+      <span id="time-label">06:42</span>
+    </div>
+    <div class="weather-row"><span id="weather-icon">☀</span><span id="weather-label">Clear</span><span id="temp-dot"></span></div>
+  </div>
+
+  <div id="top-right">
+    <canvas id="minimap" width="150" height="150"></canvas>
+    <div class="icon-row">
+      <button class="icon-btn" data-panel="map" title="Map (M)">🗺</button>
+      <button class="icon-btn" data-panel="bag" title="Inventory (I)">🎒</button>
+      <button class="icon-btn" data-panel="journal" title="Journal (J)">📓</button>
+      <button class="icon-btn" data-panel="world" title="World state (V)">🌍</button>
+      <button class="icon-btn" id="btn-menu" title="Menu (Esc)">☰</button>
+    </div>
+  </div>
+
+  <div id="quest-tracker"></div>
+
+  <div id="toasts"></div>
+
+  <div id="vitals">
+    <div class="bar hp"><i id="hp-fill"></i><span>❤</span></div>
+    <div class="bar st"><i id="st-fill"></i><span>⚡</span></div>
+  </div>
+
+  <div id="prompt" class="hidden"><b id="prompt-key">E</b><span id="prompt-text">Interact</span></div>
+
+  <div id="touch-left" class="touch-only">
+    <div id="stick-base"><div id="stick-knob"></div></div>
+  </div>
+  <div id="touch-right" class="touch-only">
+    <button id="tb-interact" class="tbtn big">E</button>
+    <button id="tb-attack" class="tbtn">✦</button>
+    <button id="tb-jump" class="tbtn">⤒</button>
+    <button id="tb-sprint" class="tbtn">»</button>
+  </div>
+
+  <div id="damage-flash"></div>
+  <div id="vignette"></div>
+  <div id="discovery-banner"><div class="db-sub">Discovered</div><div class="db-title"></div></div>
+</div>
+
+<!-- ---------------------------------------------------------- PANELS ---- -->
+<div id="panel" class="panel hidden">
+  <div class="panel-card">
+    <div class="panel-head">
+      <div class="tabs">
+        <button class="tab" data-tab="map">Map</button>
+        <button class="tab" data-tab="bag">Bag</button>
+        <button class="tab" data-tab="journal">Journal</button>
+        <button class="tab" data-tab="world">World</button>
+      </div>
+      <button id="panel-close" class="icon-btn">✕</button>
+    </div>
+    <div class="panel-body">
+      <section data-view="map" class="view">
+        <canvas id="bigmap" width="512" height="512"></canvas>
+        <div class="map-legend">
+          <span><i style="background:#68d18a"></i>Verdant Pact</span>
+          <span><i style="background:#ef7a54"></i>Ashen Legion</span>
+          <span><i style="background:#a08ef0"></i>Hollow Kin</span>
+          <span><i style="background:#d9c27a"></i>You</span>
+          <span><i style="background:#3d2a22"></i>Burn scar</span>
+        </div>
+      </section>
+      <section data-view="bag" class="view">
+        <div id="bag-grid"></div>
+        <div id="bag-stats"></div>
+      </section>
+      <section data-view="journal" class="view">
+        <div id="quest-list"></div>
+        <h3>Chronicle</h3>
+        <div id="journal-list"></div>
+      </section>
+      <section data-view="world" class="view">
+        <div id="world-state"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="menu" class="panel hidden">
+  <div class="panel-card small">
+    <div class="panel-head"><h2>Frontier</h2><button id="menu-close" class="icon-btn">✕</button></div>
+    <div class="panel-body menu-body">
+      <button class="btn wide" id="m-resume">Resume</button>
+      <button class="btn wide" id="m-save">Save now</button>
+      <button class="btn wide" id="m-mute">Sound: on</button>
+      <button class="btn wide" id="m-quality">Quality: high</button>
+      <button class="btn wide danger" id="m-reset">Erase world &amp; restart</button>
+      <p class="hint">The world keeps simulating while you are away. Come back later and it will have moved on without you.</p>
+    </div>
+  </div>
+</div>
+
+<div id="dialog" class="panel hidden">
+  <div class="panel-card small dialog-card">
+    <div class="panel-head"><h2 id="dlg-name">Villager</h2><button id="dlg-close" class="icon-btn">✕</button></div>
+    <div class="panel-body">
+      <p id="dlg-text"></p>
+      <div id="dlg-options"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
