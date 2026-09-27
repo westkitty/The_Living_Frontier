@@ -107,5 +107,14 @@ game.ui.drawMinimap(p);
 png(document.querySelector('#minimap'), 'minimap.png');
 game.ui.drawBigMap();
 png(document.querySelector('#bigmap'), 'bigmap.png');
+// the title-screen portrait of this saved world, from the save itself
+state.save();
+const raw = JSON.parse(localStorage.getItem('living_frontier_save_v1'));
+const { drawSurveyThumb } = await import('../src/cartography.js');
+const thumb = document.querySelector('#save-thumb');
+const frac = drawSurveyThumb(thumb, raw);
+console.log('  survey thumbnail:', frac === null ? 'NOT DRAWN' : (frac * 100).toFixed(1) + '% surveyed');
+png(thumb, 'save-thumb.png');
+
 console.log('done ->', out);
 process.exit(0);

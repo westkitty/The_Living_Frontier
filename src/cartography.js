@@ -6,6 +6,7 @@
 // which is persisted, so the map is another thing the world remembers.
 import { WORLD, LANDMARKS, FACTIONS, heightAt, moistureAt } from './worldgen.js';
 import { clamp, lerp, hash2i } from './rng.js';
+import { rleDecode } from './worldstate.js';
 
 const XR = WORLD.exploreRes;
 
@@ -423,6 +424,78 @@ export class Cartographer {
     ctx.fillText(metres + ' m', x, y - 7);
     ctx.restore();
   }
+}
+
+// --- the boot-screen portrait of a saved world ------------------------------
+// Drawn straight out of the save's own exploration plane, so the picture on
+// the title screen is literally the ground that player surveyed — nothing
+// they never found is shown. Returns the surveyed fraction, or null.
+export function drawSurveyThumb(cv, obj) {
+  if (!cv || !obj || !obj.explored) return null;
+  let exp;
+  try { exp = rleDecode(obj.explored, XR * XR); }
+  catch (e) { return null; }
+  const S = cv.width, cell = S / XR;
+  // burn scars, so the fires you set are visible on the title screen
+  let burn = null, BR = 0;
+  try {
+    if (obj.ground && Array.isArray(obj.ground)) {
+      BR = WORLD.stateRes;
+      burn = rleDecode(obj.ground[0], BR * BR);
+    }
+  } catch (e) { burn = null; }
+  const burnAt = (i, j) => {
+    if (!burn) return 0;
+    const bi = Math.min(BR - 1, Math.floor((i + 0.5) / XR * BR));
+    const bj = Math.min(BR - 1, Math.floor((j + 0.5) / XR * BR));
+    return burn[bj * BR + bi] / 255;
+  };
+  const g = cv.getContext('2d');
+  if (!g) return null;
+  g.fillStyle = '#0a0c0b';
+  g.fillRect(0, 0, S, S);
+  // the surveyed ground, warm where you walked most
+  let seen = 0;
+  for (let j = 0; j < XR; j++) {
+    for (let i = 0; i < XR; i++) {
+      const v = exp[j * XR + i] / 255;
+      if (v <= 0.04) continue;
+      if (v > 0.35) seen++;
+      const a = Math.min(1, v * 1.15);
+      const b = Math.min(1, burnAt(i, j) * 1.8);
+      const r = Math.round(lerp(120 + v * 86, 168, b));
+      const gg = Math.round(lerp(116 + v * 70, 62, b));
+      const bb = Math.round(lerp(92 + v * 40, 46, b));
+      g.fillStyle = `rgba(${r},${gg},${bb},${a * 0.92})`;
+      g.fillRect(i * cell, j * cell, cell + 0.6, cell + 0.6);
+    }
+  }
+  // soft vignette so the unknown reads as unknown, not as empty canvas
+  const vg = g.createRadialGradient(S / 2, S / 2, S * 0.28, S / 2, S / 2, S * 0.72);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,.55)');
+  g.fillStyle = vg; g.fillRect(0, 0, S, S);
+
+  const toPx = (x, z) => [((x + WORLD.half) / WORLD.size) * S, ((z + WORLD.half) / WORLD.size) * S];
+  const accent = ['#68d18a', '#ef7a54', '#a08ef0'];
+  for (const st of (obj.settlements || [])) {
+    const [px, py] = toPx(st.x, st.z);
+    const known = exp[Math.min(XR - 1, Math.max(0, Math.floor((py / S) * XR))) * XR
+                    + Math.min(XR - 1, Math.max(0, Math.floor((px / S) * XR)))] > 60;
+    if (!known) continue;                       // never reveal what was not found
+    g.beginPath(); g.arc(px, py, st.abandoned ? 4 : 3.4 + (st.prosperity || 0) * 4.2, 0, Math.PI * 2);
+    if (st.abandoned) { g.strokeStyle = 'rgba(160,160,160,.75)'; g.lineWidth = 1.6; g.stroke(); }
+    else { g.fillStyle = accent[st.banner % 3] || accent[0]; g.fill(); }
+  }
+  const pl = obj.player;
+  if (pl) {
+    const [px, py] = toPx(pl.x, pl.z);
+    g.beginPath(); g.arc(px, py, 8, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(245,238,220,.16)'; g.fill();
+    g.beginPath(); g.arc(px, py, 3.2, 0, Math.PI * 2);
+    g.fillStyle = '#f5eedc'; g.fill();
+  }
+  return seen / (XR * XR);
 }
 
 export { XR as EXPLORE_RES };

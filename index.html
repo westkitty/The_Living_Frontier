@@ -64,7 +64,14 @@
       <div class="title-sub">an open world that remembers</div>
       <h1>THE LIVING<span>FRONTIER</span></h1>
     </div>
-    <div id="save-summary" class="save-summary"></div>
+    <div class="save-card">
+      <figure class="save-thumb-wrap hidden" id="save-thumb-wrap">
+        <canvas id="save-thumb" width="360" height="360" role="img"
+          aria-label="The part of the frontier you have surveyed so far"></canvas>
+        <figcaption id="save-thumb-cap">surveyed</figcaption>
+      </figure>
+      <div id="save-summary" class="save-summary"></div>
+    </div>
     <div class="boot-actions">
       <button id="btn-continue" class="btn primary">Continue</button>
       <button id="btn-new" class="btn">New World</button>
@@ -195,6 +202,11 @@
       <div class="set-row">
         <label for="m-mute">Sound</label>
         <button class="seg-btn" id="m-mute" aria-pressed="true">On</button>
+      </div>
+      <div class="set-row">
+        <label for="m-vol">Volume</label>
+        <input type="range" id="m-vol" min="0" max="100" step="5" value="70" />
+        <output id="m-vol-out">70%</output>
       </div>
       <div class="set-row">
         <span id="lbl-quality">Detail</span>

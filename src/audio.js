@@ -4,6 +4,7 @@ export class AudioEngine {
     this.enabled = false;
     this.ctx = null;
     this.muted = false;
+    this.volume = 0.7;
   }
   init() {
     if (this.ctx) return;
@@ -12,7 +13,7 @@ export class AudioEngine {
     this.ctx = new AC();
     const ctx = this.ctx;
     this.master = ctx.createGain();
-    this.master.gain.value = 0.7;
+    this.master.gain.value = this.muted ? 0 : this.volume;
     this.master.connect(ctx.destination);
 
     // noise buffer reused by wind / rain / footsteps
@@ -36,6 +37,11 @@ export class AudioEngine {
     // fire bed
     this.fire = this.makeNoiseLoop(700, 0.0, 'bandpass');
     this.fire.filter.Q.value = 1.2;
+    // moving water — rivers, lake shores
+    this.water = this.makeNoiseLoop(1500, 0.0, 'bandpass');
+    this.water.filter.Q.value = 0.7;
+    // the hearth bed: the low warm hum of an inhabited, prospering place
+    this.hearth = this.makeNoiseLoop(240, 0.0, 'lowpass');
 
     this.enabled = true;
   }
@@ -51,15 +57,29 @@ export class AudioEngine {
     return { src, filter, gain: g };
   }
   resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); }
-  setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.7; }
+  setMuted(m) { this.muted = m; this.applyGain(); }
+  setVolume(v) { this.volume = Math.max(0, Math.min(1, v)); this.applyGain(); }
+  applyGain() {
+    if (!this.master) return;
+    const t = this.ctx.currentTime;
+    this.master.gain.setTargetAtTime(this.muted ? 0 : this.volume, t, 0.05);
+  }
 
-  ambience(windStrength, rainAmt, fireAmt, night) {
+  // Every bed is driven by something the simulation actually knows: wind and
+  // rain from the weather, fire from burning cells near you, water from the
+  // nearest river or shore, hearth from how alive the nearest village is.
+  ambience(a) {
     if (!this.enabled) return;
     const t = this.ctx.currentTime;
-    this.wind.gain.gain.setTargetAtTime(0.02 + windStrength * 0.10, t, 0.6);
-    this.wind.filter.frequency.setTargetAtTime(300 + windStrength * 700, t, 0.8);
-    this.rain.gain.gain.setTargetAtTime(rainAmt * 0.10, t, 0.8);
-    this.fire.gain.gain.setTargetAtTime(Math.min(0.14, fireAmt * 0.16), t, 0.5);
+    const wind = a.wind || 0, rain = a.rain || 0, fire = a.fire || 0;
+    const water = a.water || 0, hearth = a.hearth || 0, night = !!a.night;
+    this.wind.gain.gain.setTargetAtTime(0.02 + wind * 0.10, t, 0.6);
+    this.wind.filter.frequency.setTargetAtTime((night ? 220 : 300) + wind * 700, t, 0.8);
+    this.rain.gain.gain.setTargetAtTime(rain * 0.10, t, 0.8);
+    this.fire.gain.gain.setTargetAtTime(Math.min(0.14, fire * 0.16), t, 0.5);
+    this.water.gain.gain.setTargetAtTime(Math.min(0.085, water * 0.085), t, 0.7);
+    this.water.filter.frequency.setTargetAtTime(1100 + water * 900, t, 0.9);
+    this.hearth.gain.gain.setTargetAtTime(Math.min(0.055, hearth * 0.055), t, 1.2);
   }
 
   blip(freq, dur, type = 'sine', vol = 0.12, slide = 0) {
@@ -91,6 +111,12 @@ export class AudioEngine {
     if (!this.enabled || this.muted) return;
     switch (name) {
       case 'step': this.noiseBurst(0.10, 320 + Math.random() * 160, 0.11, 'lowpass'); break;
+      // footfalls read the ground you are actually standing on
+      case 'step-grass': this.noiseBurst(0.12, 260 + Math.random() * 140, 0.085, 'lowpass'); break;
+      case 'step-ash': this.noiseBurst(0.16, 1500 + Math.random() * 700, 0.075, 'highpass');
+        this.noiseBurst(0.08, 240, 0.05, 'lowpass'); break;
+      case 'step-stone': this.noiseBurst(0.07, 900 + Math.random() * 500, 0.09, 'bandpass');
+        this.blip(160 + Math.random() * 60, 0.05, 'square', 0.025, -30); break;
       case 'splash': this.noiseBurst(0.22, 1400, 0.13, 'highpass'); break;
       case 'jump': this.blip(330, 0.14, 'triangle', 0.08, 180); break;
       case 'chop': this.noiseBurst(0.16, 900, 0.22, 'bandpass'); this.blip(120, 0.14, 'square', 0.05, -40); break;

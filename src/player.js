@@ -175,6 +175,17 @@ export class Player {
   }
   heal(a) { this.hp = clamp(this.hp + a, 0, this.maxHp); }
 
+  // the ground answers back differently depending on what you burned, built
+  // or wore down: ash crunches, village paths are hard-packed, grass is soft
+  footstepSound(st) {
+    if (this.inWater) return 'splash';
+    const x = this.pos.x, z = this.pos.z;
+    if (st.getGround(x, z, CH.BURN) > 0.35) return 'step-ash';
+    if (st.getGround(x, z, CH.DEV) > 0.4 || st.getGround(x, z, CH.TRAIL) > 0.55) return 'step-stone';
+    if (st.getGround(x, z, CH.LUSH) > 0.25) return 'step-grass';
+    return 'step';
+  }
+
   update(dt, input, camera) {
     const st = this.state;
     if (this.dead) {
@@ -276,7 +287,7 @@ export class Player {
       this.footTimer -= dt;
       if (this.footTimer <= 0 && this.grounded) {
         this.footTimer = sprinting ? 0.28 : 0.46;
-        this.world.audio.play(this.inWater ? 'splash' : 'step');
+        this.world.audio.play(this.footstepSound(st));
         if (Math.random() < 0.35) this.world.fx.dust(this.pos);
       }
     }

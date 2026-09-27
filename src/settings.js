@@ -4,6 +4,7 @@ const KEY = 'living_frontier_settings_v1';
 
 const DEFAULTS = {
   muted: false,
+  volume: 0.7,            // master audio level, 0 – 1
   quality: 'high',        // high | medium | low
   reducedMotion: null,    // null = follow the operating system
   sensitivity: 1,         // look speed multiplier, 0.4 – 2
@@ -30,6 +31,7 @@ export const Settings = {
     const v = this.values;
     if (!['high', 'medium', 'low'].includes(v.quality)) v.quality = 'high';
     v.sensitivity = Math.min(2, Math.max(0.4, Number(v.sensitivity) || 1));
+    v.volume = Math.min(1, Math.max(0, Number(v.volume) >= 0 ? Number(v.volume) : 0.7));
     v.muted = !!v.muted; v.invertY = !!v.invertY; v.hints = v.hints !== false;
     if (v.mapView && !(Number.isFinite(v.mapView.cx) && Number.isFinite(v.mapView.cz) && v.mapView.span > 0)) v.mapView = null;
     if (!['map', 'bag', 'journal', 'world'].includes(v.lastTab)) v.lastTab = 'map';

@@ -41,7 +41,7 @@ function quantize(u8, step) {
   for (let i = 0; i < u8.length; i++) out[i] = Math.round(u8[i] / step) * step;
   return out;
 }
-function rleDecode(b64, length) {
+export function rleDecode(b64, length) {
   const bin = atob(b64);
   const out = new Uint8Array(length);
   let p = 0;

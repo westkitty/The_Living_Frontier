@@ -348,6 +348,53 @@ game.ui.closeDialog();
   p.hp = p.maxHp; p.stamina = 100;
 }
 
+// ---- the world is audible: beds and footfalls follow real state -----------
+{
+  const { AudioEngine } = await import('../src/audio.js');
+  const { Settings } = await import('../src/settings.js');
+  const { CH } = await import('../src/worldstate.js');
+  const p = game.player;
+
+  // footfalls read the ground the player is standing on
+  const here = () => ({ x: p.pos.x, z: p.pos.z });
+  const surf = {};
+  p.inWater = false;
+  st.paintGround(p.pos.x, p.pos.z, CH.BURN, 1, 3); surf.ash = p.footstepSound(st);
+  st.paintGround(p.pos.x, p.pos.z, CH.BURN, -1, 3);
+  st.paintGround(p.pos.x, p.pos.z, CH.DEV, 1, 3); surf.stone = p.footstepSound(st);
+  st.paintGround(p.pos.x, p.pos.z, CH.DEV, -1, 3);
+  st.paintGround(p.pos.x, p.pos.z, CH.LUSH, 1, 3); surf.grass = p.footstepSound(st);
+  st.paintGround(p.pos.x, p.pos.z, CH.LUSH, -1, 3);
+  p.inWater = true; surf.water = p.footstepSound(st); p.inWater = false;
+  log('footfall by surface:', JSON.stringify(surf));
+  const wantSurf = { ash: 'step-ash', stone: 'step-stone', grass: 'step-grass', water: 'splash' };
+  for (const k of Object.keys(wantSurf)) if (surf[k] !== wantSurf[k]) errors.push(`footstep on ${k} was ${surf[k]}`);
+
+  // the hearth bed only sounds near a living village
+  const home = st.settlements.find(s => !s.abandoned);
+  const away = { x: p.pos.x, y: p.pos.y, z: p.pos.z };
+  p.pos.set(home.x, p.pos.y, home.z);
+  const near = game.hearthNearness();
+  p.pos.set(home.x + 400, p.pos.y, home.z + 400);
+  const far = game.hearthNearness();
+  p.pos.set(home.x, p.pos.y, home.z);
+  home.abandoned = true;
+  const ghost = game.hearthNearness();
+  home.abandoned = false;
+  p.pos.set(away.x, away.y, away.z);
+  log(`hearth: in ${home.name} ${near.toFixed(2)} | 400 m away ${far.toFixed(2)} | if abandoned ${ghost.toFixed(2)}`);
+  if (!(near > 0.25 && far === 0 && ghost < near)) errors.push('hearth ambience is not tied to living settlements');
+
+  // volume is a real, clamped, persisted preference
+  const eng = new AudioEngine();
+  eng.setVolume(2); const hi = eng.volume;
+  eng.setVolume(-1); const lo = eng.volume;
+  Settings.set('volume', 0.35);
+  const reread = (Settings.values.volume = undefined, Settings.load().volume);
+  log(`volume clamps to ${lo}–${hi} and persists as ${reread}`);
+  if (hi !== 1 || lo !== 0 || reread !== 0.35) errors.push('volume preference is not clamped or not persisted');
+}
+
 // ---- the account of what happened while you were away ----------------------
 {
   const { WorldState } = await import('../src/worldstate.js');

@@ -65,6 +65,17 @@ export class UI {
         this.toast('Detail: ' + b.dataset.q);
       });
     });
+    const vol = $('#m-vol');
+    vol.addEventListener('input', () => {
+      const v = Number(vol.value) / 100;
+      Settings.set('volume', v);
+      this.world.audio.setVolume(v);
+      if (v > 0 && this.world.audio.muted) { this.world.audio.setMuted(false); Settings.set('muted', false); }
+      $('#m-vol-out').textContent = Math.round(v * 100) + '%';
+      $('#m-mute').textContent = this.world.audio.muted ? 'Off' : 'On';
+      $('#m-mute').setAttribute('aria-pressed', this.world.audio.muted ? 'false' : 'true');
+    });
+    vol.addEventListener('change', () => this.world.audio.play('ui'));
     const sens = $('#m-sens');
     sens.addEventListener('input', () => {
       const v = Number(sens.value);
@@ -306,6 +317,8 @@ export class UI {
     if (m) { const on = Settings.motionReduced; m.textContent = on ? 'On' : 'Off'; m.classList.toggle('on', on); m.setAttribute('aria-pressed', on ? 'true' : 'false'); }
     const inv = $('#m-invert');
     if (inv) { const on = !!Settings.get('invertY'); inv.textContent = on ? 'On' : 'Off'; inv.classList.toggle('on', on); inv.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+    const vol = $('#m-vol');
+    if (vol) { vol.value = String(Math.round(Number(Settings.get('volume')) * 100)); $('#m-vol-out').textContent = vol.value + '%'; }
     const sens = $('#m-sens');
     if (sens) { sens.value = String(Settings.get('sensitivity')); $('#m-sens-out').textContent = Number(sens.value).toFixed(1) + '×'; }
   }

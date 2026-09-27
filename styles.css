@@ -57,6 +57,14 @@ canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-acti
 h1{margin:0;font-size:clamp(30px,9vw,58px);line-height:.94;letter-spacing:.06em;font-weight:500;
   text-shadow:0 2px 30px rgba(224,182,97,.25)}
 h1 span{display:block;color:var(--amber-2)}
+.save-card{display:flex;align-items:center;gap:18px;justify-content:center;margin:20px auto 2px;flex-wrap:wrap}
+.save-thumb-wrap{margin:0;position:relative;animation:thumbIn .7s cubic-bezier(.2,.7,.3,1) both}
+.save-thumb-wrap canvas{width:132px;height:132px;display:block;border-radius:10px;
+  border:1px solid var(--line);background:#0b0d0c;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.save-thumb-wrap figcaption{position:absolute;left:0;right:0;bottom:-17px;text-align:center;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);opacity:.8}
+@keyframes thumbIn{from{opacity:0;transform:scale(.94) translateY(6px);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+@media (max-width:520px){.save-card{gap:12px}.save-thumb-wrap canvas{width:104px;height:104px}}
 .save-summary{margin:22px auto 6px;font-size:13px;color:var(--dim);line-height:1.6;max-width:430px;min-height:44px}
 .save-summary b{color:var(--ink);font-weight:500}
 .boot-actions{display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap}
