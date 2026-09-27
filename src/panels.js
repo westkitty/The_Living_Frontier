@@ -338,7 +338,7 @@ export const PanelsMixin = {
     for (const s of st.settlements) {
       const cls = s.abandoned ? 'abandoned' : s.status;
       html += `<div class="vil"><span>${s.name} ${crest(s.banner, FACTIONS[s.banner].name, FACTIONS[s.banner].accent,
-        `flies the ${FACTIONS[s.banner].name} banner`)}
+        `flies the banner of ${FACTIONS[s.banner].name}`)}
         <span style="color:var(--dim);font-size:11px"> · ${Math.round(s.population)} souls · ${s.buildings} buildings${s.walls ? ` · walls ${s.walls}/3` : ''}</span></span>
         <span class="tag ${cls}">${s.abandoned ? 'abandoned' : s.status}</span></div>`;
     }

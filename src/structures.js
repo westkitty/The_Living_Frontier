@@ -1,10 +1,9 @@
 // Procedural landmarks, settlements and faction outposts.
 // Each is merged into a single geometry so the whole world costs few draw calls.
 import * as THREE from 'three';
-import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, heightAt, settlementGroundY, caveFloor } from './worldgen.js';
+import { LANDMARKS, heightAt, settlementGroundY, caveFloor } from './worldgen.js';
 import { mulberry32, clamp, lerp } from './rng.js';
 import { applyGroundShader } from './terrain.js';
-import { regionIndex } from './worldstate.js';
 
 class Builder {
   constructor() { this.parts = []; }

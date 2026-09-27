@@ -4,7 +4,7 @@
 // made. Land you have never seen stays unsurveyed paper; land you have walked
 // is inked in, contoured and labelled. Fog is read from WorldState.explored,
 // which is persisted, so the map is another thing the world remembers.
-import { WORLD, LANDMARKS, FACTIONS, heightAt, moistureAt } from './worldgen.js';
+import { WORLD, FACTIONS, heightAt, moistureAt } from './worldgen.js';
 import { clamp, lerp, hash2i } from './rng.js';
 import { rleDecode } from './worldstate.js';
 

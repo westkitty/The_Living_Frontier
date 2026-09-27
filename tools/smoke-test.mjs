@@ -511,7 +511,7 @@ game.ui.closeDialog();
   {
     const crests = document.querySelectorAll('#world-state .crest');
     const names = [...document.querySelectorAll('#world-state .sr-only')].map(e => e.textContent);
-    const named = names.some(t => /flies the .* banner/.test(t)) && names.some(t => /Verdant Pact/.test(t));
+    const named = names.some(t => /flies the banner of .+/.test(t)) && names.some(t => /Verdant Pact/.test(t));
     log(`heraldry: ${crests.length} crests drawn, ${names.length} carry a readable name`, named ? '✓' : '✗');
     if (!crests.length || crests.length !== names.length) errors.push('faction crests are not paired with text alternatives');
     if (!named) errors.push('banner ownership is still conveyed by colour alone');
@@ -533,6 +533,70 @@ game.ui.closeDialog();
     }
   }
   game.ui.closePanel();
+}
+
+// ---- touch controls actually drive the game -------------------------------
+// The brief asks for excellent touch controls, and nothing else in this suite
+// had ever pressed one. These are the real listeners bound by UI.bind().
+{
+  const touchEvent = (type, touches) => {
+    const e = new window.Event(type, { bubbles: true, cancelable: true });
+    e.changedTouches = touches;
+    e.touches = touches;
+    return e;
+  };
+  const zone = document.querySelector('#touch-left');
+  const knob = document.querySelector('#stick-knob');
+  zone.getBoundingClientRect = () => ({ left: 40, top: 400, width: 140, height: 140, right: 180, bottom: 540 });
+  const centre = { x: 110, y: 470 };
+
+  // push the stick right and forward
+  zone.dispatchEvent(touchEvent('touchstart', [{ identifier: 1, clientX: centre.x + 40, clientY: centre.y - 30 }]));
+  const mv = game.input.move;
+  const knobMoved = /translate\(/.test(knob.style.transform) && knob.style.transform !== 'translate(0,0)';
+  const active = document.querySelector('#stick-base').classList.contains('active');
+  log(`touch stick: move (${mv.x.toFixed(2)}, ${mv.y.toFixed(2)}) | knob follows ${knobMoved ? '✓' : '✗'} | base lit ${active ? '✓' : '✗'}`);
+  if (!(mv.x > 0.5 && mv.y > 0.4)) errors.push('the touch stick does not produce the right move vector');
+  if (!knobMoved || !active) errors.push('the touch stick gives no visual feedback');
+
+  // and the player actually walks when it is held
+  const from = p.pos.clone();
+  for (let i = 0; i < 40; i++) game.frame();
+  const walked = p.pos.distanceTo(from);
+  log(`  holding the stick walked the player ${walked.toFixed(1)} m`, walked > 1 ? '✓' : '✗');
+  if (walked <= 1) errors.push('holding the touch stick does not move the player');
+
+  // releasing it stops the player dead
+  zone.dispatchEvent(touchEvent('touchend', [{ identifier: 1, clientX: centre.x + 40, clientY: centre.y - 30 }]));
+  log('  released:', `move (${game.input.move.x}, ${game.input.move.y})`, 'knob', knob.style.transform,
+    game.input.move.x === 0 && game.input.move.y === 0 ? '✓' : '✗');
+  if (game.input.move.x !== 0 || game.input.move.y !== 0) errors.push('releasing the touch stick leaves the player walking');
+
+  // dragging the right of the screen looks around
+  const canvas = document.querySelector('#gl');
+  const yaw0 = game.player.camYaw;
+  canvas.dispatchEvent(touchEvent('touchstart', [{ identifier: 2, clientX: global.innerWidth * 0.8, clientY: 300 }]));
+  canvas.dispatchEvent(touchEvent('touchmove', [{ identifier: 2, clientX: global.innerWidth * 0.8 + 120, clientY: 300 }]));
+  const lookDelta = game.input.look.x;
+  for (let i = 0; i < 4; i++) game.frame();
+  const yawMoved = Math.abs((game.player.camYaw) - yaw0) > 0.05;
+  log(`  right-side drag: look.x ${lookDelta.toFixed(3)} -> camera yaw moved ${yawMoved ? '✓' : '✗'}`);
+  if (!(Math.abs(lookDelta) > 0 || yawMoved)) errors.push('touch look does not turn the camera');
+  canvas.dispatchEvent(touchEvent('touchend', [{ identifier: 2, clientX: 0, clientY: 0 }]));
+
+  // the four action buttons are wired to real input, not decoration
+  document.querySelector('#tb-jump').dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+  document.querySelector('#tb-interact').dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+  document.querySelector('#tb-attack').dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+  const pressed = game.input.consume();
+  const sprintBtn = document.querySelector('#tb-sprint');
+  sprintBtn.click();
+  const sprintOn = game.input.sprint === true && sprintBtn.getAttribute('aria-pressed') === 'true';
+  sprintBtn.click();
+  const sprintOff = game.input.sprint === false && sprintBtn.getAttribute('aria-pressed') === 'false';
+  log('  action buttons:', JSON.stringify(pressed), '| sprint toggles', sprintOn && sprintOff ? '✓' : '✗');
+  if (!(pressed.jump && pressed.interact && pressed.attack)) errors.push('a touch action button is not wired to input');
+  if (!(sprintOn && sprintOff)) errors.push('the sprint toggle does not hold or announce its state');
 }
 
 // ---- the world is audible: beds and footfalls follow real state -----------
@@ -674,14 +738,27 @@ game.ui.closeDialog();
 
 // ---- save / load round-trip ------------------------------------------------
 st.player.inv.relic = 7;
+// Burn scars fade over many in-world days, so by now the fire lit at the top
+// of this run has healed. Lay down a fresh, deliberate scar: otherwise the
+// "scars survived the save" assertion below would be comparing zero to zero.
+st.ignite(st.settlements[2].x + 60, st.settlements[2].z + 60, 1);
+for (let i = 0; i < 120; i++) st.update(0.5);
+const { CH: CHrt } = await import('../src/worldstate.js');
+st.paintGround(st.settlements[2].x + 60, st.settlements[2].z + 60, CHrt.BURN, 1, 10);
+const scarsBefore = st.ground.filter((v, i) => i % 4 === 0 && v > 40).length;
+if (scarsBefore < 10) errors.push('could not produce burn scars to test persistence with');
 const saved = st.save();
 const raw = localStorage.getItem('living_frontier_save_v1');
 log('save ok:', saved, '| size', (raw.length / 1024).toFixed(1), 'KB');
 const { WorldState } = await import('../src/worldstate.js');
 const reloaded = WorldState.deserialize(JSON.parse(raw));
 const groundMatch = reloaded.ground.every((v, i) => v === st.ground[i]);
+const scarsAfter = reloaded.ground.filter((v, i) => i % 4 === 0 && v > 40).length;
 log('reload: day', reloaded.day, '| relics', reloaded.player.inv.relic, '| ground map identical:', groundMatch,
-  '| burn scars preserved:', reloaded.ground.filter((v, i) => i % 4 === 0 && v > 40).length);
+  `| burn scars ${scarsBefore} -> ${scarsAfter}`, scarsAfter === scarsBefore && scarsAfter > 0 ? '✓' : '✗');
+if (!groundMatch) errors.push('the ground memory did not survive the save');
+if (scarsAfter !== scarsBefore || scarsAfter === 0) errors.push('burn scars did not survive the save intact');
+if (reloaded.player.inv.relic !== 7 || reloaded.day !== st.day) errors.push('player state did not survive the save');
 
 // ---- discoveries -----------------------------------------------------------
 const { LANDMARKS } = await import('../src/worldgen.js');

@@ -1,7 +1,7 @@
 // The persistent, simulated world. Everything the player changes lives here,
 // is ticked over time (even while the game is closed) and is saved to localStorage.
 import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, heightAt, moistureAt } from './worldgen.js';
-import { clamp, lerp, mulberry32, hash2i } from './rng.js';
+import { clamp, lerp, mulberry32 } from './rng.js';
 
 export const SAVE_KEY = 'living_frontier_save_v1';
 export const DAY_LENGTH = 420;       // real seconds for a full day/night cycle

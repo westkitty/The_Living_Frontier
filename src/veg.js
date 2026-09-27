@@ -1,7 +1,7 @@
 // Procedural, instanced vegetation. Trees can be harvested, burned (they turn
 // to charred snags) and regrow - all driven by the persistent world state.
 import * as THREE from 'three';
-import { WORLD, treeDensityFrom, treeDensityAt, heightAt, moistureFrom, slopeAt } from './worldgen.js';
+import { WORLD, treeDensityFrom, heightAt, moistureFrom, slopeAt } from './worldgen.js';
 import { hash2i, clamp, lerp, mulberry32 } from './rng.js';
 import { shared } from './terrain.js';
 import { CH, regionIndex } from './worldstate.js';

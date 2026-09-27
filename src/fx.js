@@ -1,9 +1,8 @@
 // Sky, lighting, weather particles, fire, smoke, birds and small impact FX.
 import * as THREE from 'three';
-import { WORLD, heightAt } from './worldgen.js';
+import { heightAt } from './worldgen.js';
 import { clamp, lerp, smoothstep } from './rng.js';
 import { shared } from './terrain.js';
-import { fireToWorld } from './worldstate.js';
 
 const SKY_VERT = `
   varying vec3 vDir;

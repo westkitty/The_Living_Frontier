@@ -211,11 +211,13 @@ for manual testing:
 npm install
 npm run check      # arch + ui + shaders + smoke, in that order
 npm run arch       # module boundaries: no import cycles, no upward imports,
-                   #   the simulation core stays DOM-free, one entry point,
-                   #   no orphaned modules
+                   #   the simulation core stays DOM-free, no unused imports,
+                   #   no module using a name it never imported, one entry
+                   #   point, no orphaned modules
 npm run ui         # wiring & accessibility gate: dangling selectors, missing
                    # icons, duplicate ids, unnamed buttons, modal semantics,
-                   # live regions, unstyled classes, touch target sizes
+                   # live regions, unstyled classes, touch target sizes, and
+                   # that every control in the markup reaches a real handler
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
 npm run smoke      # boots the whole game in jsdom with a stub renderer
@@ -234,9 +236,13 @@ that a save which cannot be written reports failure after retrying with a
 slimmer payload, that the daily history matches the live simulation and stays
 bounded, that scrubbing the chart reports the selected day honestly and clamps
 at both ends, that the chart legend reports each line's true value and range
-and can isolate it, that the survey map's description matches what it draws and
-never names an unsurveyed place, that no two factions share a map silhouette, that footfalls change with the ground underfoot, and that
-preferences persist across sessions.
+and can isolate it, that the survey map's description matches what it draws
+and never names an unsurveyed place, that no two factions share a map
+silhouette, that the touch stick moves the player and releasing it stops them,
+that the touch look drag turns the camera and each on-screen action button
+feeds real input, that burn scars survive the save byte-for-byte, that
+footfalls change with the ground underfoot, and that preferences persist
+across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once

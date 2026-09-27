@@ -85,6 +85,63 @@ for (const f of HEADLESS) {
 }
 if (!problems.some(p => p.includes('headless'))) ok('the simulation core stays free of the DOM');
 
+// --- every imported name is actually used ----------------------------------
+// Stale imports are how a module quietly keeps a dependency it no longer has,
+// which makes the layer map above a lie.
+for (const f of files) {
+  const code = readFileSync(resolve(srcDir, f), 'utf8');
+  // remove import statements (single or multi-line) before looking for uses,
+  // but keep re-exports: `export { x } from ...` is itself a use.
+  const body = code.replace(/(^|\n)import\s[^;]*?;/g, '\n');
+  for (const m of code.matchAll(/(^|\n)import\s+\{([^}]*)\}\s+from\s+'([^']+)';/g)) {
+    for (const raw of m[2].split(',')) {
+      const name = raw.trim().split(/\s+as\s+/).pop().trim();
+      if (!name) continue;
+      const re = new RegExp(`(?<![A-Za-z0-9_$.])${name.replace('$', '\\$')}(?![A-Za-z0-9_$])`);
+      if (!re.test(body)) problems.push(`${f} imports ${name} from ${m[3]} but never uses it`);
+    }
+  }
+}
+if (!problems.some(p => p.includes('never uses it'))) ok('no unused imports');
+
+// --- no module uses a name another module exports without importing it -----
+// This is the shape of the bug that once crashed the bag panel: the code read
+// fine, the tests were green, and the first real click threw ReferenceError.
+const exportsOf = new Map();
+for (const f of files) {
+  const code = readFileSync(resolve(srcDir, f), 'utf8');
+  const names = new Set();
+  for (const m of code.matchAll(/export\s+(?:const|let|function|class)\s+([A-Za-z0-9_$]+)/g)) names.add(m[1]);
+  for (const m of code.matchAll(/export\s*\{([^}]*)\}/g)) {
+    for (const s of m[1].split(',')) { const n = s.trim().split(/\s+as\s+/).pop().trim(); if (n) names.add(n); }
+  }
+  exportsOf.set(f, names);
+}
+const owner = new Map();
+for (const [f, ns] of exportsOf) for (const n of ns) if (!owner.has(n)) owner.set(n, f);
+for (const f of files) {
+  const code = readFileSync(resolve(srcDir, f), 'utf8');
+  // template literals hold GLSL and HTML, which share words with our exports
+  const scan = code.replace(/`[\s\S]*?`/g, '``').replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
+  const known = new Set();
+  for (const m of code.matchAll(/import\s+(?:\*\s+as\s+([A-Za-z0-9_$]+)|\{([^}]*)\}|([A-Za-z0-9_$]+))\s+from/g)) {
+    if (m[1]) known.add(m[1]);
+    if (m[3]) known.add(m[3]);
+    if (m[2]) for (const s of m[2].split(',')) { const n = s.trim().split(/\s+as\s+/).pop().trim(); if (n) known.add(n); }
+  }
+  for (const m of code.matchAll(/(?:^|\n)\s*(?:export\s+)?(?:const|let|var|function|class)\s+([A-Za-z0-9_$]+)/g)) known.add(m[1]);
+  for (const m of code.matchAll(/export\s*\{([^}]*)\}\s*from/g)) {
+    for (const s of m[1].split(',')) { const n = s.trim().split(/\s+as\s+/).pop().trim(); if (n) known.add(n); }
+  }
+  for (const [name, from] of owner) {
+    if (from === f || known.has(name) || name === '$') continue;
+    const re = new RegExp(`(?<![A-Za-z0-9_$.'"\`])${name}(?![A-Za-z0-9_$])`);
+    if (re.test(scan)) problems.push(`${f} uses ${name} (exported by ${from}) without importing it`);
+  }
+}
+if (!problems.some(p => p.includes('without importing'))) ok('no module leans on an import it never declared');
+
 // --- one entry point --------------------------------------------------------
 const importers = new Map();
 for (const [f, deps] of graph) for (const d of deps) importers.set(d, (importers.get(d) || 0) + 1);

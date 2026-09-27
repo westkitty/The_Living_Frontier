@@ -1,8 +1,8 @@
 // THE LIVING FRONTIER - entry point.
 import * as THREE from 'three';
-import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, CAMPS, heightAt, settlementGroundY, caveFloor, placeOnLand } from './worldgen.js';
-import { clamp, lerp } from './rng.js';
-import { WorldState, CH, regionIndex, SAVE_KEY, DAY_LENGTH } from './worldstate.js';
+import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, CAMPS, heightAt, caveFloor, placeOnLand } from './worldgen.js';
+import { clamp } from './rng.js';
+import { WorldState, regionIndex, SAVE_KEY } from './worldstate.js';
 import { drawSurveyThumb } from './cartography.js';
 import { Settings } from './settings.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';

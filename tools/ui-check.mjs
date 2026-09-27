@@ -126,6 +126,35 @@ const smallTargets = [...css.matchAll(/(\.[a-z-]+)\{[^}]*?(?:width|min-width):\s
 if (smallTargets.length) warn.push('possibly small touch targets: ' + smallTargets.map(m => m[1]).join(', '));
 else ok('interactive controls are finger-sized');
 
+// ------------------------------------------------ no decorative controls
+// The brief forbids fake buttons: every control in the markup must have a
+// real path to a handler — its own id, a data attribute the code reads, or a
+// class the code actually attaches listeners to.
+{
+  const buttons = [...html.matchAll(/<button\b([^>]*)>/g)].map(m => m[1]);
+  const code = Object.values(src).join('\n');
+  const dead = [];
+  for (const attrs of buttons) {
+    const id = (attrs.match(/id="([^"]+)"/) || [])[1];
+    const cls = (attrs.match(/class="([^"]+)"/) || [])[1] || '';
+    const data = [...attrs.matchAll(/data-([a-z-]+)=/g)].map(m => m[1]);
+    let wired = false;
+    if (id && new RegExp(`['"#]${id}['"]`).test(code)) wired = true;
+    for (const d of data) {
+      const camel = d.replace(/-(.)/g, (m, c) => c.toUpperCase());
+      if (new RegExp(`dataset\\.${camel}|\\[data-${d}`).test(code)) wired = true;
+    }
+    // a class only counts when the code selects on it, not merely styles it
+    for (const c of cls.split(/\s+/)) {
+      if (!c) continue;
+      if (new RegExp(`(querySelectorAll|querySelector|closest|matches)\\((?:'|\`)[^'\`]*\\.${c}\\b`).test(code)) wired = true;
+    }
+    if (!wired) dead.push(id || cls || attrs.trim().slice(0, 60));
+  }
+  if (dead.length) problems.push('controls with no handler (fake buttons): ' + dead.join(', '));
+  else ok(`all ${buttons.length} controls are wired to real behaviour`);
+}
+
 // ---------------------------------------------------------------- report
 console.log('');
 for (const w of warn) console.log('  ⚠', w);

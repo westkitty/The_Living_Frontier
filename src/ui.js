@@ -1,9 +1,8 @@
 // HUD, maps, panels, touch controls, dialogue and toasts.
-import { WORLD, LANDMARKS, FACTIONS, heightAt, moistureAt, biomeAt, BIOME } from './worldgen.js';
-import { clamp, lerp } from './rng.js';
+import { WORLD, LANDMARKS, FACTIONS } from './worldgen.js';
+import { clamp } from './rng.js';
 import { Cartographer } from './cartography.js';
 import { Settings } from './settings.js';
-import { CH, regionIndex, regionCenter, DAY_LENGTH } from './worldstate.js';
 import { PanelsMixin } from './panels.js';
 import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
@@ -467,7 +466,7 @@ export class UI {
     // who you are speaking for, shown as heraldry and said in words
     if (faction !== undefined && FACTIONS[faction]) {
       const f = FACTIONS[faction];
-      nameEl.insertAdjacentHTML('afterbegin', crest(faction, f.name, f.accent, `Under the ${f.name} banner. `));
+      nameEl.insertAdjacentHTML('afterbegin', crest(faction, f.name, f.accent, `Under the banner of ${f.name}. `));
       nameEl.style.color = f.accent;
     } else {
       nameEl.style.color = '';

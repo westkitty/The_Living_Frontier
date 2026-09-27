@@ -1,8 +1,8 @@
 // Streaming terrain chunks with LOD + the shared "ground memory" texture
 // (burn scars, trails, lushness, development) that every surface samples.
 import * as THREE from 'three';
-import { WORLD, heightAt, moistureAt, BIOME, biomeAt } from './worldgen.js';
-import { clamp, lerp, fbm2, valueNoise2 } from './rng.js';
+import { WORLD, heightAt } from './worldgen.js';
+import { clamp, fbm2, valueNoise2 } from './rng.js';
 
 export const shared = {
   uTime: { value: 0 },

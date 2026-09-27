@@ -2,8 +2,8 @@
 // patrols that fight over territory. Populations come from the persistent
 // region simulation - killing things here changes the simulation there.
 import * as THREE from 'three';
-import { WORLD, SETTLEMENTS, FACTIONS, heightAt, settlementGroundY } from './worldgen.js';
-import { clamp, lerp, mulberry32, damp } from './rng.js';
+import { WORLD, FACTIONS, heightAt } from './worldgen.js';
+import { clamp, mulberry32, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { regionIndex, regionCenter, CH } from './worldstate.js';
 
