@@ -1,4 +1,5 @@
-// HUD, maps, panels, touch controls, dialogue and toasts.
+// Maps, panels, touch controls, dialogue and toasts. The per-frame heads-up
+// display lives in hud.js, mixed into this class below.
 import { WORLD, FACTIONS } from './worldgen.js';
 import { clamp } from './rng.js';
 import { Cartographer } from './cartography.js';
@@ -6,6 +7,7 @@ import { Settings } from './settings.js';
 import { PanelsMixin } from './panels.js';
 import { MapMixin } from './map-ui.js';
 import { RecordMixin } from './deeprecord.js';
+import { HudMixin } from './hud.js';
 import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export { icon, ITEM_ICONS } from './uikit.js';
@@ -427,182 +429,6 @@ export class UI {
 
   // ---------------------------------------------------------------- views
 
-  // ------------------------------------------------------------ hud tick
-  update(dt, player) {
-    const st = this.state;
-    const mins = Math.floor(st.time * 24 * 60);
-    const hh = String(Math.floor(mins / 60)).padStart(2, '0');
-    const mm = String(mins % 60).padStart(2, '0');
-    $('#time-label').textContent = `${hh}:${mm}`;
-    $('#day-label').textContent = 'Day ' + st.day;
-    const night = st.time < 0.22 || st.time > 0.8;
-    const wIcon = { clear: 'sun', cloudy: 'cloud', rain: 'rain', storm: 'storm', fogbank: 'fog', snow: 'snow' }[st.weather.type] || 'sun';
-    const wantIcon = night && st.weather.type === 'clear' ? 'moon' : wIcon;
-    if (this._wIcon !== wantIcon) {
-      this._wIcon = wantIcon;
-      const u = $('#weather-icon').querySelector('use');
-      if (u) u.setAttribute('href', '#i-' + wantIcon);
-    }
-    $('#weather-label').textContent = st.weather.type[0].toUpperCase() + st.weather.type.slice(1);
-
-    const risk = st.fireConditions().risk;
-    const riskEl = $('#fire-risk');
-    if (riskEl.dataset.risk !== risk) {
-      riskEl.dataset.risk = risk;
-      riskEl.textContent = risk;
-      riskEl.setAttribute('aria-label', `Fire risk: ${risk}`);
-    }
-
-    const hpF = clamp(player.hp / player.maxHp, 0, 1), stF = clamp(player.stamina / 100, 0, 1);
-    $('#hp-fill').style.transform = `scaleX(${hpF})`;
-    $('#st-fill').style.transform = `scaleX(${stF})`;
-    const hpN = Math.ceil(player.hp), stN = Math.ceil(player.stamina);
-    if (this._hpN !== hpN) {
-      this._hpN = hpN;
-      $('#hp-num').textContent = hpN;
-      $('#hp-bar').setAttribute('aria-valuenow', hpN);
-      $('#hp-bar').classList.toggle('low', hpF < 0.32);
-    }
-    if (this._stN !== stN) {
-      this._stN = stN;
-      $('#st-num').textContent = stN;
-      $('#st-bar').setAttribute('aria-valuenow', stN);
-      $('#st-bar').classList.toggle('low', stF < 0.25);
-    }
-
-    // compass
-    const strip = $('#compass-strip');
-    if (!this._compassBuilt) {
-      let h = '';
-      for (let i = 0; i < 48; i++) {
-        const deg = i * 15;
-        const label = deg % 90 === 0 ? ['N', 'E', 'S', 'W'][(deg / 90) % 4] : (deg % 45 === 0 ? '·' : '|');
-        h += `<i class="${deg % 90 === 0 ? 'card' : ''}" style="width:40px">${label}</i>`;
-      }
-      strip.innerHTML = h + h;
-      this._compassBuilt = true;
-    }
-    const heading = ((-player.camYaw + Math.PI) % 6.283 + 6.283) % 6.283;
-    const px = (heading / 6.283) * (48 * 40);
-    strip.style.transform = `translateX(${-px + $('#compass').clientWidth / 2}px)`;
-
-    this.updateCompassPips(player);
-
-    this.minimapT -= dt;
-    if (this.minimapT <= 0) { this.minimapT = 0.12; this.drawMinimap(player); }
-
-    // keep the map's text alternative describing the real surroundings
-    this._a11yT = (this._a11yT || 0) - dt;
-    if (this._a11yT <= 0) {
-      this._a11yT = 3;
-      const near = [];
-      for (const s of st.settlements) {
-        const d = Math.hypot(s.x - player.pos.x, s.z - player.pos.z);
-        if (d < 400) near.push(`${s.name} ${Math.round(d)} metres`);
-      }
-      const fires = st.burningList.length;
-      $('#minimap').setAttribute('aria-label',
-        `Local map. ${near.length ? 'Near: ' + near.join(', ') + '.' : 'No settlement within 400 metres.'}` +
-        (fires ? ` ${fires} fires burning.` : ''));
-    }
-
-    // quest tracker
-    if (!this._qhash || this._qhash !== this.questHash()) {
-      this._qhash = this.questHash();
-      const box = $('#quest-tracker');
-      box.innerHTML = '';
-      if (this.waypoint) {
-        const d = Math.round(Math.hypot(this.waypoint.x - player.pos.x, this.waypoint.z - player.pos.z));
-        const el = document.createElement('div');
-        el.className = 'qt way';
-        el.innerHTML = `<div class="qt-title">◈ ${this.waypoint.name || 'Waypoint'}</div><div class="qt-sub">${d > 999 ? (d / 1000).toFixed(1) + ' km' : d + ' m'}</div>`;
-        box.appendChild(el);
-      }
-      for (const q of st.quests.filter(q => !q.done).slice(0, 3)) {
-        const d = Math.round(Math.hypot(q.x - player.pos.x, q.z - player.pos.z));
-        const el = document.createElement('div');
-        el.className = 'qt';
-        el.innerHTML = `<div class="qt-title">${q.title}</div><div class="qt-sub">${q.need ? `${Math.min(q.progress, q.need)}/${q.need} · ` : ''}${d} m</div>`;
-        box.appendChild(el);
-      }
-    }
-    if (this.panelOpen === 'world' && (this._wsT = (this._wsT || 0) + dt) > 2) { this._wsT = 0; this.renderWorldState(); }
-  }
-  // Bearing in the same frame the compass strip uses (see updateCompassPips).
-  bearingTo(dx, dz) {
-    const yaw = Math.atan2(-dx, -dz);
-    return ((-yaw + Math.PI) % 6.283185 + 6.283185) % 6.283185;
-  }
-  // Pips ride the compass so the player can navigate by looking at the world
-  // instead of by opening a map.
-  updateCompassPips(player) {
-    const box = $('#compass-pips');
-    if (!box) return;
-    const targets = [];
-    if (this.waypoint) targets.push({ x: this.waypoint.x, z: this.waypoint.z, cls: 'way', label: this.waypoint.name || 'Waypoint' });
-    for (const q of this.state.quests) if (!q.done) targets.push({ x: q.x, z: q.z, cls: 'quest', label: q.title });
-    for (const s of this.state.settlements) {
-      if (s.abandoned) continue;
-      const d = Math.hypot(s.x - player.pos.x, s.z - player.pos.z);
-      if (d < 420) targets.push({ x: s.x, z: s.z, cls: 'place', label: s.name });
-    }
-    const key = targets.map(t => t.cls + t.x + t.z).join('|');
-    if (key !== this._pipKey) {
-      this._pipKey = key;
-      box.innerHTML = '';
-      this._pips = targets.map(t => {
-        const el = document.createElement('i');
-        el.className = 'pip ' + t.cls;
-        el.dataset.label = t.label;
-        box.appendChild(el);
-        return { el, t };
-      });
-    }
-    if (!this._pips) return;
-    const W = $('#compass').clientWidth || 260;
-    const heading = ((-player.camYaw + Math.PI) % 6.283185 + 6.283185) % 6.283185;
-    const pxPerRad = (48 * 40) / 6.283185;
-    for (const { el, t } of this._pips) {
-      const dx = t.x - player.pos.x, dz = t.z - player.pos.z;
-      let delta = this.bearingTo(dx, dz) - heading;
-      while (delta > Math.PI) delta -= 6.283185;
-      while (delta < -Math.PI) delta += 6.283185;
-      const x = W / 2 + delta * pxPerRad;
-      const dist = Math.round(Math.hypot(dx, dz));
-      if (x < -20 || x > W + 20) { el.style.display = 'none'; continue; }
-      el.style.display = '';
-      el.style.transform = `translateX(${x}px)`;
-      el.style.opacity = String(clamp(1 - Math.abs(delta) / 1.4, 0.35, 1));
-      el.dataset.dist = dist > 999 ? (dist / 1000).toFixed(1) + 'km' : dist + 'm';
-    }
-  }
-
-  questHash() {
-    const w = this.waypoint;
-    return this.state.quests.map(q => q.id + q.progress + q.done).join('|') +
-      (w ? `w${w.x},${w.z}` : '') + Math.round(this.world.player.pos.x / 25) + Math.round(this.world.player.pos.z / 25);
-  }
-
-  // The contextual prompt shows the real keys, and hides them on touch where
-  // the on-screen buttons are the controls.
-  setPrompt(text, key = 'E', alt = null, altKey = 'F') {
-    const p = $('#prompt');
-    if (!text) { p.classList.add('hidden'); this._prompt = null; return; }
-    const sig = text + '|' + (alt || '');
-    if (this._prompt !== sig) {
-      this._prompt = sig;
-      const touch = document.body.classList.contains('touch');
-      $('#prompt-text').textContent = text;
-      $('#prompt-key').textContent = touch ? '◉' : key;
-      const altBox = $('#prompt-alt');
-      if (alt) {
-        altBox.classList.remove('hidden');
-        $('#prompt-alt-key').textContent = touch ? '✦' : altKey;
-        $('#prompt-alt-text').textContent = alt;
-      } else altBox.classList.add('hidden');
-    }
-    p.classList.remove('hidden');
-  }
 }
 
-Object.assign(UI.prototype, PanelsMixin, RecordMixin, MapMixin);
+Object.assign(UI.prototype, HudMixin, PanelsMixin, RecordMixin, MapMixin);

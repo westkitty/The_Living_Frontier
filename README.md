@@ -255,17 +255,21 @@ src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs and pa
 src/map-ui.js       survey gestures and drawing, mixed onto UI
 src/settings.js     player preferences, stored apart from the world
 src/worldgen.js     heightfield, biomes, rivers, landmark & settlement siting
+src/grid.js         the four world grids and the arithmetic between them
+src/fire.js         ignition, fuel, downwind spread, rain extinction, scars
 src/worldstate.js   persistent simulation + fast-forward
 src/persistence.js  save/load, compression and recovery orchestration
 src/save-recovery.js section validation and conservative damaged-JSON recovery
 src/history.js      daily measurements and homecoming comparisons
 src/terrain.js      chunk streaming, LOD, ground-memory shader, water
+src/chunk-cache.js  deterministic chunk geometry and a bounded cache for it
 src/veg.js          instanced procedural vegetation, wind, harvest, regrowth
 src/structures.js   landmarks, villages, caves, camps, banners (merged meshes)
 src/entities.js     wildlife, villager routines, faction patrols and combat
 src/player.js       controller, spring camera, unified keyboard/touch input
 src/fx.js           sky, lights, weather, fire, smoke, sparks, birds
-src/ui.js           HUD, minimap, world map, panel shell, dialogue, touch stick
+src/hud.js          the per-frame heads-up display, mixed onto UI
+src/ui.js           minimap, world map, panel shell, dialogue, touch stick
 src/panels.js       bag, chronicle, world screen and the readable history chart
 src/uikit.js        the shared icon helper and inventory icon table
 src/audio.js        fully procedural WebAudio: state-driven beds and effects
@@ -305,7 +309,7 @@ npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection
-npm run perf       # scene budget, FX/fire/recovery probes and adaptive-quality regressions
+npm run perf       # scene budget, FX/fire/recovery/HUD probes and adaptive-quality regressions
 ```
 
 `npm run smoke` asserts behaviour, not just absence of crashes: that forward
@@ -352,8 +356,8 @@ fails. A ceiling cannot be raised relative to the preceding commit to bypass the
 gate. See [verification notes](tools/VERIFICATION.md) for deliberate failure tests
 and historical refinement data. [Current performance notes](tools/PERFORMANCE.md)
 record paired before/after scorecards, methodology and limitations, and link the
-[fire](tools/fire-perf-probe.mjs) and [recovery](tools/recovery-perf-probe.mjs)
-probes.
+[fire](tools/fire-perf-probe.mjs), [recovery](tools/recovery-perf-probe.mjs) and
+[HUD](tools/hud-perf-probe.mjs) probes.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once

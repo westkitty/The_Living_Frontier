@@ -10,7 +10,7 @@
     "shaders": "node tools/shader-check.mjs",
     "ui": "node tools/ui-check.mjs",
     "visual": "node tools/visual-qa.mjs",
-    "perf": "node tools/perf-probe.mjs && node tools/fx-perf-probe.mjs --assert && node tools/fire-perf-probe.mjs --assert && node tools/recovery-perf-probe.mjs --assert && node tools/performance-test.mjs",
+    "perf": "node tools/perf-probe.mjs && node tools/fx-perf-probe.mjs --assert && node tools/fire-perf-probe.mjs --assert && node tools/recovery-perf-probe.mjs --assert && node tools/hud-perf-probe.mjs --assert && node tools/performance-test.mjs",
     "check": "npm run arch && npm run ui && npm run shaders && npm run visit && npm run smoke",
     "arch": "node tools/arch-check.mjs",
     "visit": "node tools/visit-test.mjs"

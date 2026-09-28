@@ -91,9 +91,11 @@ else ok('no import cycles');
 // place this ordering is written down, so keep them honest.
 const LAYER = {
   'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
-  'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'world-recovery.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
-  'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'fx-particles.js': 3, 'audio.js': 3,
-  'guidance.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'ui.js': 5,
+  'grid.js': 1,
+  'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'world-recovery.js': 2, 'fire.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
+  'chunk-cache.js': 3, 'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'fx-particles.js': 3, 'audio.js': 3,
+  'guidance.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'hud.js': 5,
+  'ui.js': 5,
   'loop.js': 6, 'streaming.js': 6, 'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };
@@ -111,7 +113,7 @@ if (!problems.some(p => p.includes('upward'))) ok('every import points down the 
 // --- the simulation stays headless -----------------------------------------
 // worldstate/worldgen/rng must run with no DOM at all: that is what makes the
 // headless smoke test, the offline fast-forward and the save format testable.
-const HEADLESS = ['history.js', 'persistence.js', 'save-recovery.js', 'rng.js', 'worldgen.js', 'world-recovery.js', 'worldstate.js', 'chronology.js'];
+const HEADLESS = ['history.js', 'persistence.js', 'save-recovery.js', 'rng.js', 'worldgen.js', 'grid.js', 'world-recovery.js', 'fire.js', 'worldstate.js', 'chronology.js'];
 for (const f of HEADLESS) {
   for (const d of graph.get(f) || []) {
     if (!HEADLESS.includes(d)) problems.push(`${f} must stay headless but imports ${d}`);
@@ -160,8 +162,12 @@ const owner = new Map();
 for (const [f, ns] of exportsOf) for (const n of ns) if (!owner.has(n)) owner.set(n, f);
 for (const f of files) {
   const code = readFileSync(resolve(srcDir, f), 'utf8');
-  // template literals hold GLSL and HTML, which share words with our exports
+  // template literals hold GLSL and HTML, and quoted strings hold CSS
+  // selectors; both share words with our exports ('#weather-icon' reads as the
+  // `icon` export). No identifier can be *used* from inside a string, so
+  // blanking all three makes the scan precise instead of merely suspicious.
   const scan = code.replace(/`[\s\S]*?`/g, '``').replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''").replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
     .split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
   const known = new Set();
   for (const m of code.matchAll(/import\s+(?:\*\s+as\s+([A-Za-z0-9_$]+)|\{([^}]*)\}|([A-Za-z0-9_$]+))\s+from/g)) {

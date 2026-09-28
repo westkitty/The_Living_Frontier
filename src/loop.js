@@ -93,19 +93,18 @@ export const LoopMixin = {
     this.updateGroundMemory(dtRaw);
 
     // Audio ambience
-    const w = st.weather;
+    const w = st.weather, night = st.time < 0.22 || st.time > 0.8;
     this.audio.ambience({
       wind: w.windSpeed,
       rain: (w.type === 'rain' || w.type === 'storm') ? w.intensity : 0,
       fire: clamp(st.burningCount() * 0.25, 0, 1) * (1 - clamp(Math.abs(this.nearestFireDist() / 90), 0, 1)),
       water: this.waterNearness(),
       hearth: this.hearthNearness(),
-      night: st.time < 0.22 || st.time > 0.8,
+      night,
     });
     this.ambienceTimer = (this.ambienceTimer || 0) - dtRaw;
     if (this.ambienceTimer <= 0) {
       this.ambienceTimer = 3 + Math.random() * 7;
-      const night = st.time < 0.22 || st.time > 0.8;
       if (!night && Math.random() < 0.6 && w.intensity < 0.5) this.audio.play('bird');
       else if (night && Math.random() < 0.4) this.audio.play(Math.random() < 0.6 ? 'owl' : 'wolfhowl');
     }
@@ -177,11 +176,12 @@ export const LoopMixin = {
   },
 
   nearestFireDist() {
-    let bd = 1e9;
+    // Squared distance and one root at the end: this walks every burning cell each frame for the audio bed.
+    const p = this.player.pos; let bd = Infinity;
     for (const c of this.state.burningList) {
-      const d = Math.hypot(c.x - this.player.pos.x, c.z - this.player.pos.z);
-      if (d < bd) bd = d;
+      const dx = c.x - p.x, dz = c.z - p.z, d2 = dx * dx + dz * dz;
+      if (d2 < bd) bd = d2;
     }
-    return bd === 1e9 ? 999 : bd;
+    return bd === Infinity ? 999 : Math.sqrt(bd);
   },
 };

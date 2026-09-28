@@ -68,8 +68,7 @@ export const StreamingMixin = {
     let banner = null;
     if (!s.abandoned) {
       banner = makeBanner(FACTIONS[s.banner].color);
-      banner.position.set(s.x + 4, baseY + heightAt(s.x + 4, s.z + 4) - baseY, s.z + 4);
-      banner.position.y = heightAt(s.x + 4, s.z + 4);
+      banner.position.set(s.x + 4, heightAt(s.x + 4, s.z + 4), s.z + 4);
       this.scene.add(banner);
       this.banners.push(banner);
     }

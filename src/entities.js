@@ -274,8 +274,11 @@ export class ActorSystem {
       const distToPlayer = a.pos.distanceTo(p);
 
       if (def.pred) {
-        const carcass = this.corpses.filter(c => c.pos.distanceTo(a.pos) < c.scentRadius)
-          .sort((b, c) => b.pos.distanceToSquared(a.pos) - c.pos.distanceToSquared(a.pos))[0];
+        // Nearest carcass inside scent range, in one pass: filter()+sort() built
+        // two arrays and a comparator per predator per frame to pick one winner.
+        // Ties keep the earlier corpse, exactly as the stable sort did.
+        let carcass = null, cd = Infinity;
+        for (const c of this.corpses) { const d = c.pos.distanceToSquared(a.pos); if (d < c.scentRadius * c.scentRadius && d < cd) { cd = d; carcass = c; } }
         if (carcass) {
           a.state = 'feed';
           const d = a.pos.distanceTo(carcass.pos);
@@ -541,28 +544,20 @@ export class ActorSystem {
     if (a.deadTime > 30) this.remove(a, list);
   }
 
+  // findTarget() calls this every frame over every actor of every kind, so it
+  // runs one pass per list and refills a single reusable result instead of
+  // allocating a fresh {type, actor} on each improvement. Callers read the
+  // result within the frame they are given; nothing retains it.
   nearestInteractable(pos, radius = 3.4) {
-    let best = null, bd = radius * radius;
-    for (const a of this.corpses) {
-      const d = a.pos.distanceToSquared(pos);
-      if (d < bd) { bd = d; best = { type: 'carcass', actor: a }; }
-    }
-    for (const a of this.animals) {
-      if (!a.alive) continue;
-      const d = a.pos.distanceToSquared(pos);
-      if (d < bd) { bd = d; best = { type: 'animal', actor: a }; }
-    }
-    for (const a of this.npcs) {
-      if (!a.alive) continue;
-      const d = a.pos.distanceToSquared(pos);
-      if (d < bd) { bd = d; best = { type: 'npc', actor: a }; }
-    }
-    for (const a of this.soldiers) {
-      if (!a.alive) continue;
-      const d = a.pos.distanceToSquared(pos);
-      if (d < bd) { bd = d; best = { type: 'soldier', actor: a }; }
-    }
-    return best;
+    let best = null, kind = null, bd = radius * radius;
+    for (const a of this.corpses) { const d = a.pos.distanceToSquared(pos); if (d < bd) { bd = d; best = a; kind = 'carcass'; } }
+    for (const a of this.animals) { if (!a.alive) continue; const d = a.pos.distanceToSquared(pos); if (d < bd) { bd = d; best = a; kind = 'animal'; } }
+    for (const a of this.npcs) { if (!a.alive) continue; const d = a.pos.distanceToSquared(pos); if (d < bd) { bd = d; best = a; kind = 'npc'; } }
+    for (const a of this.soldiers) { if (!a.alive) continue; const d = a.pos.distanceToSquared(pos); if (d < bd) { bd = d; best = a; kind = 'soldier'; } }
+    if (!best) return null;
+    const hit = this._hit || (this._hit = { type: null, actor: null });
+    hit.type = kind; hit.actor = best;
+    return hit;
   }
 }
 

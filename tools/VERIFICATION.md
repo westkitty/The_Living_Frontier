@@ -23,6 +23,25 @@ was added because the original checkout had no such script.
 | B9 | Disable recovery: truncated-diary assertion fails. Recovered ground, survey, regions, settlements and position are compared with originals; diary loss, raw quarantine, healthy load and unrecoverable fallback are checked. |
 | B10 | Append 200 filler lines to each of 28 source modules separately: every attempt fails architecture. Remove both game mixin applications: wiring gate fails. All mutations restored. |
 
+## Uplift-pass gates (same day, restored before committing)
+
+The performance uplift added four modules and one probe, and each gate change it
+needed was failure-tested rather than assumed:
+
+| Change | Mutation observed to fail |
+|---|---|
+| `arch-check.mjs` now blanks quoted strings as well as template literals when looking for a name a module never imported, because the selector `'#weather-icon'` read as the `icon` export. | Append `const p = () => icon("sun") + WORLD.size;` to `hud.js`: two `✗ … uses X without importing it` plus the line ratchet. The widened scan still catches real undeclared use; what it stopped reporting was a string literal. |
+| `ui-check.mjs` validates `hudEl('#id')` as well as `$('#id')`, so the HUD's selectors stayed covered after moving to `hud.js`. | Rename `#time-label` to `#time-label-typo` in `hud.js`: `✗ code queries elements that do not exist: #time-label-typo (hud.js)`. |
+| `module-lines.json` records a ceiling for `hud.js` (256) and lowers `ui.js` 608 → 434, `entities.js` 574 → 569, `fx.js` 398 → 395, `streaming.js` 183 → 182, `worldstate.js` 591 → 590; worst module `ui.js` 608 → `worldstate.js` 590. | Add two lines to `hud.js`: `✗ hud.js: 257 lines exceeds its ratchet 255`. Ceilings may only decrease relative to the preceding commit, so the tightened values cannot be quietly raised again. |
+| `hud-perf-probe.mjs --assert` requires identical DOM state, an identical effective-write count, ≤0.05 lookups/frame, ≤1 layout read per run, and redundant writes cut >4× — all of which are exact and repeatable. It deliberately does *not* assert on milliseconds: a tick costs ~10 µs, and at that scale the sandbox reorders the two columns between runs, so timing is printed as a diagnostic only. | Point the optimized slot at the reference implementation instead of `HudMixin`: `AssertionError: element lookups are still uncached (standing still): 11.06/frame`. The equality assertion also caught a real probe defect — a second stub document left the shipped element cache pointing at detached nodes, so the harness now retires the previous document the way a browser would. |
+
+The fire/grid extraction was additionally proven equivalent to a retained copy of
+the pre-refactor module across ten scenarios (see
+[PERFORMANCE.md](PERFORMANCE.md#fire-and-grid-extraction-srcgridjs-srcfirejs));
+that harness was a one-off and is not part of `npm run perf`. The anchors that
+are — `damp 1 cells, tinder 163 cells` and 704 → 704 burn scars — were unchanged
+by the rewrite.
+
 ## Measured behaviours
 
 - Autonomous actor fixture, twenty 420-second days: mean TRAIL **0.984** on

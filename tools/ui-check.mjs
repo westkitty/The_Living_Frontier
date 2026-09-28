@@ -50,7 +50,9 @@ else ok(`${jsIcons.size} runtime icon references resolve`);
 const dynamic = new Set(['#toasts', '#panel', '#menu', '#dialog', '#confirm']);
 const selectors = new Set();
 for (const [file, code] of Object.entries(src)) {
-  for (const m of code.matchAll(/\$\('#([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
+  // `$` is the plain lookup and `hudEl` the cached one in hud.js; both take a
+  // literal selector, so both are checked against the ids in index.html.
+  for (const m of code.matchAll(/(?:\$|hudEl)\('#([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
   for (const m of code.matchAll(/getElementById\('([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
   for (const m of code.matchAll(/querySelector\('#([A-Za-z0-9_-]+)'\)/g)) selectors.add(m[1] + '\u0000' + file);
 }

@@ -1,19 +1,23 @@
 {
   "worst": {
     "module": "worldstate.js",
-    "lines": 680
+    "lines": 590
   },
   "modules": {
     "audio.js": 137,
     "cartography.js": 537,
     "chronology.js": 193,
+    "chunk-cache.js": 182,
     "deeprecord.js": 423,
     "dialogue.js": 130,
-    "entities.js": 574,
-    "fx.js": 398,
+    "entities.js": 569,
+    "fire.js": 128,
     "fx-particles.js": 60,
+    "fx.js": 395,
+    "grid.js": 50,
     "guidance.js": 46,
     "history.js": 94,
+    "hud.js": 256,
     "interaction.js": 217,
     "loop.js": 187,
     "main.js": 268,
@@ -25,14 +29,14 @@
     "rng.js": 65,
     "save-recovery.js": 111,
     "settings.js": 64,
-    "streaming.js": 183,
+    "streaming.js": 182,
     "structures.js": 472,
-    "terrain.js": 261,
-    "ui.js": 608,
+    "terrain.js": 205,
+    "ui.js": 434,
     "uikit.js": 24,
     "veg.js": 460,
-    "worldgen.js": 321,
     "world-recovery.js": 52,
-    "worldstate.js": 680
+    "worldgen.js": 321,
+    "worldstate.js": 590
   }
 }

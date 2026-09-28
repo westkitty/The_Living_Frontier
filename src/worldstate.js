@@ -1,9 +1,12 @@
 // The persistent, simulated world. Everything the player changes lives here,
 // is ticked over time (even while the game is closed) and is saved to localStorage.
-import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, heightAt, moistureAt } from './worldgen.js';
+import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, treeDensityFrom,
+  moistureAt, moistureFrom, slopeAt, heightAt } from './worldgen.js';
 import { HistoryMixin, HomecomingMixin } from './history.js';
 import { PersistenceMixin, LoadMixin } from './persistence.js';
 import { recoverWorldState } from './world-recovery.js';
+import { igniteFire, fireConditionsAt, runFireTick } from './fire.js';
+import { CH, worldToState, regionIndex, regionCenter } from './grid.js';
 import { clamp, lerp, mulberry32 } from './rng.js';
 
 export { SAVE_KEY, rleDecode } from './persistence.js';
@@ -11,34 +14,35 @@ export const DAY_LENGTH = 420;       // real seconds for a full day/night cycle
 const R = WORLD.stateRes, FR = WORLD.fireRes, RR = WORLD.regionRes;
 const XR = WORLD.exploreRes;
 
+// The grid maths lives in grid.js so that subsystems lifted out of the world
+// state can map coordinates without importing it back. Re-exported here, which
+// is where every existing caller already finds it.
+export { CH, worldToState, worldToFire, fireToWorld, regionIndex, regionCenter } from './grid.js';
+
+// paintGround() stamps a disc of ground-memory bytes around a world point, and
+// fire calls it twice per burning cell four times a second. The disc's shape
+// depends only on its radius expressed in state cells, so the offsets and
+// weights are built once per radius instead of per cell. Weights stay Float64:
+// paintGround rounds to whole bytes, and a narrower type could shift a rounded
+// value and change what gets saved.
+const paintKernels = new Map();
+export function paintKernel(cells) {
+  let k = paintKernels.get(cells);
+  if (k) return k;
+  const di = [], dj = [], w = [];
+  for (let j = -cells; j <= cells; j++) {
+    for (let i = -cells; i <= cells; i++) {
+      const d = Math.hypot(i, j) / (cells + 0.0001);
+      if (d > 1) continue;
+      di.push(i); dj.push(j); w.push(1 - d * d);
+    }
+  }
+  k = { di: Int32Array.from(di), dj: Int32Array.from(dj), w: Float64Array.from(w) };
+  paintKernels.set(cells, k);
+  return k;
+}
+
 // ---------------------------------------------------------------------------
-export function worldToState(x, z) {
-  const i = clamp(Math.floor((x + WORLD.half) / WORLD.stateCell), 0, R - 1);
-  const j = clamp(Math.floor((z + WORLD.half) / WORLD.stateCell), 0, R - 1);
-  return j * R + i;
-}
-export function worldToFire(x, z) {
-  const i = clamp(Math.floor((x + WORLD.half) / WORLD.fireCell), 0, FR - 1);
-  const j = clamp(Math.floor((z + WORLD.half) / WORLD.fireCell), 0, FR - 1);
-  return j * FR + i;
-}
-export function fireToWorld(idx) {
-  const i = idx % FR, j = (idx / FR) | 0;
-  return [(i + 0.5) * WORLD.fireCell - WORLD.half, (j + 0.5) * WORLD.fireCell - WORLD.half];
-}
-export function regionIndex(x, z) {
-  const i = clamp(Math.floor((x + WORLD.half) / WORLD.regionCell), 0, RR - 1);
-  const j = clamp(Math.floor((z + WORLD.half) / WORLD.regionCell), 0, RR - 1);
-  return j * RR + i;
-}
-export function regionCenter(idx) {
-  const i = idx % RR, j = (idx / RR) | 0;
-  return [(i + 0.5) * WORLD.regionCell - WORLD.half, (j + 0.5) * WORLD.regionCell - WORLD.half];
-}
-
-// Ground channels
-export const CH = { BURN: 0, TRAIL: 1, LUSH: 2, DEV: 3 };
-
 export class WorldState {
   constructor(seed = WORLD.seed) {
     this.seed = seed;
@@ -60,6 +64,12 @@ export class WorldState {
     this.burnTimer = new Float32Array(FR * FR);
 
     this.burningList = [];
+    // How many fire cells are alight. tickFire scans the whole 96x96 grid, so
+    // this lets it return immediately on the overwhelmingly common tick where
+    // nothing is burning. Maintained by ignite() and tickFire() only; `burning`
+    // is never restored from a save, so it cannot drift out of step on load.
+    this._burnCount = 0;
+    this._spread = [];
     this.weather = { type: 'clear', intensity: 0, target: 0, next: 90, windDir: 0.7, windSpeed: 0.45 };
 
     this.regions = [];
@@ -90,8 +100,14 @@ export class WorldState {
     for (let j = 0; j < FR; j++) {
       for (let i = 0; i < FR; i++) {
         const idx = j * FR + i, x = (i + 0.5) * WORLD.fireCell - WORLD.half, z = (j + 0.5) * WORLD.fireCell - WORLD.half;
-        this.fuelDensity[idx] = treeDensityAt(x, z);
-        this.fuel[idx] = Math.round(clamp(this.fuelDensity[idx] * 1.1 + moistureAt(x, z) * 0.25, 0, 1) * 255);
+        // treeDensityAt() and moistureAt() would each re-derive heightAt() and
+        // moistureFrom() for the same point. Both are pure, so sample once, over
+        // 9,216 cells on the blocking path before the title screen is ready.
+        // The height guard is treeDensityAt's own: outside it the density is 0,
+        // and skipping slopeAt() there also skips its four height samples.
+        const h = heightAt(x, z), m = moistureFrom(h, x, z);
+        this.fuelDensity[idx] = (h < 1.2 || h > 128) ? 0 : treeDensityFrom(h, m, slopeAt(x, z), x, z);
+        this.fuel[idx] = Math.round(clamp(this.fuelDensity[idx] * 1.1 + m * 0.25, 0, 1) * 255);
       }
     }
     // Regions: ecology + faction ownership
@@ -163,17 +179,14 @@ export class WorldState {
     const cells = Math.max(0, Math.round(radius / WORLD.stateCell));
     const ci = clamp(Math.floor((x + WORLD.half) / WORLD.stateCell), 0, R - 1);
     const cj = clamp(Math.floor((z + WORLD.half) / WORLD.stateCell), 0, R - 1);
-    for (let j = -cells; j <= cells; j++) {
-      for (let i = -cells; i <= cells; i++) {
-        const ii = ci + i, jj = cj + j;
-        if (ii < 0 || jj < 0 || ii >= R || jj >= R) continue;
-        const d = Math.hypot(i, j) / (cells + 0.0001);
-        if (d > 1) continue;
-        const k = (jj * R + ii) * 4 + ch;
-        const falloff = 1 - d * d;
-        const v = clamp(this.ground[k] / 255 + amt * falloff, 0, 1);
-        this.ground[k] = Math.round(v * 255);
-      }
+    const k = paintKernel(cells);
+    const { di, dj, w } = k;
+    for (let n = 0; n < di.length; n++) {
+      const ii = ci + di[n], jj = cj + dj[n];
+      if (ii < 0 || jj < 0 || ii >= R || jj >= R) continue;
+      const k2 = (jj * R + ii) * 4 + ch;
+      const v = clamp(this.ground[k2] / 255 + amt * w[n], 0, 1);
+      this.ground[k2] = Math.round(v * 255);
     }
     this.groundDirty = true; this.groundStamp++;
   }
@@ -215,83 +228,15 @@ export class WorldState {
   }
 
   // ------------------------------------------------------------------- fire
-  ignite(x, z, strength = 1) {
-    const idx = worldToFire(x, z);
-    if (this.fuel[idx] < 12) return false;
-    this.burning[idx] = Math.max(this.burning[idx], strength);
-    this.player.stats.fires++;
-    this.fireActive = true;
-    return true;
-  }
+  // The fire model lives in fire.js; these are the state's own three doors
+  // into it, so every existing caller (interaction, HUD, probes, tests) keeps
+  // the same surface.
+  ignite(x, z, strength = 1) { return igniteFire(this, x, z, strength); }
   burningCount() { return this.burningList.length; }
 
-  fireConditions() {
-    const w = this.weather;
-    const rain = w.type === 'rain' || w.type === 'storm' ? 1 : w.type === 'snow' ? 0.8 : 0;
-    const wetness = Math.max(rain, clamp(w.groundWetness || 0, 0, 1));
-    const wind = Math.max(0, w.windSpeed) / 0.45;
-    // The displayed risk is the maximum directional spread multiplier, not a second model.
-    const multiplier = along => (0.45 + wind * (along * 0.5 + 0.5)) * (1 - wetness);
-    const risk = wetness >= 0.5 ? 'damp' : multiplier(1) >= 1.15 ? 'tinder' : 'dry';
-    return { wetness, multiplier, risk };
-  }
+  fireConditions() { return fireConditionsAt(this); }
 
-  tickFire(dt) {
-    const w = this.weather;
-    const { wetness, multiplier } = this.fireConditions();
-    const wx = Math.cos(w.windDir), wz = Math.sin(w.windDir);
-    let any = false;
-    const spread = [];
-    const list = [];
-    for (let j = 0; j < FR; j++) {
-      for (let i = 0; i < FR; i++) {
-        const idx = j * FR + i;
-        let b = this.burning[idx];
-        if (b <= 0.02) continue;
-        any = true;
-        const fuel = this.fuel[idx] / 255;
-        // consume fuel, scar the ground
-        const consume = dt * 0.055 * (0.4 + b);
-        this.fuel[idx] = Math.max(0, this.fuel[idx] - consume * 255);
-        const [wxp, wzp] = fireToWorld(idx);
-        list.push({ x: wxp, z: wzp, v: b, idx });
-        this.paintGround(wxp, wzp, CH.BURN, dt * 0.35, WORLD.fireCell * 0.7);
-        this.paintGround(wxp, wzp, CH.LUSH, -dt * 0.5, WORLD.fireCell * 0.7);
-        const reg = this.regions[regionIndex(wxp, wzp)];
-        reg.trees = Math.max(0, reg.trees - dt * 0.004);
-        // Trees here are burning, so whatever is scattered in this chunk is
-        // now wrong. Mark it for re-scatter: the renderer drains this set, so
-        // the charred snags appear whether or not the player watched it burn,
-        // and a fire crossing a chunk seam marks both sides.
-        this.markVegDirty(wxp, wzp);
-        reg.prey = Math.max(0, reg.prey - dt * 0.03);
-        reg.pred = Math.max(0, reg.pred - dt * 0.006);
-        // decay
-        b -= dt * (0.030 + wetness * 0.40) + (fuel < 0.05 ? dt * 0.45 : 0);
-        this.burning[idx] = Math.max(0, b);
-        if (b > 0.25 && wetness < 0.5) {
-          for (let d = 0; d < 4; d++) {
-            const dx = d === 0 ? 1 : d === 1 ? -1 : 0;
-            const dz = d === 2 ? 1 : d === 3 ? -1 : 0;
-            const ni = i + dx, nj = j + dz;
-            if (ni < 0 || nj < 0 || ni >= FR || nj >= FR) continue;
-            const nidx = nj * FR + ni;
-            if (this.burning[nidx] > 0.1 || this.fuel[nidx] < 40) continue;
-            const along = clamp(dx * wx + dz * wz, -1, 1);
-            const chance = dt * (0.008 + 0.055 * (this.fuel[nidx] / 255)) * multiplier(along);
-            if (Math.random() < chance) spread.push(nidx);
-          }
-        }
-      }
-    }
-    for (const idx of spread) {
-      this.burning[idx] = 0.55;
-      const [sx, sz] = fireToWorld(idx);
-      list.push({ x: sx, z: sz, v: 0.55, idx });
-    }
-    this.burningList = list;
-    this.fireActive = any || spread.length > 0;
-  }
+  tickFire(dt) { runFireTick(this, dt); }
 
   // -------------------------------------------------------------- ecosystem
   tickEcology(dt) {
@@ -543,14 +488,17 @@ export class WorldState {
     // never loaded, and the re-scatter silently does nothing.
     const i = Math.floor(x / WORLD.chunk);
     const j = Math.floor(z / WORLD.chunk);
-    const key = i + ',' + j;
     // A fire re-marks the same chunk on every tick. Re-scattering a chunk is
     // real work, so hold each one to roughly one refresh per burning second:
     // the snags still appear while you watch, without rebuilding the same
-    // trees sixty times a second.
+    // trees sixty times a second. The throttle is keyed numerically so a
+    // burning cell does not build a chunk-key string on every tick; the string
+    // the renderer needs is only built when the chunk is actually marked.
+    const nk = (i + 512) * 1024 + (j + 512);
     this._vegMarked = this._vegMarked || new Map();
-    if ((this._vegMarked.get(key) || -1e9) > this.elapsed - 1.0) return;
-    this._vegMarked.set(key, this.elapsed);
+    if ((this._vegMarked.get(nk) || -1e9) > this.elapsed - 1.0) return;
+    this._vegMarked.set(nk, this.elapsed);
+    const key = i + ',' + j;
     this.vegDirty = true;
     this.vegDirtyKeys = this.vegDirtyKeys || new Set();
     this.vegDirtyKeys.add(key);
