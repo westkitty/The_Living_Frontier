@@ -6,6 +6,7 @@ import { Settings } from './settings.js';
 import { PanelsMixin } from './panels.js';
 import { MapMixin } from './map-ui.js';
 import { RecordMixin } from './deeprecord.js';
+import { EvidenceMixin } from './evidence.js';
 import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export { icon, ITEM_ICONS } from './uikit.js';
@@ -28,6 +29,7 @@ export class UI {
       set: (v) => { this.state.player.waypoint = v; },
     });
     this.bind();
+    $('#db-read').addEventListener('click', () => this.readEvidence());
   }
 
   bind() {
@@ -418,12 +420,6 @@ export class UI {
     f.style.opacity = '0.85';
     setTimeout(() => { f.style.opacity = '0'; }, 90);
   }
-  discovery(title) {
-    const b = $('#discovery-banner');
-    b.querySelector('.db-title').textContent = title;
-    b.classList.add('show');
-    setTimeout(() => b.classList.remove('show'), 3200);
-  }
 
   // ---------------------------------------------------------------- views
 
@@ -605,4 +601,4 @@ export class UI {
   }
 }
 
-Object.assign(UI.prototype, PanelsMixin, RecordMixin, MapMixin);
+Object.assign(UI.prototype, PanelsMixin, RecordMixin, MapMixin, EvidenceMixin);

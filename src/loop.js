@@ -1,6 +1,8 @@
 // Frame scheduling, discovery and ambient state. Mixed onto Game.prototype.
 import { WORLD, LANDMARKS, heightAt } from './worldgen.js';
 import { clamp } from './rng.js';
+import { updateAmbientAudio } from './ambient.js';
+import { simulationDelta, sampleFrameCost, nextQuality } from './frame-budget.js';
 
 export const LoopMixin = {
   // ----------------------------------------------------------- discoveries
@@ -17,7 +19,7 @@ export const LoopMixin = {
       if (st.discovered[L.id]) continue;
       if (Math.hypot(L.x - p.x, L.z - p.z) < L.r * 0.62) {
         st.discovered[L.id] = st.day;
-        this.ui.discovery(L.name);
+        this.ui.discovery(L.name, L);
         this.audio.play('discover');
         st.note(`Discovered ${L.name}.`, 'discovery');
         st.player.inv.relic += 0;
@@ -62,7 +64,8 @@ export const LoopMixin = {
   },
 
   frame() {
-    const dtRaw = Math.min(this.clock.getDelta(), 0.05);
+    const frameElapsed = this.clock.getDelta();
+    const dtRaw = simulationDelta(frameElapsed);
     const blocking = this.ui.blocking;
     // a few frames of slow-motion on a landed blow: the hit gets weight
     let impact = 1;
@@ -94,21 +97,14 @@ export const LoopMixin = {
 
     this.updateGroundMemory(dtRaw);
 
-    // Audio ambience
-    const w = st.weather;
-    this.audio.ambience({
-      wind: w.windSpeed,
-      rain: (w.type === 'rain' || w.type === 'storm') ? w.intensity : 0,
-      fire: clamp(st.burningCount() * 0.25, 0, 1) * (1 - clamp(Math.abs(this.nearestFireDist() / 90), 0, 1)),
-      water: this.waterNearness(),
-      hearth: this.hearthNearness(),
-      night: st.time < 0.22 || st.time > 0.8,
-    });
+    // Ambient values are smoothed over hundreds of milliseconds by WebAudio;
+    // sampling terrain and fire state every rendered frame does not improve it.
+    updateAmbientAudio(this, dtRaw);
     this.ambienceTimer = (this.ambienceTimer || 0) - dtRaw;
     if (this.ambienceTimer <= 0) {
       this.ambienceTimer = 3 + Math.random() * 7;
       const night = st.time < 0.22 || st.time > 0.8;
-      if (!night && Math.random() < 0.6 && w.intensity < 0.5) this.audio.play('bird');
+      if (!night && Math.random() < 0.6 && st.weather.intensity < 0.5) this.audio.play('bird');
       else if (night && Math.random() < 0.4) this.audio.play(Math.random() < 0.6 ? 'owl' : 'wolfhowl');
     }
 
@@ -139,13 +135,15 @@ export const LoopMixin = {
 
     this.renderer.render(this.scene, this.camera);
 
-    // adaptive quality
-    this.frameTimes.push(dtRaw);
-    if (this.frameTimes.length > 120) {
-      const avg = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
-      this.frameTimes.length = 0;
-      if (avg > 0.055 && this.quality === 'high') { this.cycleQuality(); this.ui.toast('Quality lowered for smoother play'); }
-      else if (avg > 0.07 && this.quality === 'medium') { this.cycleQuality(); }
+    // Quality observes real elapsed frame time; simulation dt remains capped.
+    const avgFrame = sampleFrameCost(this.frameTimes, frameElapsed);
+    if (avgFrame !== null) {
+      const before = this.quality;
+      const next = nextQuality(before, avgFrame);
+      if (next !== before) {
+        this.setQuality(next);
+        if (before === 'high') this.ui.toast('Quality lowered for smoother play');
+      }
     }
   },
 

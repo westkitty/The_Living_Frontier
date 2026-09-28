@@ -54,7 +54,7 @@ in their shaders, so consequences are visible in the world, not in a menu.
 
 **Day / night + weather** — a full sky shader with sun, dusk, stars, drifting
 cloud layers, and clear / cloudy / rain / storm / fog states that change fog
-distance, light colour, wind strength, precipitation particles and fire spread.
+distance, light colour, wind strength, GPU-animated precipitation and fire spread. Rain/snow particles keep a static position buffer; their fall, wind drift and wrap are evaluated per point instead of rewriting 2,200 points on the CPU every frame.
 
 **Ecology** — 144 regions each run a predator/prey model with carrying capacity
 tied to forest health. Live animals near the player are spawned in proportion to
@@ -219,6 +219,12 @@ Discovery replaces that control with the unsealed account. The living band's
 war ending measures banner changes recorded during your tenancy, not the
 territory factions already held when you arrived.
 
+A landmark discovery now arrives as a field reading rather than a disposable
+name card. Its fragment is drawn from that site's unsealed chronology; following
+it opens the same Long Record at the exact year, at a human reading scale. The
+Aqueduct's marks, for example, lead to the account of its cut from within. No
+second history is authored for the interface, and unread places remain sealed.
+
 At the closest reading, each hair in your own band is a day you wrote something
 on. At the widest, the readout does the arithmetic you were avoiding:
 
@@ -305,7 +311,7 @@ npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection
-npm run perf       # chunk streaming cost, draw calls and triangle counts
+npm run perf       # chunk streaming, FX uploads, ambient sampling, startup batches
 ```
 
 `npm run smoke` asserts behaviour, not just absence of crashes: that forward
@@ -350,7 +356,8 @@ The module-size ratchet records the largest module and individual ceilings.
 Lower ceilings when shrinking modules; adding 200 lines to **any** source module
 fails. A ceiling cannot be raised relative to the preceding commit to bypass the
 gate. See [verification notes](tools/VERIFICATION.md) for deliberate failure tests
-and the paired performance comparison.
+and the paired performance comparison, and the [current performance scorecard](tools/PERFORMANCE.md)
+for the 2026-09-28 baseline, changes, and remaining device-measurement limits.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once

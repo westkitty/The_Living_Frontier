@@ -64,8 +64,9 @@
   <div class="boot-bg"></div>
   <div class="boot-inner">
     <div class="title-mark">
-      <div class="title-sub">an open world that remembers</div>
+      <div class="title-sub"><span class="signal-dot"></span>Field observatory · unauthorized survey</div>
       <h1>THE LIVING<span>FRONTIER</span></h1>
+      <p class="threshold-copy">The valley was inhabited before its borders had names.<br>It will keep changing after you leave.</p>
     </div>
     <div class="save-card">
       <figure class="save-thumb-wrap hidden" id="save-thumb-wrap">
@@ -81,11 +82,10 @@
       <button id="btn-new" class="btn">New World</button>
     </div>
     <div class="boot-help">
-      <div><b>Move</b> WASD / left stick &nbsp;·&nbsp; <b>Look</b> drag or mouse &nbsp;·&nbsp; <b>Sprint</b> Shift &nbsp;·&nbsp; <b>Jump</b> Space</div>
-      <div><b>Act</b> E &nbsp;·&nbsp; <b>Strike / set alight</b> F &nbsp;·&nbsp; <b>Map</b> M &nbsp;·&nbsp; <b>Bag</b> I &nbsp;·&nbsp; <b>World</b> V &nbsp;·&nbsp; <b>Help</b> H</div>
-      <div class="boot-note">Your map begins blank. It is drawn by walking — and the high ground shows you more.</div>
+      <div><b>Move</b> WASD / left stick &nbsp;·&nbsp; <b>Look</b> drag or mouse &nbsp;·&nbsp; <b>Act</b> E &nbsp;·&nbsp; <b>Map</b> M</div>
+      <div class="boot-note">Survey from the ground. The record opens only where you have stood.</div>
     </div>
-    <div id="boot-status" class="boot-status">Shaping the frontier…</div>
+    <div id="boot-status" class="boot-status"><span class="status-rule"></span>Shaping the frontier<span class="status-rule"></span></div>
   </div>
 </div>
 
@@ -143,7 +143,12 @@
 
   <div id="damage-flash"></div>
   <div id="vignette"></div>
-  <div id="discovery-banner" role="status" aria-live="assertive"><div class="db-sub">Discovered</div><div class="db-title"></div></div>
+  <section id="discovery-banner" aria-live="polite" aria-atomic="true" aria-label="Field reading">
+    <div class="db-kicker"><span class="signal-dot"></span>Field reading · record unsealed</div>
+    <div class="db-title"></div>
+    <p class="db-fragment"></p>
+    <button class="db-read" id="db-read" type="button">Trace this evidence <span aria-hidden="true">↗</span></button>
+  </section>
 </div>
 
 <!-- ---------------------------------------------------------- PANELS ---- -->

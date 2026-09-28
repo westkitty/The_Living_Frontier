@@ -78,6 +78,14 @@ row-streaming cost for canopies; do not mistake a single ~55 ms reference from a
 different run for a hardware-invariant promise. Frame time on real GPU hardware
 has not been measured here.
 
+### Current performance pass
+
+The 2026-09-28 pass adds matched ambient-sampling, GPU-rain-buffer and staged
+startup probes to `npm run perf`; it retains the earlier idle-FX, geometry and
+streaming probes. See [PERFORMANCE.md](PERFORMANCE.md) for the measured baseline,
+tradeoffs, scorecards and GPU/mobile limitations. The rain PointsMaterial
+injection is now part of the GLSL parser gate.
+
 ## Visual and device limits
 
 `node tools/visual-qa.mjs` renders the production 2D code through @napi-rs/canvas.

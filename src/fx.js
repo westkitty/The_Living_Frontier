@@ -4,6 +4,7 @@ import { heightAt } from './worldgen.js';
 import { clamp, lerp, smoothstep } from './rng.js';
 import { shared } from './terrain.js';
 import { emitSmoke, updateSmokeParticles, updateSparkParticles } from './fx-particles.js';
+import { makeRain, updateRain } from './fx-rain.js';
 
 const SKY_VERT = `
   varying vec3 vDir;
@@ -104,21 +105,7 @@ export class FX {
 
   // -------------------------------------------------------------- weather
   initWeather() {
-    const N = 2200;
-    const pos = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 90;
-      pos[i * 3 + 1] = Math.random() * 46;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 90;
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    this.rainMat = new THREE.PointsMaterial({ color: 0xaac4d8, size: 0.26, transparent: true, opacity: 0.0, depthWrite: false, fog: true });
-    this.rain = new THREE.Points(g, this.rainMat);
-    this.rain.frustumCulled = false;
-    this.scene.add(this.rain);
-    this.rainVel = new Float32Array(N);
-    for (let i = 0; i < N; i++) this.rainVel[i] = 22 + Math.random() * 18;
+    this.rainSystem = makeRain(this.scene);
   }
 
   initClouds() {
@@ -292,30 +279,8 @@ export class FX {
     }
     this.clouds.instanceMatrix.needsUpdate = true;
 
-    // --- precipitation
-    const precip = (w.type === 'rain' || w.type === 'storm') ? w.intensity : 0;
-    const snow = w.type === 'snow' ? w.intensity : 0;
-    this.rainMat.opacity = clamp(precip * 0.55 + snow * 0.8, 0, 0.8);
-    this.rainMat.size = snow > 0 ? 0.6 : 0.3;
-    this.rainMat.color.setHex(snow > 0 ? 0xffffff : 0x9fb8cc);
-    if (this.rainMat.opacity > 0.01) {
-      this.rain.visible = true;
-      const arr = this.rain.geometry.attributes.position.array;
-      const wx = Math.cos(w.windDir) * w.windSpeed * 8;
-      const wz = Math.sin(w.windDir) * w.windSpeed * 8;
-      for (let i = 0; i < arr.length / 3; i++) {
-        arr[i * 3 + 1] -= this.rainVel[i] * dt * (snow > 0 ? 0.18 : 1);
-        arr[i * 3] += wx * dt * (snow > 0 ? 2 : 1);
-        arr[i * 3 + 2] += wz * dt * (snow > 0 ? 2 : 1);
-        if (arr[i * 3 + 1] < -6) {
-          arr[i * 3 + 1] = 42;
-          arr[i * 3] = (Math.random() - 0.5) * 90;
-          arr[i * 3 + 2] = (Math.random() - 0.5) * 90;
-        }
-      }
-      this.rain.geometry.attributes.position.needsUpdate = true;
-      this.rain.position.set(playerPos.x, playerPos.y, playerPos.z);
-    } else this.rain.visible = false;
+    // --- precipitation: immutable particle positions, animated by GPU uniforms
+    updateRain(this.rainSystem, w, dt, playerPos);
 
     // --- birds (ambient wildlife)
     const bt = shared.uTime.value;

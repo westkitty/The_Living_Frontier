@@ -680,6 +680,22 @@ game.ui.closeDialog();
   log('  closing gives the world back:', freed ? '✓' : '✗', '| the sheet fades out:', hidden ? '✓' : '✗');
   if (!freed) errors.push('closing the record does not resume the world');
   if (!hidden) errors.push('the record sheet stays on screen after closing');
+
+  // A field reading is the unsealed chronology, not a second authored account.
+  const aqueduct = (await import('../src/worldgen.js')).LANDMARKS.find(l => l.id === 'aqueduct');
+  st.discovered.aqueduct = true;
+  const aqueductEvent = chron.deepEvents(st).filter(e => e.landmark === aqueduct.id).sort((a, b) => b.at - a.at)[0];
+  game.ui.discovery(aqueduct.name, aqueduct);
+  const fragment = document.querySelector('#discovery-banner .db-fragment').textContent;
+  const trace = document.querySelector('#db-read');
+  const evidenceOk = fragment === aqueductEvent.after && !trace.hidden;
+  trace.click();
+  const traceOk = game.ui.recordOpen && game.ui.recordYear === aqueductEvent.at && game.ui.recordScale === 2;
+  log('  field evidence traces the discovered aqueduct to its year:', evidenceOk && traceOk ? '✓' : '✗');
+  if (!evidenceOk) errors.push('the field reading does not match unsealed canonical evidence');
+  if (!traceOk) errors.push('the evidence control does not focus its exact year in the Long Record');
+  game.ui.closeRecord();
+  delete st.discovered.aqueduct;
 }
 
 // ---- streaming does not leak ----------------------------------------------

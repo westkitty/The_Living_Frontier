@@ -2,6 +2,8 @@
 // resolves #include chunks, and parses the result to catch GLSL syntax errors
 // (we cannot run a GPU in this environment). Run with: npm run shaders
 import * as THREE from 'three';
+import { FX } from '../src/fx.js';
+import { WorldState } from '../src/worldstate.js';
 import { parser } from '@shaderfrog/glsl-parser';
 import { preprocess } from '@shaderfrog/glsl-parser/preprocessor/index.js';
 
@@ -107,6 +109,8 @@ const mod = await import('../src/terrain.js');
 const stubScene = { add() { } };
 const water = mod.makeWater(stubScene);
 capture(water.material, 'water');
+const rainFx = new FX(new THREE.Scene(), { setClearColor() {} }, new WorldState());
+capture(rainFx.rainSystem.material, 'rain (GPU particle drift)', 'points');
 
 console.log('\n GLSL syntax check\n');
 let ok = true;
@@ -115,8 +119,6 @@ for (const [label, v, f] of captured) ok = check(label, v, f) && ok;
 // sky shader (raw ShaderMaterial)
 const skyV = `varying vec3 vDir;
   void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`;
-const { FX } = await import('../src/fx.js');
-const skySrc = FX.toString();
 ok = check('sky (inline)', skyV, `
   varying vec3 vDir;
   uniform vec3 uTop, uMid, uBottom, uSunCol, uSunDir;

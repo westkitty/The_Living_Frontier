@@ -16,6 +16,7 @@ import { DialogueMixin } from './dialogue.js';
 import { LoopMixin } from './loop.js';
 import { StreamingMixin } from './streaming.js';
 import { QuestMixin } from './quests.js';
+import { prepareNearField } from './startup.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -218,11 +219,9 @@ async function boot() {
     game.ui.buildBaseMap(288);
     $('#boot-status').textContent = 'Growing the forests…';
     await new Promise(r => setTimeout(r, 20));
-    // pre-stream the chunks around the player before revealing the world
-    for (let i = 0; i < 60; i++) {
-      game.chunks.update(state.player.x, state.player.z, 4);
-      if (!game.chunks.queue.length) break;
-    }
+    // Prepare nearby ground in yielding batches. The frame streamer finishes
+    // the distant, fog-hidden ring after the first world frame is visible.
+    await prepareNearField(game, state, $('#boot-status'));
     game.player.updateCamera(0.2, game.camera, game.input);
     game.renderer.render(game.scene, game.camera);
 
