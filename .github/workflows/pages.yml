@@ -59,8 +59,12 @@ jobs:
         with:
           path: .
 
+  # The github-pages environment on this repository only accepts deployments
+  # from the default branch, so work branches stop after building and checking
+  # the artifact. Landing the branch on main publishes it.
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
