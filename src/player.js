@@ -1,97 +1,12 @@
 // Third-person player: movement over the heightfield, smooth spring camera,
 // unified keyboard/mouse + touch input, stamina, damage and animation.
 import * as THREE from 'three';
-import { WORLD, heightAt, normalAt } from './worldgen.js';
+import { WORLD, heightAt } from './worldgen.js';
 import { clamp, lerp, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { CH } from './worldstate.js';
-
-export class Input {
-  constructor(dom) {
-    this.keys = {};
-    this.move = new THREE.Vector2();       // -1..1
-    this.look = new THREE.Vector2();       // delta accumulated per frame
-    this.sprint = false;
-    this.jumpPressed = false;
-    this.interactPressed = false;
-    this.attackPressed = false;
-    this.touch = false;
-    this.dom = dom;
-    this.lookScale = 1;
-    this.sensitivity = 1;
-    this.invertY = false;
-    this._bind();
-  }
-  _bind() {
-    addEventListener('keydown', (e) => {
-      if (e.repeat) return;
-      this.keys[e.code] = true;
-      if (e.code === 'Space') { this.jumpPressed = true; e.preventDefault(); }
-      if (e.code === 'KeyE' || e.code === 'Enter') this.interactPressed = true;
-      if (e.code === 'KeyF') this.attackPressed = true;
-    });
-    addEventListener('keyup', (e) => { this.keys[e.code] = false; });
-    addEventListener('blur', () => { this.keys = {}; });
-
-    // Mouse look (drag or pointer lock)
-    const canvas = this.dom;
-    canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0) { this.dragging = true; this.lastX = e.clientX; this.lastY = e.clientY; }
-      if (e.button === 2) this.attackPressed = true;
-    });
-    addEventListener('mouseup', () => { this.dragging = false; });
-    addEventListener('mousemove', (e) => {
-      if (document.pointerLockElement === canvas) {
-        this.look.x += e.movementX * 0.0022;
-        this.look.y += e.movementY * 0.0022;
-      } else if (this.dragging) {
-        this.look.x += (e.clientX - this.lastX) * 0.004;
-        this.look.y += (e.clientY - this.lastY) * 0.004;
-        this.lastX = e.clientX; this.lastY = e.clientY;
-      }
-    });
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
-    canvas.addEventListener('wheel', (e) => { this.zoom = (this.zoom || 0) + Math.sign(e.deltaY) * 0.6; e.preventDefault(); }, { passive: false });
-
-    // Touch look on the right half of the screen
-    this.touches = new Map();
-    const startLook = (t) => { this.lookId = t.identifier; this.lastTX = t.clientX; this.lastTY = t.clientY; };
-    canvas.addEventListener('touchstart', (e) => {
-      this.touch = true;
-      for (const t of e.changedTouches) {
-        if (t.clientX > innerWidth * 0.38 && this.lookId === undefined) startLook(t);
-      }
-    }, { passive: true });
-    canvas.addEventListener('touchmove', (e) => {
-      for (const t of e.changedTouches) {
-        if (t.identifier === this.lookId) {
-          this.look.x += (t.clientX - this.lastTX) * 0.006;
-          this.look.y += (t.clientY - this.lastTY) * 0.006;
-          this.lastTX = t.clientX; this.lastTY = t.clientY;
-        }
-      }
-    }, { passive: true });
-    const endTouch = (e) => {
-      for (const t of e.changedTouches) if (t.identifier === this.lookId) this.lookId = undefined;
-    };
-    canvas.addEventListener('touchend', endTouch, { passive: true });
-    canvas.addEventListener('touchcancel', endTouch, { passive: true });
-  }
-  keyboardMove() {
-    const k = this.keys;
-    let x = 0, y = 0;
-    if (k.KeyW || k.ArrowUp) y += 1;
-    if (k.KeyS || k.ArrowDown) y -= 1;
-    if (k.KeyA || k.ArrowLeft) x -= 1;
-    if (k.KeyD || k.ArrowRight) x += 1;
-    return [x, y, !!(k.ShiftLeft || k.ShiftRight)];
-  }
-  consume() {
-    const r = { jump: this.jumpPressed, interact: this.interactPressed, attack: this.attackPressed };
-    this.jumpPressed = this.interactPressed = this.attackPressed = false;
-    return r;
-  }
-}
+import { Mobility } from './mobility.js';
+export { Input } from './input.js';
 
 // ---------------------------------------------------------------------------
 function playerGeo(part) {
@@ -159,6 +74,7 @@ export class Player {
     this.deathTimer = 0;
     this.footTimer = 0;
     this.inWater = false;
+    this.mobility = new Mobility(this);
   }
 
   damage(amount, source) {
@@ -201,7 +117,6 @@ export class Player {
     let [mx, my, sprintKey] = input.keyboardMove();
     if (input.move.lengthSq() > 0.001) { mx = input.move.x; my = input.move.y; }
     const moveLen = Math.min(1, Math.hypot(mx, my));
-    const sprinting = (sprintKey || input.sprint) && moveLen > 0.4 && this.stamina > 2 && !this.crouched;
 
     // --- camera orientation from look input
     const sens = input.sensitivity || 1;
@@ -210,66 +125,19 @@ export class Player {
     input.look.set(0, 0);
     if (input.zoom) { this.camDistTarget = clamp(this.camDistTarget + input.zoom, 3.2, 16); input.zoom = 0; }
 
-    // --- movement
-    const speed = (this.crouched ? 1.9 : sprinting ? 9.2 : 4.6) * this.speedMul;
-    if (moveLen > 0.05) {
-      // forward is away from the camera: camera sits at +(sin(camYaw), cos(camYaw))
-      const ang = Math.atan2(mx, -my) + this.camYaw;
-      const dirX = Math.sin(ang), dirZ = Math.cos(ang);
-      this.vel.x = damp(this.vel.x, dirX * speed * moveLen, 12, dt);
-      this.vel.z = damp(this.vel.z, dirZ * speed * moveLen, 12, dt);
-      const want = Math.atan2(dirX, dirZ);
-      let d = want - this.yaw;
-      while (d > Math.PI) d -= 6.283; while (d < -Math.PI) d += 6.283;
-      this.yaw += clamp(d, -9 * dt, 9 * dt);
-    } else {
-      this.vel.x = damp(this.vel.x, 0, 14, dt);
-      this.vel.z = damp(this.vel.z, 0, 14, dt);
+    // --- movement (see mobility.js): sprint, shaped jumps, slides, mantling
+    const ev = this.mobility.step(dt, input, mx, my, moveLen, sprintKey);
+    if (ev.jumped || ev.airJumped) { this.world.audio.play('jump'); if (ev.airJumped) { this.world.fx.dust(this.pos); this.addShake(0.08); } }
+    if (ev.slid || ev.mantled) this.world.audio.play(ev.slid ? 'step-stone' : 'step');
+    if (ev.landed) {
+      this.world.fx.dust(this.pos);
+      if (ev.fallSpeed > 9) { this.world.audio.play(this.footstepSound(st)); this.addShake(Math.min(0.5, ev.fallSpeed * 0.015)); }
+      if (ev.hurt) this.damage(ev.hurt, 'the fall');
+      else if (ev.rolled) this.world.ui.toast('You roll through the landing.');
     }
-
-    // stamina
-    if (sprinting) this.stamina = clamp(this.stamina - dt * 16, 0, 100);
-    else this.stamina = clamp(this.stamina + dt * (moveLen > 0.1 ? 7 : 15), 0, 100);
-
-    // --- vertical
-    const ground = heightAt(this.pos.x, this.pos.z);
-    this.vel.y -= 26 * dt;
-    if (input.jumpPressed && this.grounded) {
-      this.vel.y = 9.2; this.grounded = false; input.jumpPressed = false;
-      this.world.audio.play('jump');
-    }
-
-    // --- integrate with slope resistance
-    const stepX = this.vel.x * dt, stepZ = this.vel.z * dt;
-    const tryX = this.pos.x + stepX, tryZ = this.pos.z + stepZ;
-    const limX = clamp(tryX, -WORLD.half + 8, WORLD.half - 8);
-    const limZ = clamp(tryZ, -WORLD.half + 8, WORLD.half - 8);
-    const nh = heightAt(limX, limZ);
-    const climb = nh - ground;
-    const maxClimb = 1.35 * Math.max(0.4, Math.hypot(stepX, stepZ)) + 0.55;
-    if (climb < maxClimb) { this.pos.x = limX; this.pos.z = limZ; }
-    else {
-      // slide along the slope
-      const n = normalAt(this.pos.x, this.pos.z);
-      const slideX = this.vel.x - n[0] * (this.vel.x * n[0] + this.vel.z * n[2]);
-      const slideZ = this.vel.z - n[2] * (this.vel.x * n[0] + this.vel.z * n[2]);
-      const sx = clamp(this.pos.x + slideX * dt * 0.5, -WORLD.half + 8, WORLD.half - 8);
-      const sz = clamp(this.pos.z + slideZ * dt * 0.5, -WORLD.half + 8, WORLD.half - 8);
-      if (heightAt(sx, sz) - ground < maxClimb) { this.pos.x = sx; this.pos.z = sz; }
-    }
-
-    this.pos.y += this.vel.y * dt;
-    const gh = heightAt(this.pos.x, this.pos.z);
-    if (this.pos.y <= gh) {
-      if (!this.grounded && this.vel.y < -16) {
-        this.damage(clamp((-this.vel.y - 16) * 2.2, 0, 60), 'the fall');
-        this.world.fx.dust(this.pos);
-      }
-      this.pos.y = gh; this.vel.y = 0; this.grounded = true;
-    } else if (this.vel.y < -1) this.grounded = false;
 
     // water
-    this.inWater = gh < WORLD.water + 0.4;
+    this.inWater = this.pos.y < WORLD.water + 0.4;
     this.speedMul = this.inWater ? 0.55 : 1;
 
     this.group.position.copy(this.pos);
@@ -286,7 +154,7 @@ export class Player {
       }
       this.footTimer -= dt;
       if (this.footTimer <= 0 && this.grounded) {
-        this.footTimer = sprinting ? 0.28 : 0.46;
+        this.footTimer = this.mobility.sprinting ? 0.24 : 0.46;
         this.world.audio.play(this.footstepSound(st));
         if (Math.random() < 0.35) this.world.fx.dust(this.pos);
       }
@@ -304,7 +172,17 @@ export class Player {
     this.armR.rotation.x = this.swing > 0 ? lerp(0.6, -2.2, 1 - this.swing) : s * amp * 0.85;
     this.body.rotation.x = clamp(sp * 0.012, 0, 0.16);
     this.body.position.y = Math.abs(Math.sin(this.phase * 1.4)) * amp * 0.09 - (this.crouched ? 0.25 : 0);
-    if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
+    const mob = this.mobility;
+    if (!this.grounded) {
+      // tuck on the way up, reach on the way down; the second jump flips
+      const rise = clamp(this.vel.y / 10, -1, 1);
+      this.legL.rotation.x = 0.5 + rise * 0.4; this.legR.rotation.x = -0.3 - rise * 0.3;
+      this.armL.rotation.x = -1.2 - rise * 0.8; this.armR.rotation.x = this.swing > 0 ? this.armR.rotation.x : -1.0 - rise * 0.6;
+      this.body.rotation.x = mob.airJumps > 0 ? -Math.max(0, mob.holdT) * 12 : 0.1 - rise * 0.15;
+    }
+    if (mob.slideT > 0) { this.body.rotation.x = 0.9; this.body.position.y = -0.55; this.legL.rotation.x = -1.3; this.legR.rotation.x = -0.9; }
+    if (mob.rollT > 0) this.body.rotation.x = (0.55 - mob.rollT) / 0.55 * 6.283;
+    if (mob.mantleT > 0) { this.armL.rotation.x = this.armR.rotation.x = -2.6; this.body.position.y = -0.2; }
 
     this.updateCamera(dt, camera, input);
 
@@ -339,8 +217,16 @@ export class Player {
   }
 
   updateCamera(dt, camera, input) {
-    const height = 1.55;
-    this.camDist = damp(this.camDist, this.camDistTarget, 6, dt);
+    const height = this.mobility.slideT > 0 ? 1.0 : 1.55;
+    // speed reads as a slightly wider, further view
+    const sp = Math.hypot(this.vel.x, this.vel.z);
+    const rush = clamp((sp - 5) / 9, 0, 1);
+    this.camDist = damp(this.camDist, this.camDistTarget + rush * 1.4, 6, dt);
+    if (camera.isPerspectiveCamera) {
+      if (this._baseFov === undefined) this._baseFov = camera.fov;
+      const wantFov = this._baseFov + rush * 7 + (this.grounded ? 0 : 2);
+      if (Math.abs(camera.fov - wantFov) > 0.02) { camera.fov = damp(camera.fov, wantFov, 5, dt); camera.updateProjectionMatrix(); }
+    }
     this.camTarget.set(this.pos.x, this.pos.y + height, this.pos.z);
     const cp = Math.cos(this.camPitch), sp2 = Math.sin(this.camPitch);
     const dir = this._camDir.set(Math.sin(this.camYaw) * cp, sp2 + 0.28, Math.cos(this.camYaw) * cp);

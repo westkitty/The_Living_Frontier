@@ -1,72 +1,10 @@
 // Deterministic world generation: heightfield, biomes, landmark sites, settlement sites.
 import { fbm2, ridge2, valueNoise2, clamp, lerp, smoothstep, hash2i } from './rng.js';
+import { WORLD, LANDMARKS, SETTLEMENTS, shapeSite, siteClearing, sitesNear, invalidateSiteGrid } from './sites.js';
 
-export const WORLD = {
-  seed: 1337,
-  half: 1150,          // world extends -half..half on X and Z
-  water: 0.0,          // sea / river level
-  chunk: 180,          // chunk size in world units
-  stateRes: 512,       // resolution of the persistent ground-state texture
-  exploreRes: 128,     // resolution of the player's remembered map (fog of war)
-  fireRes: 96,         // resolution of the fire/fuel grid
-  regionRes: 12,       // ecology / faction region grid
-};
-WORLD.size = WORLD.half * 2;
-WORLD.stateCell = WORLD.size / WORLD.stateRes;
-WORLD.exploreCell = WORLD.size / WORLD.exploreRes;
-WORLD.fireCell = WORLD.size / WORLD.fireRes;
-WORLD.regionCell = WORLD.size / WORLD.regionRes;
-
-// ---------------------------------------------------------------------------
-// Landmarks (hand-placed, procedurally built)
-// ---------------------------------------------------------------------------
-export const LANDMARKS = [
-  { id: 'aqueduct', name: 'The Broken Aqueduct', x: -430, z: 110, r: 150, kind: 'aqueduct' },
-  { id: 'drowned', name: 'The Drowned Halls', x: 360, z: -560, r: 150, kind: 'flooded' },
-  { id: 'cliffhold', name: 'Cliffhold', x: 720, z: 600, r: 130, kind: 'cliff' },
-  { id: 'crater', name: 'The Starfall Crater', x: -700, z: -620, r: 190, kind: 'crater' },
-  { id: 'fortress', name: 'Fort Ashken', x: 140, z: 800, r: 130, kind: 'fortress' },
-  { id: 'deadtree', name: 'The Hollow Giant', x: -130, z: -280, r: 110, kind: 'deadtree' },
-  { id: 'cave_ember', name: 'Emberdeep Cavern', x: 620, z: -120, r: 70, kind: 'cave', dir: 2.35, len: 64, w: 17 },
-  { id: 'cave_whisper', name: 'The Whispering Hollow', x: -840, z: 300, r: 70, kind: 'cave', dir: 0.5, len: 58, w: 15 },
-  { id: 'cave_warren', name: 'The Sunken Warren', x: 40, z: -820, r: 70, kind: 'cave', dir: 4.1, len: 54, w: 16 },
-];
-
-// Faction camps: static outposts whose colours follow whoever holds the ground.
-export const CAMPS = [
-  { id: 'camp_north', x: -300, z: 520 },
-  { id: 'camp_east', x: 640, z: 300 },
-  { id: 'camp_south', x: -120, z: -560 },
-  { id: 'camp_west', x: -700, z: -60 },
-  { id: 'camp_ridge', x: 420, z: 640 },
-  { id: 'camp_waste', x: 240, z: -300 },
-];
-
-// Settlements (villages). Faction "home" is their founding allegiance.
-export const SETTLEMENTS = [
-  { id: 'greenhollow', name: 'Greenhollow', x: -180, z: 260, faction: 0 },
-  { id: 'stonebeck', name: 'Stonebeck', x: 470, z: 180, faction: 0 },
-  { id: 'ashford', name: 'Ashford', x: -560, z: -180, faction: 1 },
-  { id: 'redmoor', name: 'Redmoor', x: 250, z: -230, faction: 2 },
-  { id: 'highfen', name: 'Highfen', x: -60, z: 620, faction: 0 },
-];
-
-export const FACTIONS = [
-  { id: 0, name: 'The Verdant Pact', color: 0x4a9d5f, accent: '#68d18a', desc: 'Settlers, farmers, wardens of the woods.' },
-  { id: 1, name: 'Ashen Legion', color: 0xb5482e, accent: '#ef7a54', desc: 'Iron discipline. They take what the land owes.' },
-  { id: 2, name: 'Hollow Kin', color: 0x6a5bb5, accent: '#a08ef0', desc: 'Ruin-dwellers who speak to the old stones.' },
-];
-
-// Unbreakable power centres. Borders move, but no faction is ever wiped out,
-// so the three-way war keeps running for as long as the world exists.
-export const STRONGHOLDS = [
-  { faction: 0, x: -180, z: 260, name: 'Greenhollow' },
-  { faction: 0, x: -60, z: 620, name: 'Highfen' },
-  { faction: 1, x: 140, z: 800, name: 'Fort Ashken' },
-  { faction: 1, x: -560, z: -180, name: 'Ashford' },
-  { faction: 2, x: -700, z: -620, name: 'Starfall Crater' },
-  { faction: 2, x: 360, z: -560, name: 'The Drowned Halls' },
-];
+// Sites (landmarks, settlements, camps, factions) live in sites.js; re-exported
+// here so the rest of the game keeps a single door into world data.
+export { WORLD, LANDMARKS, CAMPS, SETTLEMENTS, FACTIONS, STRONGHOLDS } from './sites.js';
 
 // A gentle site influence used to flatten/shape terrain around structures.
 function siteFalloff(dx, dz, r) {
@@ -122,13 +60,15 @@ export function heightAt(x, z) {
     h = lerp(h, bed, bank * 0.92 * lowlandOnly + bank * 0.12);
   }
 
-  // Landmark shaping
-  for (let i = 0; i < LANDMARKS.length; i++) {
-    const L = LANDMARKS[i];
+  // Landmark shaping (only the sites whose reach covers this cell)
+  const near = sitesNear(x, z);
+  for (let i = 0; i < near.length; i++) {
+    const L = near[i];
     const dx = x - L.x, dz = z - L.z;
+    if (dx * dx + dz * dz > L.reach * L.reach) continue;
     const d = Math.sqrt(dx * dx + dz * dz);
-    if (d > (L.kind === 'cave' ? L.len + L.w + 20 : L.r * 1.4)) continue;
-    if (L.kind === 'crater') {
+    if (L.shape) h = shapeSite(L, dx, dz, d, h, siteBaseY(L));
+    else if (L.kind === 'crater') {
       const rr = d / L.r;
       const bowl = -46 * (1 - smoothstep(0.0, 0.74, rr));
       const rim = 30 * Math.exp(-Math.pow((rr - 0.80) * 6.0, 2));
@@ -226,6 +166,7 @@ export function resolveCaveSites() {
     if (best) { L.x = best[0]; L.z = best[1]; L.dir = best[2]; }
   }
   _skipCaves = false;
+  invalidateSiteGrid();
 }
 
 // Deterministically nudge a point onto sensible, dry, walkable ground.
@@ -251,6 +192,11 @@ export function placeOnLand(key, x, z, minH = 4, maxSlope = 0.22) {
   return best;
 }
 
+function siteBaseY(L) {
+  if (L.baseH === undefined) L.baseH = baseHeight(L.x, L.z);
+  return L.baseH;
+}
+
 const settleY = [];
 export function settlementGroundY(i) {
   if (settleY[i] === undefined) {
@@ -260,7 +206,34 @@ export function settlementGroundY(i) {
   return settleY[i];
 }
 
+// A bridge is only a bridge over water: slide each one onto the nearest river
+// and turn it square across the channel.
+export function resolveBridgeSites() {
+  for (const L of LANDMARKS) {
+    if (L.kind !== 'bridge' || L.resolved) continue;
+    L.resolved = true;
+    let best = null, bs = 1e9;
+    for (let r = 0; r <= 220; r += 10) {
+      const n = r === 0 ? 1 : Math.round(r / 5);
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const px = L.x + Math.cos(a) * r, pz = L.z + Math.sin(a) * r;
+        const rv = riverField(px, pz), bh = baseHeight(px, pz);
+        if (bh < 6 || bh > 70) continue;
+        const score = rv * 1000 + r * 0.3;
+        if (rv < 0.02 && score < bs) { bs = score; best = [px, pz]; }
+      }
+    }
+    if (!best) continue;
+    L.x = best[0]; L.z = best[1];
+    const e = 6, gx = riverField(L.x + e, L.z) - riverField(L.x - e, L.z), gz = riverField(L.x, L.z + e) - riverField(L.x, L.z - e);
+    L.dir = Math.atan2(gz, gx);   // steepest climb out of the channel = across it
+  }
+  invalidateSiteGrid();
+}
+
 resolveCaveSites();   // deterministic, runs once at module load
+resolveBridgeSites();
 
 export function normalAt(x, z, e = 1.2) {
   const hL = heightAt(x - e, z), hR = heightAt(x + e, z);
@@ -303,7 +276,7 @@ export function treeDensityFrom(h, m, slope, x, z) {
   let d = clamp((m - 0.30) * 1.7, 0, 1) * clamp(clump * 1.5 - 0.22, 0, 1);
   d *= 1 - smoothstep(92, 128, h);
   d *= 1 - smoothstep(0.35, 0.75, slope);
-  return clamp(d * 1.25, 0, 1);
+  return clamp(d * 1.25, 0, 1) * siteClearing(x, z);
 }
 export function treeDensityAt(x, z) {
   const h = heightAt(x, z);

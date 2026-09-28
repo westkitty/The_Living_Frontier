@@ -333,11 +333,11 @@ const LANDMARK_BUILDERS = {
   crater: buildCrater, fortress: buildFortress, deadtree: buildDeadTree, cave: buildCave,
 };
 
-export function buildLandmarks(scene, material) {
+export function buildLandmarks(scene, material, extra = {}) {
   const groups = [];
   for (const L of LANDMARKS) {
     const b = new Builder();
-    const baseY = LANDMARK_BUILDERS[L.kind](L, b);
+    const baseY = (LANDMARK_BUILDERS[L.kind] || extra[L.kind])(L, b);
     const geo = b.build();
     const mesh = new THREE.Mesh(geo, material);
     mesh.position.set(L.x, baseY, L.z);

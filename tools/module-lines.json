@@ -20,7 +20,7 @@
     "map-ui.js": 357,
     "panels.js": 394,
     "persistence.js": 188,
-    "player.js": 365,
+    "player.js": 251,
     "quests.js": 45,
     "rng.js": 65,
     "save-recovery.js": 111,
@@ -31,7 +31,12 @@
     "ui.js": 608,
     "uikit.js": 24,
     "veg.js": 460,
-    "worldgen.js": 321,
-    "worldstate.js": 680
+    "worldgen.js": 294,
+    "worldstate.js": 680,
+    "sites.js": 242,
+    "ruins.js": 614,
+    "wonders.js": 379,
+    "input.js": 93,
+    "mobility.js": 145
   }
 }

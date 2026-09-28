@@ -88,10 +88,25 @@ banners and fortress flags recolour with whoever holds the ground.
 **Quests** — generated from actual world state (a starving village, thinning
 herds, too many wolves, an undiscovered landmark), never from a fixed list.
 
-**Landmarks** — the Broken Aqueduct, the Drowned Halls, Cliffhold, the Starfall
-Crater, Fort Ashken, the Hollow Giant, plus three real, walkable caves carved
-into hillsides with glowing crystals. Each is built from procedural geometry and
-merged into a single mesh.
+**Landmarks** — forty-five places, built from thirty-seven generators. The
+original nine (the Broken Aqueduct, the Drowned Halls, Cliffhold, the Starfall
+Crater, Fort Ashken, the Hollow Giant and three walkable caves) are joined by
+the ruins of an older people — a coliseum whose terraced stands you can climb,
+two temples, a ziggurat raised out of the ground itself, a standing-stone
+council, a field of obelisks, a necropolis, a fallen library, drowned baths, a
+triumphal gate, a toppled colossus, an observatory, a watchtower, a real
+stone-walled maze, a windmill, a lighthouse on a causeway, two more aqueducts,
+four paved roads with wayside shrines and a bridge that finds its own river —
+and by wonders of the land: two impact craters (one glassed, one a lake), a
+massive crystal cathedral that glows at night, the Undervault (a roofed pit
+with a hidden fungal world, shrine and bones at the bottom), a cenote, a mesa
+with a palace on top, a volcano with a lava lake, hot-spring terraces, a
+petrified grove, wind-carved arches, leviathan bones, a shipwreck and a black
+monolith. Every generator reads its site's seed and parameters, so the same
+kind comes out differently each time it is placed. Each site is merged into a
+single mesh; the ground is bent under it (`src/sites.js`) so craters, pits,
+mesas, terraces and stepped pyramids are terrain you actually walk on.
+`node tools/site-preview.mjs` renders every site to PNG without WebGL.
 
 **The map you make yourself** — the world starts as blank paper. Land is inked
 in only where you have actually been, and how far you can survey depends on
@@ -119,8 +134,11 @@ recovery.
 |---|---|---|
 | Move | WASD / arrows | left stick |
 | Look | drag, or move the mouse | drag the right side |
-| Sprint | Shift | `»` toggle |
-| Jump | Space | `⤒` |
+| Sprint | Shift (fast, drains stamina; the camera widens with speed) | `»` toggle |
+| Jump | Space — tap for a hop, hold to rise higher; press again in the air for a second jump that can redirect you | `⤒` (hold works too) |
+| Slide / crouch | C or Ctrl — while sprinting you slide and keep your speed; standing still it toggles a crouch | — |
+| Ledge mantle | automatic: jump toward a ledge within arm's reach and you pull yourself over it | automatic |
+| Landing roll | automatic: land a long fall while sprinting into it and you roll instead of breaking | automatic |
 | Interact / harvest carcass hide | E | `E` |
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
@@ -254,6 +272,7 @@ src/rng.js          seeded hashing, value noise, fBm, ridged noise
 src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs and patterns
 src/map-ui.js       survey gestures and drawing, mixed onto UI
 src/settings.js     player preferences, stored apart from the world
+src/sites.js        every fixed place (landmarks, villages, camps) and the terrain each demands
 src/worldgen.js     heightfield, biomes, rivers, landmark & settlement siting
 src/worldstate.js   persistent simulation + fast-forward
 src/persistence.js  save/load, compression and recovery orchestration
@@ -262,8 +281,12 @@ src/history.js      daily measurements and homecoming comparisons
 src/terrain.js      chunk streaming, LOD, ground-memory shader, water
 src/veg.js          instanced procedural vegetation, wind, harvest, regrowth
 src/structures.js   landmarks, villages, caves, camps, banners (merged meshes)
+src/ruins.js        coliseum, temples, ziggurat, roads, aqueducts, bridge and other built ruins
+src/wonders.js      craters, crystal cathedral, the Undervault, cenote, mesa, volcano and glow geometry
 src/entities.js     wildlife, villager routines, faction patrols and combat
-src/player.js       controller, spring camera, unified keyboard/touch input
+src/input.js        unified keyboard / mouse / touch input
+src/mobility.js     sprint, shaped and double jumps, slide, mantle, landing roll
+src/player.js       controller, spring camera, animation
 src/fx.js           sky, lights, weather, fire, smoke, sparks, birds
 src/ui.js           HUD, minimap, world map, panel shell, dialogue, touch stick
 src/panels.js       bag, chronicle, world screen and the readable history chart

@@ -1,10 +1,12 @@
 // Chunk lifetime and structures. Mixed onto Game.prototype, never an entry point.
 import * as THREE from 'three';
-import { LANDMARKS, FACTIONS, CAMPS, heightAt, caveFloor, placeOnLand } from './worldgen.js';
+import { FACTIONS, CAMPS, heightAt, placeOnLand } from './worldgen.js';
 import { regionIndex } from './worldstate.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
 import { Vegetation } from './veg.js';
 import { buildLandmarks, buildSettlementGeometry, makeStructureMaterial, makeBanner, buildCaveGlow, buildCampGeometry } from './structures.js';
+import { RUIN_BUILDERS } from './ruins.js';
+import { WONDER_BUILDERS, buildWonderGlow } from './wonders.js';
 
 export const StreamingMixin = {
   initStreaming() {
@@ -18,14 +20,13 @@ export const StreamingMixin = {
     this.water = makeWater(this.scene);
 
     this.structMat = makeStructureMaterial();
-    this.landmarks = buildLandmarks(this.scene, this.structMat);
+    this.landmarks = buildLandmarks(this.scene, this.structMat, Object.assign({}, RUIN_BUILDERS, WONDER_BUILDERS));
     this.settlementMeshes = [];
     this.banners = [];
     this.buildSettlements();
     this.buildLandmarkBanners();
     this.buildCaves();
     this.buildCamps();
-
   },
   streamChunks(blocking) {
     this.chunks.update(this.player.pos.x, this.player.pos.z, blocking ? 1 : 2);
@@ -46,7 +47,6 @@ export const StreamingMixin = {
       st.vegDirtyKeys.delete(k);
       this.veg.rebuild(k);
     }
-
   },
   // ------------------------------------------------------------ settlements
   settlementHash(s) {
@@ -68,27 +68,27 @@ export const StreamingMixin = {
     let banner = null;
     if (!s.abandoned) {
       banner = makeBanner(FACTIONS[s.banner].color);
-      banner.position.set(s.x + 4, baseY + heightAt(s.x + 4, s.z + 4) - baseY, s.z + 4);
-      banner.position.y = heightAt(s.x + 4, s.z + 4);
+      banner.position.set(s.x + 4, heightAt(s.x + 4, s.z + 4), s.z + 4);
       this.scene.add(banner);
       this.banners.push(banner);
     }
     this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY };
   },
+  // Anything that shines (caves, crystal, fungus, lava) gets an unlit glow mesh and a nearby-only light.
   buildCaves() {
     this.caves = [];
     const glowMat = new THREE.MeshBasicMaterial({ vertexColors: true, fog: true });
-    for (const L of LANDMARKS) {
-      if (L.kind !== 'cave') continue;
-      const floorY = caveFloor(L);
-      const glow = new THREE.Mesh(buildCaveGlow(L), glowMat);
-      glow.position.set(L.x, floorY, L.z);
-      glow.matrixAutoUpdate = false; glow.updateMatrix();
-      this.scene.add(glow);
-      const light = new THREE.PointLight(0x7fe0d8, 0, 70, 2);
-      light.position.set(L.x + Math.cos(L.dir) * L.len * 0.6, floorY + 4, L.z + Math.sin(L.dir) * L.len * 0.6);
+    for (const { L, baseY } of this.landmarks) {
+      const geo = L.kind === 'cave' ? buildCaveGlow(L) : buildWonderGlow(L, baseY);
+      if (!geo) continue;
+      const glow = new THREE.Mesh(geo, glowMat);
+      glow.position.set(L.x, baseY, L.z);
+      glow.matrixAutoUpdate = false; glow.updateMatrix(); this.scene.add(glow);
+      const light = new THREE.PointLight(L.glow || 0x7fe0d8, 0, L.glowRange || 70, 2);
+      const along = L.kind === 'cave' ? L.len * 0.6 : 0;
+      light.position.set(L.x + Math.cos(L.dir || 0) * along, baseY + (L.kind === 'crystal' ? 14 : 4), L.z + Math.sin(L.dir || 0) * along);
       this.scene.add(light);
-      this.caves.push({ L, glow, light, floorY });
+      this.caves.push({ L, glow, light, floorY: baseY, reach: (L.kind === 'cave' ? L.len : L.r) + 40 });
     }
   },
 
@@ -120,7 +120,7 @@ export const StreamingMixin = {
     for (const lm of this.landmarks) {
       if (lm.L.kind !== 'fortress' && lm.L.kind !== 'cliff') continue;
       const b = makeBanner(0x888888);
-      b.position.set(lm.L.x + 10, heightAt(lm.L.x + 10, lm.L.z + 10) + (lm.L.kind === 'fortress' ? 0 : 0), lm.L.z + 10);
+      b.position.set(lm.L.x + 10, heightAt(lm.L.x + 10, lm.L.z + 10), lm.L.z + 10);
       this.scene.add(b);
       this.banners.push(b);
       this.landmarkBanners.push({ L: lm.L, banner: b, faction: -1 });
@@ -166,7 +166,7 @@ export const StreamingMixin = {
     // cave glow pulses, and its light only burns while the player is inside
     for (const cave of this.caves) {
       const d = Math.hypot(cave.L.x - this.player.pos.x, cave.L.z - this.player.pos.z);
-      const near = d < cave.L.len + 40;
+      const near = d < cave.reach;
       cave.glow.visible = near;
       cave.light.intensity = near ? 3.2 + Math.sin(shared.uTime.value * 1.6) * 0.8 : 0;
     }
