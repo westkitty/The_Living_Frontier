@@ -37,10 +37,32 @@ was added because the original checkout had no such script.
 
 ## Performance
 
-The scene probe now reports **92 meshes / 80,112 triangles**, compared with
+The scene probe reports **92 meshes / 80,112 triangles**, compared with
 **86 / 79,932** on the original revision: +6 calls, +180 triangles (~0.23%).
 This satisfies the requested +10-call / +25%-triangle canopy limits. Geometry
-counts were unchanged by the B10 extraction.
+counts remain unchanged by this performance pass.
+
+This pass adds a repeatable idle-effects probe to `npm run perf`: 120 warm-up
+frames followed by five rounds of 900 identical FX updates at 60 Hz, recording
+median/p95 update cost, Three.js `Color.clone()` calls, and smoke/spark position
+buffer version changes. On the same sandbox before/after:
+
+| Idle FX metric | Before | After |
+|---|---:|---:|
+| Median update time | 0.009 ms | 0.006 ms |
+| p95 update time | 0.013 ms | 0.012 ms |
+| Smoke / spark `needsUpdate` version bumps in 4,500 frames | 4,500 / 4,500 | 0 / 0 |
+| `Color.clone()` calls in 4,500 frames | not instrumented; source did 6/frame | 0 (instrumented) |
+
+The sub-0.02 ms timing is below a useful real-device frame budget and varies
+between runs; treat those CPU timings as directional, not a demonstrated
+user-visible speedup. The robust code-path gain is removing two redundant 500/220-point position-buffer
+upload requests on every idle frame and replacing per-frame palette creation and
+cloning with constructor-owned reusable colors. Actual GPU transfer and render
+cost were unavailable in this environment. The probe asserts idle upload
+suppression, zero sky-color clones, live particle updates, expiration, and return
+to an upload-free idle state. `npm run perf` also preserves the existing terrain
+mesh/triangle budget and chunk/height sampling probes.
 
 Five interleaved runs of original commit `4909518` and the refined tree on the
 same sandbox (no other dependencies installed):
