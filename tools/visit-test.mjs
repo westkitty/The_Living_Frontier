@@ -102,11 +102,23 @@ const state = game.state, texts = [], toast = game.ui.toast.bind(game.ui);
 game.ui.toast = (text, ...args) => { texts.push(text); toast(text, ...args); };
 game.clock.getDelta = () => 0.01;
 const tick = () => game.frame();
+state.weather.type = 'rain'; state.weather.next = 999; tick();
+assert.equal(document.querySelector('#fire-risk').textContent, 'damp');
+assert.equal(document.querySelector('#fire-risk').getAttribute('aria-label'), 'Fire risk: damp');
+state.weather.type = 'clear'; state.weather.groundWetness = 0; state.weather.windSpeed = 0.9; tick();
+assert.equal(document.querySelector('#fire-risk').textContent, 'tinder');
+
 // Actual game paths trigger the observations; do not call Guidance.once directly.
 state.time = 0.5; tick(); state.time = 0.81; tick();
 const tree = [...game.veg.chunks].flatMap(([key, c]) => c.items.map(item => ({ key, item })))
   .find(v => v.item.type === 'pine' || v.item.type === 'broad');
 assert(tree, 'need a real harvestable tree');
+game.player.pos.set(tree.item.x, tree.item.y + 1, tree.item.z);
+const target = game.findTarget();
+assert(target.canIgnite && target.alt.includes('tinder'), 'tinder risk must be in the real ignition prompt');
+game.interactTarget = target;
+game.strike(); tick();
+assert(state.player.stats.fires > 0, 'tinder label must not break strike-to-ignite');
 game.harvest(tree); tick();
 state.fuel.fill(255);
 state.ignite(game.player.pos.x + 30, game.player.pos.z, 1); tick();

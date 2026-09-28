@@ -354,9 +354,20 @@ export class WorldState {
   }
   burningCount() { return this.burningList.length; }
 
+  fireConditions() {
+    const w = this.weather;
+    const rain = w.type === 'rain' || w.type === 'storm' ? 1 : w.type === 'snow' ? 0.8 : 0;
+    const wetness = Math.max(rain, clamp(w.groundWetness || 0, 0, 1));
+    const wind = Math.max(0, w.windSpeed) / 0.45;
+    // The displayed risk is the maximum directional spread multiplier, not a second model.
+    const multiplier = along => (0.45 + wind * (along * 0.5 + 0.5)) * (1 - wetness);
+    const risk = wetness >= 0.5 ? 'damp' : multiplier(1) >= 1.15 ? 'tinder' : 'dry';
+    return { wetness, multiplier, risk };
+  }
+
   tickFire(dt) {
     const w = this.weather;
-    const wetness = w.type === 'rain' || w.type === 'storm' ? 1 : w.type === 'snow' ? 0.8 : 0;
+    const { wetness, multiplier } = this.fireConditions();
     const wx = Math.cos(w.windDir), wz = Math.sin(w.windDir);
     let any = false;
     const spread = [];
@@ -396,7 +407,7 @@ export class WorldState {
             const nidx = nj * FR + ni;
             if (this.burning[nidx] > 0.1 || this.fuel[nidx] < 40) continue;
             const along = clamp(dx * wx + dz * wz, -1, 1);
-            const chance = dt * (0.008 + 0.055 * (this.fuel[nidx] / 255)) * (0.45 + 1.0 * (along * 0.5 + 0.5)) * (1 - wetness);
+            const chance = dt * (0.008 + 0.055 * (this.fuel[nidx] / 255)) * multiplier(along);
             if (Math.random() < chance) spread.push(nidx);
           }
         }
@@ -643,6 +654,8 @@ export class WorldState {
     }
     w.intensity = lerp(w.intensity, w.target, clamp(dt * 0.12, 0, 1));
     w.windSpeed = lerp(w.windSpeed, 0.25 + (w.type === 'storm' ? 0.9 : w.type === 'rain' ? 0.5 : 0.2) * w.intensity + 0.15, clamp(dt * 0.2, 0, 1));
+    const soaking = w.type === 'rain' || w.type === 'storm' || w.type === 'snow';
+    w.groundWetness = clamp((w.groundWetness || 0) + dt * (soaking ? 0.025 : -0.003), 0, 1);
     // Rain regrows the land a little and douses scars slowly
     if (w.type === 'rain' || w.type === 'storm') this.rainAccum = (this.rainAccum || 0) + dt * w.intensity;
   }

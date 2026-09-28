@@ -42,8 +42,9 @@ export const InteractionMixin = {
             : t === 'ore' ? 'Mine ore'
               : t === 'rock' ? 'Break stone'
                 : t === 'sapling' ? 'Tend sapling' : 'Gather herbs';
-      const alt = (t === 'pine' || t === 'broad' || t === 'bush' || t === 'fern' || t === 'berry') ? 'Set alight' : null;
-      return { type: 'veg', veg: v, label, alt };
+      const canIgnite = (t === 'pine' || t === 'broad' || t === 'bush' || t === 'fern' || t === 'berry');
+      const alt = canIgnite ? (this.state.fireConditions().risk === 'tinder' ? 'Set alight — tinder risk' : 'Set alight') : null;
+      return { type: 'veg', veg: v, label, alt, canIgnite };
     }
     // plant sapling on bare ground
     if (this.state.player.inv.wood >= 1 && heightAt(p.x, p.z) > 1.5) {
@@ -156,7 +157,7 @@ export const InteractionMixin = {
     this.player.addShake(0.16);
     const t = this.interactTarget;
     const p = this.player.pos;
-    if (t && t.type === 'veg' && t.alt === 'Set alight') {
+    if (t && t.type === 'veg' && t.canIgnite) {
       if (this.state.ignite(t.veg.item.x, t.veg.item.z, 0.8)) {
         this.audio.play('fire');
         this.ui.toast('Flames catch and spread with the wind…');

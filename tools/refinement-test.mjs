@@ -10,6 +10,7 @@ import { Vegetation } from '../src/veg.js';
 import { ChunkManager } from '../src/terrain.js';
 import { ActorSystem } from '../src/entities.js';
 import { DAY_LENGTH, CH } from '../src/worldstate.js';
+import { mulberry32 } from '../src/rng.js';
 import { heightAt } from '../src/worldgen.js';
 import { WorldState } from '../src/worldstate.js';
 import { WORLD } from '../src/worldgen.js';
@@ -152,4 +153,32 @@ import { WORLD } from '../src/worldgen.js';
   assert.equal(state.player.inv.hide, hide + 2, 'harvesting gives hide exactly once');
   assert.equal(scene.children.length, baseline);
   console.log('  ✓ carcass attraction, feeding, day-long decay, harvest and cleanup');
+}
+
+{
+  const burn = type => {
+    const state = new WorldState();
+    state.weather = { ...state.weather, type, windSpeed: 0.9, groundWetness: 0 };
+    state.fuel.fill(255);
+    assert.equal(state.fireConditions().risk, type === 'rain' ? 'damp' : 'tinder');
+    const random = Math.random; Math.random = mulberry32(4187);
+    const touched = new Set();
+    try {
+      state.ignite(0, 0, 1);
+      for (let i = 0; i < 90; i++) {
+        state.tickFire(0.5);
+        state.burningList.forEach(c => touched.add(c.idx));
+      }
+    } finally { Math.random = random; }
+    return touched.size;
+  };
+  const damp = burn('rain'), tinder = burn('clear');
+  assert(tinder > damp + 2, 'same ignition must reach measurably fewer cells in damp conditions');
+  const state = new WorldState();
+  state.weather.windSpeed = 0.05;
+  assert.equal(state.fireConditions().risk, 'dry');
+  state.weather.type = 'rain'; state.weather.next = 999;
+  state.tickWeather(30); state.weather.type = 'clear';
+  assert.equal(state.fireConditions().risk, 'damp', 'rain-wetted ground must still damp fire after rain stops');
+  console.log(`  ✓ shared fire model: damp ${damp} cells, tinder ${tinder} cells`);
 }

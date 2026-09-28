@@ -447,3 +447,7 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
 
 button.rec-line{display:block;width:100%;min-height:44px;text-align:left;background:transparent;cursor:pointer}
 button.rec-line:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+#fire-risk{border:1px solid currentColor;border-radius:4px;padding:1px 4px;font-size:10px;text-transform:uppercase}
+#fire-risk[data-risk="damp"]{color:#a8c6d6}
+#fire-risk[data-risk="tinder"]{color:#ffc07c}

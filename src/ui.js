@@ -793,6 +793,14 @@ export class UI {
     }
     $('#weather-label').textContent = st.weather.type[0].toUpperCase() + st.weather.type.slice(1);
 
+    const risk = st.fireConditions().risk;
+    const riskEl = $('#fire-risk');
+    if (riskEl.dataset.risk !== risk) {
+      riskEl.dataset.risk = risk;
+      riskEl.textContent = risk;
+      riskEl.setAttribute('aria-label', `Fire risk: ${risk}`);
+    }
+
     const hpF = clamp(player.hp / player.maxHp, 0, 1), stF = clamp(player.stamina / 100, 0, 1);
     $('#hp-fill').style.transform = `scaleX(${hpF})`;
     $('#st-fill').style.transform = `scaleX(${stF})`;
