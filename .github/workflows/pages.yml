@@ -1,0 +1,70 @@
+# Publish THE LIVING FRONTIER to GitHub Pages.
+#
+# The game is a static site with no build step: index.html, styles.css, src/
+# and a vendored copy of Three.js. Every path in it is relative, so it runs
+# unchanged from a project subpath such as /The_Living_Frontier/.
+#
+# Pages on this repository is set to "GitHub Actions" as its source, so this
+# workflow is what actually publishes. It runs on pushes to the default branch,
+# on pushes to the working branch, and on demand from the Actions tab.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - arena/01a0e459-the-living-frontier
+    paths-ignore:
+      - 'README.md'
+      - 'tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail loudly here rather than publishing a site that cannot boot.
+      - name: Check the shipped files are present
+        run: |
+          set -e
+          for f in index.html styles.css vendor/three.module.js src/main.js src/ui.js src/worldstate.js; do
+            test -s "$f" || { echo "missing or empty: $f"; exit 1; }
+          done
+          grep -q 'type="importmap"' index.html || { echo 'import map missing from index.html'; exit 1; }
+          grep -q './vendor/three.module.js' index.html || { echo 'three.js is not vendored relatively'; exit 1; }
+          if grep -nE '(src|href)="/[^/]' index.html; then
+            echo 'absolute paths will 404 under a project subpath'; exit 1
+          fi
+          echo "shipped files look publishable"
+
+      # Static host, no Jekyll processing.
+      - name: Disable Jekyll
+        run: touch .nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
