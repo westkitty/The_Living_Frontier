@@ -1078,6 +1078,8 @@ const { LANDMARKS } = await import('../src/worldgen.js');
 for (const L of LANDMARKS) { p.pos.set(L.x, 0, L.z); game.checkDiscoveries(); }
 log('landmarks discoverable:', Object.keys(st.discovered).length, '/', LANDMARKS.length);
 
+await import('./refinement-test.mjs');
+
 step(30);
 console.log('\n  errors:', errors.length ? errors : 'none');
 console.log('  frames drawn:', drawCalls);

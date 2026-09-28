@@ -274,7 +274,7 @@ export class Cartographer {
     }
     const R = WORLD.stateRes;
     lc.drawImage(this.groundOverlay(makeCanvas), u0 * R, v0 * R, uw * R, vh * R, 0, 0, w, h);
-    if (opts.territory !== false) this._territory(lc, w, h, win);
+    if (opts.territory !== false) this._territory(lc, w, h, win, makeCanvas);
     // punch out everything the player has not surveyed
     lc.globalCompositeOperation = 'destination-in';
     lc.drawImage(this.fogMask(makeCanvas), u0 * XR, v0 * XR, uw * XR, vh * XR, 0, 0, w, h);
@@ -289,7 +289,26 @@ export class Cartographer {
 
   // Faction holdings: a light tint plus an inked border where ownership
   // changes, so borders read as borders instead of as a grid of squares.
-  _territory(ctx, w, h, win) {
+  territoryFill(ctx, faction, makeCanvas) {
+    if (faction === 0) return FACTIONS[0].accent;
+    if (!this.territoryTiles) this.territoryTiles = new Map();
+    if (!this.territoryTiles.has(faction)) {
+      const tile = makeCanvas(8, 8), ink = tile.getContext('2d');
+      ink.strokeStyle = ink.fillStyle = FACTIONS[faction].accent;
+      if (faction === 1) {
+        ink.lineWidth = 2;
+        ink.beginPath();
+        for (const x of [-8, 0, 8]) { ink.moveTo(x, 8); ink.lineTo(x + 8, 0); }
+        ink.stroke();
+      } else {
+        ink.beginPath(); ink.arc(4, 4, 1.5, 0, Math.PI * 2); ink.fill();
+      }
+      this.territoryTiles.set(faction, tile);
+    }
+    return ctx.createPattern(this.territoryTiles.get(faction), 'repeat');
+  }
+
+  _territory(ctx, w, h, win, makeCanvas) {
     const st = this.state, RR = WORLD.regionRes;
     const cell = WORLD.size / RR;
     const spanY = win.span * (h / w);
@@ -303,7 +322,7 @@ export class Cartographer {
         if (!r || r.owner < 0) continue;
         const x = toX(i * cell - WORLD.half), y = toY(j * cell - WORLD.half);
         const x2 = toX((i + 1) * cell - WORLD.half), y2 = toY((j + 1) * cell - WORLD.half);
-        ctx.fillStyle = FACTIONS[r.owner].accent;
+        ctx.fillStyle = this.territoryFill(ctx, r.owner, makeCanvas);
         ctx.fillRect(x, y, x2 - x + 0.6, y2 - y + 0.6);
       }
     }

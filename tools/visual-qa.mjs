@@ -29,6 +29,8 @@ window.HTMLCanvasElement.prototype.getContext = function (type) {
     ctx.__wrapped = true;
     const di = ctx.drawImage.bind(ctx);
     ctx.drawImage = (img, ...rest) => di(backing.get(img) || img, ...rest);
+    const cp = ctx.createPattern.bind(ctx);
+    ctx.createPattern = (img, repeat) => cp(backing.get(img) || img, repeat);
   }
   try { ctx.canvas = this; } catch (e) { /* read-only */ }
   return ctx;
