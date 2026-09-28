@@ -104,6 +104,7 @@ quietly losing your frontier.
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
 | Map / Bag / Journal / World | M / I / J / V | HUD icons |
+| The Long Record | R | world screen → Read the Long Record |
 | Help | H | Menu → Controls |
 | Menu | Esc | ☰ |
 
@@ -162,6 +163,40 @@ is, how much of the frontier you have surveyed, the settlements inside the
 frame with their standing and banner — never one you have not found yet — and
 the distance and bearing to your waypoint, using the same bearing maths as the
 compass pips.
+
+## The Long Record
+
+The frontier did not begin when you arrived. Press **R**, or open it from the
+world screen, and the ground opens into a core sample of every year this valley
+has been counted — fourteen centuries of it, drawn from the same seed that
+raised the terrain.
+
+It opens on your own days, filling the screen, and then pulls back until they
+are a hairline. Five lanes run down the column, one for each settlement site,
+because the same five pieces of good ground keep being chosen: you can watch
+them occupied, lost, left fallow and settled again, over and over, each band
+coloured by how it ended — ash, silt, bone, iron, greenwood. Those are the same
+five endings the living world still produces, which is the only reason the
+column can be read at all.
+
+The spine of named events is fixed and causal: the Starfall in year 0, the
+aqueduct raised in 344 and *cut* in 761 — not fallen, cut, from the inside —
+and the Drowned Halls flooded the same night, their doors barred from the
+outside. Entries stay **SEALED** until you have stood in front of the stone
+that carries them, so the archive is unlocked by walking, not by reading.
+
+At the closest reading, each hair in your own band is a day you wrote something
+on. At the widest, the readout does the arithmetic you were avoiding:
+
+```
+41 settlements have stood on these five sites. 4,693 people are accounted for
+in this column. 10 burned, 10 drowned, 11 starved, 7 were taken, 8 walked out.
+Your tenancy: 70 days — less than a tenth of one per cent of the record.
+```
+
+Every number there is measured, not written: the deep history is derived
+deterministically from the world seed, and your band is read from your own
+statistics — trees felled, animals taken, fires set, ground still scorched.
 
 ## Coming back
 
@@ -246,8 +281,11 @@ settlement's banner cloth changes colour, that setting a wooded chunk alight
 turns standing trees into charred snags in the scene without re-scattering
 that chunk every frame, that hunting a valley out leaves it visibly emptier,
 that walking a four-kilometre round trip leaves the scene the size it started
-— no leaked chunks, no detached meshes — that footfalls change with the ground
-underfoot, and that preferences persist across sessions.
+— no leaked chunks, no detached meshes — that the deep record is deterministic
+per seed and chronological, that its entries stay sealed until the matching
+landmark is found, that reading a year reports what actually stood there, that
+the opening pull-back ends at the whole record, that footfalls change with the
+ground underfoot, and that preferences persist across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once

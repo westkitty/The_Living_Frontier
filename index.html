@@ -245,6 +245,34 @@
   </div>
 </div>
 
+<div id="record" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="rec-title">
+  <div class="panel-card record-card">
+    <div class="panel-head">
+      <h2 id="rec-title">The Long Record</h2>
+      <button class="icon-btn" id="rec-close" aria-label="Close the record" title="Close (Esc)"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="panel-body rec-body">
+      <div class="rec-column">
+        <canvas id="rec-canvas" width="360" height="620" tabindex="0" role="img"
+          aria-label="A core sample of the frontier's recorded years"></canvas>
+        <div class="rec-tools">
+          <button class="map-btn" id="rec-in" aria-label="Read closer" title="Read closer"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          <button class="map-btn" id="rec-out" aria-label="Read wider" title="Read wider"><svg class="ic" aria-hidden="true"><use href="#i-minus"/></svg></button>
+          <button class="map-btn" id="rec-me" aria-label="Find my own years" title="Find my own years"><svg class="ic" aria-hidden="true"><use href="#i-locate"/></svg></button>
+        </div>
+      </div>
+      <div class="rec-read">
+        <h3 id="rec-year">Year</h3>
+        <p id="rec-depth" class="rec-depth"></p>
+        <div id="rec-lines"></div>
+        <p id="rec-weight" class="rec-weight"></p>
+        <p id="rec-share" class="rec-share"></p>
+        <p class="rec-hint">drag the column · scroll or + and - to change what a screen is worth · Home for the Starfall, End for now</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="report" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="rep-title">
   <div class="panel-card small report-card">
     <div class="panel-head">

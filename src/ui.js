@@ -4,6 +4,7 @@ import { clamp } from './rng.js';
 import { Cartographer } from './cartography.js';
 import { Settings } from './settings.js';
 import { PanelsMixin } from './panels.js';
+import { RecordMixin } from './deeprecord.js';
 import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export { icon, ITEM_ICONS } from './uikit.js';
@@ -112,6 +113,7 @@ export class UI {
         if (this.reportOpen) this.closeHomecoming();
         else if (this.confirmOpen) this.closeConfirm();
         else if (this.dialogOpen) this.closeDialog();
+        else if (this.recordOpen) this.closeRecord();
         else if (this.panelOpen) this.closePanel();
         else if (!$('#menu').classList.contains('hidden')) this.closeMenu();
         else this.openMenu();
@@ -126,6 +128,7 @@ export class UI {
       if (e.code === 'KeyI' || e.code === 'KeyB') this.togglePanel('bag');
       if (e.code === 'KeyJ') this.togglePanel('journal');
       if (e.code === 'KeyV') this.togglePanel('world');
+      if (e.code === 'KeyR') { if (this.recordOpen) this.closeRecord(); else { this.closePanel(); this.openRecord(); } }
     });
 
     // touch joystick
@@ -488,7 +491,10 @@ export class UI {
     this.dialogOpen = false;
     this.closeSheet('#dialog');
   }
-  get blocking() { return this.panelOpen !== null || this.dialogOpen || this.confirmOpen || this.reportOpen || !$('#menu').classList.contains('hidden'); }
+  get blocking() {
+    return this.recordOpen || this.panelOpen !== null || this.dialogOpen || this.confirmOpen
+      || this.reportOpen || !$('#menu').classList.contains('hidden');
+  }
 
   // ---------------------------------------------------------------- toasts
   toast(text, kind = '') {
@@ -939,4 +945,4 @@ export class UI {
   }
 }
 
-Object.assign(UI.prototype, PanelsMixin);
+Object.assign(UI.prototype, PanelsMixin, RecordMixin);

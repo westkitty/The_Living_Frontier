@@ -116,6 +116,24 @@ if (state.history.length > 4) {
   game.ui.drawHistoryChart(state);
   console.log('  chart readout:', (document.querySelector('#ws-read') || {}).textContent);
 }
+// --- the long record, at the widest and the closest
+{
+  const chron = await import('../src/chronology.js');
+  for (const d of ['crater', 'aqueduct', 'drowned']) state.discovered[d] = true;
+  game.ui.openRecord();
+  game.ui.recordEnter = 1;
+  for (const [name, scale, year] of [['record-wide', 0, chron.presentYear(state)],
+                                     ['record-close', 2, Math.round(chron.presentYear(state) * 0.55)],
+                                     ['record-mine', 3, chron.presentYear(state)]]) {
+    game.ui.recordScale = scale;
+    game.ui.recordYear = year;
+    game.ui.drawRecord();
+    png(document.querySelector('#rec-canvas'), `${name}.png`);
+    console.log('   ', document.querySelector('#rec-share').textContent);
+  }
+  game.ui.closeRecord();
+}
+
 const chart = document.querySelector('#ws-chart');
 if (chart) png(chart, 'ws-chart.png'); else console.log('  (no chronicle chart rendered)');
 

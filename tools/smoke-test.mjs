@@ -538,6 +538,111 @@ game.ui.closeDialog();
 
 
 
+
+// ---- the long record ------------------------------------------------------
+// Deep time has to be real: derived from the seed, consistent between runs,
+// sealed where the player has not been, and honest about how small their own
+// tenancy is.
+{
+  const chron = await import('../src/chronology.js');
+  const seed = st.seed;
+  const a = JSON.stringify(chron.tenancies(seed));
+  const b = JSON.stringify(chron.tenancies(seed));
+  const other = JSON.stringify(chron.tenancies((seed ^ 0x9e37) >>> 0));
+  log('deep history is deterministic:', a === b ? '✓' : '✗', '| seed-specific:', a !== other ? '✓' : '✗');
+  if (a !== b) errors.push('the same seed produces a different past each time it is asked');
+  if (a === other) errors.push('every seed shares the same past');
+
+  const ten = chron.tenancies(seed);
+  const chronological = ten.every(t => t.end >= t.start) &&
+    ten.every((t, i) => i === 0 || t.start >= ten[i - 1].start);
+  const beforeNow = ten.every(t => t.end < chron.presentYear(st));
+  const w = chron.weight(seed);
+  log(`  ${w.tenancies} earlier settlements, ${w.souls} souls, over ${w.years} years`,
+    chronological && beforeNow ? '✓ ordered and finished before you arrived' : '✗');
+  if (!chronological) errors.push('the deep history is not in chronological order');
+  if (!beforeNow) errors.push('an earlier settlement outlives the present day');
+  if (w.tenancies < 12 || w.souls < 500) errors.push('the record is too thin to mean anything');
+
+  // sealed until you have stood there
+  const sealedBefore = chron.deepEvents(st).filter(e => e.sealed).length;
+  const known = Object.keys(st.discovered || {}).length;
+  st.discovered.crater = true;
+  const sealedAfter = chron.deepEvents(st).filter(e => e.sealed).length;
+  log(`  landmarks found: ${known} | sealed entries ${sealedBefore} -> ${sealedAfter} after finding the crater`,
+    sealedAfter < sealedBefore ? '✓ discovery unseals the record' : '✗');
+  if (sealedAfter >= sealedBefore) errors.push('finding a landmark does not unseal its entry in the record');
+
+  // the reading instrument
+  game.ui.openRecord();
+  const cv = document.querySelector('#rec-canvas');
+  const openOk = !document.querySelector('#record').classList.contains('hidden') && game.ui.blocking;
+  log('  the record opens and holds the world still:', openOk ? '✓' : '✗');
+  if (!openOk) errors.push('the record does not open, or the world keeps running behind it');
+
+  // the crossing: opening starts inside the player's own days and pulls back
+  const firstSpan = game.ui.recordWindow().span;
+  for (let i = 0; i < 40; i++) game.ui.tickRecord(0.05);
+  const settledSpan = game.ui.recordWindow().span;
+  log(`  the crossing: opens on ${Math.round(firstSpan)} years of your own, settles at ${Math.round(settledSpan)}`,
+    firstSpan < 12 && settledSpan > 900 && game.ui.recordEnter >= 1 ? '✓ pulls back to the whole record' : '✗');
+  if (!(firstSpan < 12 && settledSpan > 900)) errors.push('the record does not pull back from the present to deep time');
+  if (game.ui.recordEnter < 1) errors.push('the opening transition never finishes');
+
+  game.ui.recordEnter = 1;
+  game.ui.recordScale = 0;
+  game.ui.recordYear = chron.presentYear(st);
+  game.ui.drawRecord();
+  const wholeSpan = game.ui.recordWindow().span;
+  game.ui.zoomRecord(1); game.ui.zoomRecord(1); game.ui.zoomRecord(1);
+  const closeSpan = game.ui.recordWindow().span;
+  game.ui.zoomRecord(1);
+  const clamped = game.ui.recordWindow().span === closeSpan;
+  log(`  a screen is worth ${Math.round(wholeSpan)} years at the widest, ${Math.round(closeSpan)} at the closest`,
+    wholeSpan > closeSpan * 50 && clamped ? '✓ scale collapses by orders of magnitude' : '✗');
+  if (!(wholeSpan > closeSpan * 50)) errors.push('zooming the record does not meaningfully change scale');
+  if (!clamped) errors.push('the record zoom does not clamp');
+
+  // reading a year tells the truth about that year
+  const tn = ten[Math.floor(ten.length / 2)];
+  game.ui.recordScale = 1;
+  game.ui.recordYear = tn.start + Math.floor(tn.span / 2);
+  game.ui.drawRecord();
+  const text = document.querySelector('#rec-lines').textContent;
+  const alt = cv.getAttribute('aria-label');
+  log(`  reading year ${game.ui.recordYear}: mentions ${tn.name}`, text.includes(tn.name) ? '✓' : '✗',
+    '| spoken label agrees:', alt.includes(tn.name) ? '✓' : '✗');
+  if (!text.includes(tn.name)) errors.push('reading a year does not report what stood there');
+  if (!alt.includes(tn.name)) errors.push('the record says one thing on screen and another to a screen reader');
+
+  // the player's own band, and how small it is
+  game.ui.recordYear = chron.presentYear(st);
+  game.ui.drawRecord();
+  const mine = document.querySelector('#rec-lines').textContent;
+  const share = document.querySelector('#rec-share').textContent;
+  const live = chron.livingBand(st);
+  const honest = mine.includes(String(live.felled)) && mine.includes(String(live.hunted)) && /Your tenancy/.test(share);
+  log(`  your own band: "${share.trim()}"`, honest ? '✓ measured, not narrated' : '✗');
+  if (!honest) errors.push('the record does not describe the player from live statistics');
+
+  // keyboard reading, and the ends of time
+  cv.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }));
+  const atStart = Math.round(game.ui.recordYear);
+  cv.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }));
+  const atEnd = Math.round(game.ui.recordYear);
+  log(`  Home reaches year ${atStart}, End returns to year ${atEnd}`,
+    atStart === 0 && atEnd === chron.presentYear(st) ? '✓' : '✗');
+  if (atStart !== 0 || atEnd !== chron.presentYear(st)) errors.push('the record cannot be walked from end to end by keyboard');
+
+  game.ui.closeRecord();
+  const freed = !game.ui.recordOpen && !game.ui.blocking;          // the world resumes at once
+  await new Promise(r => setTimeout(r, 260));                      // the sheet fades out
+  const hidden = document.querySelector('#record').classList.contains('hidden');
+  log('  closing gives the world back:', freed ? '✓' : '✗', '| the sheet fades out:', hidden ? '✓' : '✗');
+  if (!freed) errors.push('closing the record does not resume the world');
+  if (!hidden) errors.push('the record sheet stays on screen after closing');
+}
+
 // ---- streaming does not leak ----------------------------------------------
 // Walking a long way and coming back must leave the scene the size it was:
 // chunk churn is the one thing in this game that runs thousands of times.

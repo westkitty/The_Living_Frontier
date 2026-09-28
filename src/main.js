@@ -338,6 +338,7 @@ class Game {
     this.chunks.update(this.player.pos.x, this.player.pos.z, blocking ? 1 : 2);
     this.actors.update(dt, this.player);
     this.fx.update(dtRaw, this.camera, this.player.pos);
+    this.ui.tickRecord(dtRaw);
     this.syncStructures(dt);
     this.checkDiscoveries();
     this.updateSight(dtRaw);

@@ -223,6 +223,8 @@ export const PanelsMixin = {
     const cv = document.getElementById('ws-chart');
     if (!cv || st.history.length < 2) return;
     this.bindHistoryChart(cv, st);
+    const rec = document.getElementById('ws-open-record');
+    if (rec) rec.addEventListener('click', () => { this.closePanel(); this.openRecord(); });
     const g = cv.getContext('2d');
     if (!g) return;
     const W = cv.width, H = cv.height, pad = 16, foot = 26;   // foot leaves room for labels
@@ -321,6 +323,13 @@ export const PanelsMixin = {
         <p class="ws-empty">The frontier has not lived long enough to have a history yet.
         Come back after a couple of days and this becomes a chart of everything you changed.</p></div>`;
     }
+
+    // the way into deep time: the living world first, then everything it stands on
+    html += `<div class="ws-block"><h4>The Long Record</h4>
+      <p class="hint">Fourteen centuries of this valley are cut into the ground beneath these
+      villages. Your days are the last band of it.</p>
+      <button class="btn wide ws-record" id="ws-open-record" type="button">
+        ${icon('relic')} Read the Long Record <span class="kbd">R</span></button></div>`;
 
     html += `<div class="ws-block"><h4>Factions</h4>`;
     for (let i = 0; i < 3; i++) {

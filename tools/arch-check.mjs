@@ -23,7 +23,8 @@ const graph = new Map();
 for (const f of files) {
   const code = readFileSync(resolve(srcDir, f), 'utf8');
   const deps = new Set();
-  for (const m of code.matchAll(/(?:^|\n)\s*(?:import|export)[^;\n]*?from\s+'\.\/([A-Za-z0-9_.-]+)'/g)) deps.add(m[1]);
+  // note: imports may span several lines, so this must not be line-anchored
+  for (const m of code.matchAll(/(?:^|\n)\s*(?:import|export)[\s\S]*?from\s+'\.\/([A-Za-z0-9_.-]+)'/g)) deps.add(m[1]);
   for (const m of code.matchAll(/import\('\.\/([A-Za-z0-9_.-]+)'\)/g)) deps.add(m[1]);
   graph.set(f, deps);
 }
@@ -52,9 +53,9 @@ else ok('no import cycles');
 // place this ordering is written down, so keep them honest.
 const LAYER = {
   'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
-  'worldstate.js': 2, 'cartography.js': 3,
+  'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
   'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'audio.js': 3,
-  'player.js': 4, 'panels.js': 5, 'ui.js': 5,
+  'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'ui.js': 5,
   'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };
@@ -72,7 +73,7 @@ if (!problems.some(p => p.includes('upward'))) ok('every import points down the 
 // --- the simulation stays headless -----------------------------------------
 // worldstate/worldgen/rng must run with no DOM at all: that is what makes the
 // headless smoke test, the offline fast-forward and the save format testable.
-const HEADLESS = ['rng.js', 'worldgen.js', 'worldstate.js'];
+const HEADLESS = ['rng.js', 'worldgen.js', 'worldstate.js', 'chronology.js'];
 for (const f of HEADLESS) {
   for (const d of graph.get(f) || []) {
     if (!HEADLESS.includes(d)) problems.push(`${f} must stay headless but imports ${d}`);
@@ -93,7 +94,7 @@ for (const f of files) {
   // remove import statements (single or multi-line) before looking for uses,
   // but keep re-exports: `export { x } from ...` is itself a use.
   const body = code.replace(/(^|\n)import\s[^;]*?;/g, '\n');
-  for (const m of code.matchAll(/(^|\n)import\s+\{([^}]*)\}\s+from\s+'([^']+)';/g)) {
+  for (const m of code.matchAll(/(^|\n)import\s+\{([^}]*)\}\s+from\s+'([^']+)';/g)) {   // { } may wrap lines
     for (const raw of m[2].split(',')) {
       const name = raw.trim().split(/\s+as\s+/).pop().trim();
       if (!name) continue;

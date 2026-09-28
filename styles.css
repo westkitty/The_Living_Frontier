@@ -415,3 +415,30 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
   #vitals{bottom:calc(120px + var(--safe-b))}
   #touch-left{width:108px;height:108px}
 }
+
+/* ---- The Long Record: a core sample you can read ---- */
+.record-card{max-width:940px;width:96vw;height:92vh;display:flex;flex-direction:column}
+.rec-body{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,1.25fr);gap:18px;overflow:hidden;flex:1}
+.rec-column{position:relative;min-height:0}
+#rec-canvas{width:100%;height:100%;display:block;border-radius:10px;background:#07090a;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.8),0 0 0 1px var(--line)}
+#rec-canvas:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.rec-tools{position:absolute;right:8px;bottom:8px;display:flex;flex-direction:column;gap:6px}
+.rec-read{overflow-y:auto;padding-right:6px;min-height:0}
+.rec-read h3{margin:0;font-size:20px;letter-spacing:.02em;color:var(--amber)}
+.rec-depth{margin:2px 0 12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.rec-line{margin:0 0 10px;font-size:13.5px;line-height:1.55;color:var(--ink);
+  border-left:2px solid var(--line);padding-left:11px}
+.rec-line.event{border-left-color:var(--amber);color:#efe4c8}
+.rec-line.tenancy{border-left-color:#6b6455}
+.rec-line.quiet{border-left-color:#3a3a34;color:var(--dim);font-style:italic}
+.rec-line.living{border-left-color:#c9a24a;background:rgba(201,162,74,.07);padding:9px 11px;border-radius:0 8px 8px 0}
+.rec-line.mine{border-left-color:#8a7a4a;color:#d8cba8;font-size:12.5px}
+.rec-weight{margin:16px 0 4px;font-size:12px;line-height:1.6;color:#b9ad90;border-top:1px solid var(--line);padding-top:12px}
+.rec-share{margin:0 0 8px;font-size:12.5px;color:var(--amber)}
+.rec-hint{margin:6px 0 0;font-size:11px;color:var(--dim);line-height:1.5}
+.ws-record{display:flex;align-items:center;gap:10px;width:100%;justify-content:center;min-height:44px}
+@media (max-width:760px){
+  .rec-body{grid-template-columns:1fr;grid-template-rows:minmax(180px,42%) 1fr}
+  .record-card{width:100vw;height:100vh;max-width:none;border-radius:0}
+}
