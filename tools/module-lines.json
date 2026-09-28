@@ -11,6 +11,7 @@
     "dialogue.js": 130,
     "entities.js": 574,
     "fx.js": 398,
+    "fx-particles.js": 60,
     "guidance.js": 46,
     "history.js": 94,
     "interaction.js": 217,

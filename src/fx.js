@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { heightAt } from './worldgen.js';
 import { clamp, lerp, smoothstep } from './rng.js';
 import { shared } from './terrain.js';
+import { emitSmoke, updateSmokeParticles, updateSparkParticles } from './fx-particles.js';
 
 const SKY_VERT = `
   varying vec3 vDir;
@@ -34,11 +35,25 @@ const SKY_FRAG = `
     gl_FragColor = vec4(col, 1.0);
   }`;
 
+function blendSky(out, day, nightColor, duskColor, grayOut, gray, night, dusk, cloudy, grayScale, cloudScale) {
+  out.copy(day).lerp(nightColor, night).lerp(duskColor, dusk * 0.8);
+  grayOut.copy(gray).multiplyScalar(grayScale);
+  return out.lerp(grayOut, cloudy * cloudScale);
+}
+
 export class FX {
   constructor(scene, renderer, state) {
     this.scene = scene;
     this.state = state;
     this.renderer = renderer;
+    // Keep the sky palette and interpolation scratch colors off the frame path.
+    this.skyPalette = {
+      dayTop: new THREE.Color(0x2e6fbb), nightTop: new THREE.Color(0x070c1c), duskTop: new THREE.Color(0x2c3b6b),
+      dayMid: new THREE.Color(0x8cbce4), nightMid: new THREE.Color(0x101a33), duskMid: new THREE.Color(0x7a5a7e),
+      dayBot: new THREE.Color(0xd9dfd4), nightBot: new THREE.Color(0x141c2b), duskBot: new THREE.Color(0xe08a54),
+      gray: new THREE.Color(0x8e98a2), fogBank: new THREE.Color(0xa8b0b4),
+    };
+    this.skyGrayMix = [new THREE.Color(), new THREE.Color(), new THREE.Color()];
 
     this.skyUniforms = {
       uTop: { value: new THREE.Color(0x2f6fb5) },
@@ -154,6 +169,7 @@ export class FX {
     // smoke / ember points
     const N = 500;
     const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) pos[i * 3 + 1] = -9999;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     this.smokeMat = new THREE.PointsMaterial({ color: 0x6b6259, size: 2.4, transparent: true, opacity: 0.35, depthWrite: false });
@@ -161,12 +177,15 @@ export class FX {
     this.smoke.frustumCulled = false;
     this.scene.add(this.smoke);
     this.smokeParts = [];
-    for (let i = 0; i < N; i++) this.smokeParts.push({ life: 0, x: 0, y: -999, z: 0, vy: 0 });
+    this.smokeActive = [];
+    this.smokeCursor = 0;
+    for (let i = 0; i < N; i++) this.smokeParts.push({ life: 0, x: 0, y: -999, z: 0, vy: 0, active: false });
   }
 
   initSparks() {
     const N = 220;
     const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) pos[i * 3 + 1] = -9999;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     this.sparkMat = new THREE.PointsMaterial({ color: 0xffd08a, size: 0.7, transparent: true, opacity: 0.95, depthWrite: false });
@@ -174,7 +193,8 @@ export class FX {
     this.sparks.frustumCulled = false;
     this.scene.add(this.sparks);
     this.sparkParts = [];
-    for (let i = 0; i < N; i++) this.sparkParts.push({ life: 0, x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0, col: 0 });
+    this.sparkActive = [];
+    for (let i = 0; i < N; i++) this.sparkParts.push({ life: 0, x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0, col: 0, active: false });
     this.sparkCursor = 0;
   }
 
@@ -183,6 +203,7 @@ export class FX {
       const p = this.sparkParts[this.sparkCursor];
       this.sparkCursor = (this.sparkCursor + 1) % this.sparkParts.length;
       p.life = 0.5 + Math.random() * 0.6;
+      if (!p.active) { p.active = true; this.sparkActive.push(this.sparkCursor === 0 ? this.sparkParts.length - 1 : this.sparkCursor - 1); }
       p.x = pos.x; p.y = pos.y + 0.4; p.z = pos.z;
       p.vx = (Math.random() - 0.5) * spread;
       p.vy = Math.random() * up;
@@ -221,14 +242,10 @@ export class FX {
     const cloudy = clamp(w.intensity * (w.type === 'clear' ? 0.2 : 1), 0, 1);
     su.uSunSize.value = 1 - cloudy * 0.85;
 
-    const dayTop = new THREE.Color(0x2e6fbb), nightTop = new THREE.Color(0x070c1c), duskTop = new THREE.Color(0x2c3b6b);
-    const dayMid = new THREE.Color(0x8cbce4), nightMid = new THREE.Color(0x101a33), duskMid = new THREE.Color(0x7a5a7e);
-    const dayBot = new THREE.Color(0xd9dfd4), nightBot = new THREE.Color(0x141c2b), duskBot = new THREE.Color(0xe08a54);
-    const mix = (d, n, k) => d.clone().lerp(n, night).lerp(k, dusk * 0.8);
-    const gray = new THREE.Color(0x8e98a2);
-    su.uTop.value.copy(mix(dayTop, nightTop, duskTop)).lerp(gray.clone().multiplyScalar(0.5 + dayAmt * 0.5), cloudy * 0.8);
-    su.uMid.value.copy(mix(dayMid, nightMid, duskMid)).lerp(gray.clone().multiplyScalar(0.6 + dayAmt * 0.4), cloudy * 0.8);
-    su.uBottom.value.copy(mix(dayBot, nightBot, duskBot)).lerp(gray.clone().multiplyScalar(0.7 + dayAmt * 0.3), cloudy * 0.7);
+    const palette = this.skyPalette, grayMix = this.skyGrayMix;
+    blendSky(su.uTop.value, palette.dayTop, palette.nightTop, palette.duskTop, grayMix[0], palette.gray, night, dusk, cloudy, 0.5 + dayAmt * 0.5, 0.8);
+    blendSky(su.uMid.value, palette.dayMid, palette.nightMid, palette.duskMid, grayMix[1], palette.gray, night, dusk, cloudy, 0.6 + dayAmt * 0.4, 0.8);
+    blendSky(su.uBottom.value, palette.dayBot, palette.nightBot, palette.duskBot, grayMix[2], palette.gray, night, dusk, cloudy, 0.7 + dayAmt * 0.3, 0.7);
     su.uSunCol.value.setHSL(lerp(0.12, 0.05, dusk), 0.75, lerp(0.6, 0.5, night));
 
     // --- lights
@@ -245,7 +262,7 @@ export class FX {
 
     // --- fog
     this.fogColor.copy(su.uBottom.value).lerp(su.uMid.value, 0.45);
-    if (w.type === 'fogbank') this.fogColor.lerp(new THREE.Color(0xa8b0b4), 0.5 * w.intensity);
+    if (w.type === 'fogbank') this.fogColor.lerp(this.skyPalette.fogBank, 0.5 * w.intensity);
     this.scene.fog.color.copy(this.fogColor);
     this.renderer.setClearColor(this.fogColor);
     const fogFar = w.type === 'fogbank' ? lerp(520, 110, w.intensity)
@@ -322,7 +339,7 @@ export class FX {
     }
 
     this.updateFire(dt, playerPos);
-    this.updateSparks(dt);
+    updateSparkParticles(this, dt);
   }
 
   updateFire(dt, playerPos) {
@@ -347,7 +364,7 @@ export class FX {
       m.material.color.setHSL(lerp(0.02, 0.11, flick), 1.0, lerp(0.45, 0.62, flick));
       m.material.opacity = 0.75 + flick * 0.2;
       // smoke
-      if (Math.random() < dt * 14) this.emitSmoke(c.x, y + 3, c.z);
+      if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 3, c.z);
     }
     if (cells.length) {
       this.fireLight.position.set(cells[0].x, heightAt(cells[0].x, cells[0].z) + 4, cells[0].z);
@@ -355,44 +372,7 @@ export class FX {
       this.fireLight.distance = 70;
     } else this.fireLight.intensity = lerp(this.fireLight.intensity, 0, dt * 4);
 
-    // smoke particles
-    const sp = this.smoke.geometry.attributes.position.array;
-    for (let i = 0; i < this.smokeParts.length; i++) {
-      const p = this.smokeParts[i];
-      if (p.life > 0) {
-        p.life -= dt;
-        p.y += p.vy * dt;
-        p.x += Math.cos(st.weather.windDir) * dt * 3.5;
-        p.z += Math.sin(st.weather.windDir) * dt * 3.5;
-        sp[i * 3] = p.x; sp[i * 3 + 1] = p.y; sp[i * 3 + 2] = p.z;
-      } else { sp[i * 3 + 1] = -9999; }
-    }
-    this.smoke.geometry.attributes.position.needsUpdate = true;
-  }
-
-  emitSmoke(x, y, z) {
-    for (let k = 0; k < this.smokeParts.length; k++) {
-      const i = (this.smokeCursor = (this.smokeCursor || 0) + 1) % this.smokeParts.length;
-      const p = this.smokeParts[i];
-      if (p.life <= 0) {
-        p.life = 3 + Math.random() * 3; p.x = x + (Math.random() - 0.5) * 3;
-        p.y = y; p.z = z + (Math.random() - 0.5) * 3; p.vy = 3 + Math.random() * 4;
-        return;
-      }
-    }
-  }
-
-  updateSparks(dt) {
-    const arr = this.sparks.geometry.attributes.position.array;
-    for (let i = 0; i < this.sparkParts.length; i++) {
-      const p = this.sparkParts[i];
-      if (p.life > 0) {
-        p.life -= dt;
-        p.vy -= 9.8 * dt;
-        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
-        arr[i * 3] = p.x; arr[i * 3 + 1] = p.y; arr[i * 3 + 2] = p.z;
-      } else arr[i * 3 + 1] = -9999;
-    }
-    this.sparks.geometry.attributes.position.needsUpdate = true;
+    // Particle systems visit live slots only and skip idle GPU uploads.
+    updateSmokeParticles(this, dt);
   }
 }
