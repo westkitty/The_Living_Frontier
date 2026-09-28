@@ -55,7 +55,7 @@ const LAYER = {
   'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
   'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
   'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'audio.js': 3,
-  'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'ui.js': 5,
+  'guidance.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'ui.js': 5,
   'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };

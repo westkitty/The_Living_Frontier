@@ -4,6 +4,7 @@ import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, CAMPS, heightAt, caveFloor, pl
 import { clamp } from './rng.js';
 import { WorldState, regionIndex, SAVE_KEY } from './worldstate.js';
 import { drawSurveyThumb } from './cartography.js';
+import { Guidance } from './guidance.js';
 import { Settings } from './settings.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
 import { Vegetation } from './veg.js';
@@ -70,7 +71,9 @@ class Game {
     this.timeScale = 1;
     this.frameTimes = [];
 
+    this.guidance = new Guidance(state, this.ui);
     state.onNote = (e) => {
+      this.guidance.note(e);
       if (e.kind === 'faction') this.ui.toast(e.text, 'faction');
       else if (e.kind === 'settlement') this.ui.toast(e.text);
       else if (e.kind === 'combat') this.ui.toast(e.text, 'faction');
@@ -341,6 +344,7 @@ class Game {
     this.ui.tickRecord(dtRaw);
     this.syncStructures(dt);
     this.checkDiscoveries();
+    this.guidance.update(this.player.pos);
     this.updateSight(dtRaw);
 
     // Ground memory texture upload (throttled)
@@ -573,7 +577,9 @@ async function boot() {
         touch ? 'Hand button acts · blade strikes · » to run.' : 'E acts · F strikes or sets alight · Shift runs · H for help.',
         'Your map is blank until you walk it. Climb high ground to see further.',
       ];
-      tips.forEach((t, i) => setTimeout(() => game.ui.toast(t), 1600 + i * 4200));
+      if (prefs.hints) tips.forEach((t, i) => setTimeout(() => {
+        if (Settings.get('hints')) game.ui.toast(t);
+      }, 1600 + i * 4200));
     } else if (state.homecoming && state.homecoming.length) {
       for (const l of state.homecoming.slice().reverse()) state.note(l.text, l.kind === 'faction' ? 'faction' : 'world');
       setTimeout(() => game.ui.showHomecoming(state.homecoming, state.homecomingDays, state.awaySeconds), 900);
