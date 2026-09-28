@@ -24,7 +24,7 @@ export const InteractionMixin = {
       const a = act.actor;
       if (act.type === 'npc') return { type: 'npc', actor: a, label: a.fleeing > 0 ? `${a.name} flees from you` : `Talk to ${a.name}`, alt: 'Attack' };
       if (act.type === 'soldier') return { type: 'soldier', actor: a, label: `Hail the ${FACTIONS[a.faction].name}`, alt: 'Attack' };
-      if (!a.alive) return { type: 'carcass', actor: a, label: 'Take hide & meat', alt: null };
+      if (!a.alive) return { type: 'carcass', actor: a, label: 'Harvest hide', alt: null };
       return { type: 'animal', actor: a, label: a.def.pred ? 'Wolf — dangerous' : 'Approach quietly', alt: 'Strike' };
     }
     // relics at landmarks
@@ -42,8 +42,9 @@ export const InteractionMixin = {
             : t === 'ore' ? 'Mine ore'
               : t === 'rock' ? 'Break stone'
                 : t === 'sapling' ? 'Tend sapling' : 'Gather herbs';
-      const alt = (t === 'pine' || t === 'broad' || t === 'bush' || t === 'fern' || t === 'berry') ? 'Set alight' : null;
-      return { type: 'veg', veg: v, label, alt };
+      const canIgnite = (t === 'pine' || t === 'broad' || t === 'bush' || t === 'fern' || t === 'berry');
+      const alt = canIgnite ? (this.state.fireConditions().risk === 'tinder' ? 'Set alight — tinder risk' : 'Set alight') : null;
+      return { type: 'veg', veg: v, label, alt, canIgnite };
     }
     // plant sapling on bare ground
     if (this.state.player.inv.wood >= 1 && heightAt(p.x, p.z) > 1.5) {
@@ -59,10 +60,12 @@ export const InteractionMixin = {
     switch (t.type) {
       case 'veg': return this.harvest(t.veg);
       case 'carcass': {
-        inv.hide += 1; inv.berry += 1;
+        if (!this.actors.corpses.includes(t.actor)) return;
+        const amount = t.actor.kind === 'rabbit' ? 1 : 2;
+        inv.hide += amount;
         this.audio.play('pick');
-        this.ui.toast('+1 hide, +1 meat');
-        this.actors.remove(t.actor, t.actor.faction !== undefined ? this.actors.soldiers : this.actors.animals);
+        this.ui.toast(`+${amount} hide`);
+        this.actors.remove(t.actor, this.actors.corpses);
         break;
       }
       case 'relic': {
@@ -154,7 +157,7 @@ export const InteractionMixin = {
     this.player.addShake(0.16);
     const t = this.interactTarget;
     const p = this.player.pos;
-    if (t && t.type === 'veg' && t.alt === 'Set alight') {
+    if (t && t.type === 'veg' && t.canIgnite) {
       if (this.state.ignite(t.veg.item.x, t.veg.item.z, 0.8)) {
         this.audio.play('fire');
         this.ui.toast('Flames catch and spread with the wind…');

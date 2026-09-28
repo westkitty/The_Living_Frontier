@@ -545,6 +545,14 @@ game.ui.closeDialog();
 // tenancy is.
 {
   const chron = await import('../src/chronology.js');
+  const { WorldState: FreshState } = await import('../src/worldstate.js');
+  const fresh = new FreshState();
+  if (chron.livingBand(fresh).fate !== 'leave') errors.push('fresh tenancy must not inherit ancient border wars');
+  fresh.note('A banner changed hands.', 'faction');
+  if (chron.livingBand(fresh).fate !== 'war') errors.push('player-era banner change must yield war');
+  fresh.player.stats.hunted = 40;
+  if (chron.livingBand(fresh).fate !== 'starve') errors.push('hunting starvation must outrank banner changes');
+
   const seed = st.seed;
   const a = JSON.stringify(chron.tenancies(seed));
   const b = JSON.stringify(chron.tenancies(seed));
@@ -614,6 +622,37 @@ game.ui.closeDialog();
     '| spoken label agrees:', alt.includes(tn.name) ? '✓' : '✗');
   if (!text.includes(tn.name)) errors.push('reading a year does not report what stood there');
   if (!alt.includes(tn.name)) errors.push('the record says one thing on screen and another to a screen reader');
+
+  // Native sealed controls are keyboard-focusable and lead to the real stone.
+  const unread = chron.deepEvents(st).filter(e => e.sealed);
+  const previousWaypoint = game.ui.waypoint;
+  for (const entry of unread) {
+    game.ui.openRecord();
+    game.ui.recordEnter = 1;
+    game.ui.recordScale = 0;
+    game.ui.recordYear = entry.at;
+    game.ui.drawRecord();
+    const button = document.querySelector(`[data-record-landmark="${entry.landmark}"]`);
+    if (!button || button.tagName !== 'BUTTON' || button.tabIndex !== 0) {
+      errors.push(`sealed ${entry.id} lacks a native keyboard control`);
+      continue;
+    }
+    button.focus();
+    if (document.activeElement !== button) errors.push('sealed control cannot receive keyboard focus');
+    button.click(); // native buttons use this same activation for Enter/Space
+    const wp = game.ui.waypoint;
+    if (!wp || Math.hypot(wp.x - entry.x, wp.z - entry.z) >= 1) errors.push(`sealed ${entry.id} waypoint misses the stone`);
+    if (game.ui.recordOpen || game.ui.blocking) errors.push('sealed control did not close the record');
+    if (!st.journal.some(j => j.text.includes(`Something is recorded at ${entry.place}`))) errors.push('sealed control omitted its journal note');
+    st.discovered[entry.landmark] = true;
+    game.ui.drawRecord();
+    if (document.querySelector(`[data-record-landmark="${entry.landmark}"]`) ||
+        chron.deepEvents(st).find(e => e.id === entry.id).sealed) errors.push('discovered stone still presents a sealed control');
+    delete st.discovered[entry.landmark];
+  }
+  game.ui.waypoint = previousWaypoint;
+  game.ui.openRecord();
+  game.ui.recordEnter = 1;
 
   // the player's own band, and how small it is
   game.ui.recordYear = chron.presentYear(st);
@@ -1038,6 +1077,8 @@ if (reloaded.player.inv.relic !== 7 || reloaded.day !== st.day) errors.push('pla
 const { LANDMARKS } = await import('../src/worldgen.js');
 for (const L of LANDMARKS) { p.pos.set(L.x, 0, L.z); game.checkDiscoveries(); }
 log('landmarks discoverable:', Object.keys(st.discovered).length, '/', LANDMARKS.length);
+
+await import('./refinement-test.mjs');
 
 step(30);
 console.log('\n  errors:', errors.length ? errors : 'none');

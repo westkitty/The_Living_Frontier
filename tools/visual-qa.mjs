@@ -29,6 +29,8 @@ window.HTMLCanvasElement.prototype.getContext = function (type) {
     ctx.__wrapped = true;
     const di = ctx.drawImage.bind(ctx);
     ctx.drawImage = (img, ...rest) => di(backing.get(img) || img, ...rest);
+    const cp = ctx.createPattern.bind(ctx);
+    ctx.createPattern = (img, repeat) => cp(backing.get(img) || img, repeat);
   }
   try { ctx.canvas = this; } catch (e) { /* read-only */ }
   return ctx;
@@ -135,7 +137,13 @@ if (state.history.length > 4) {
 }
 
 const chart = document.querySelector('#ws-chart');
-if (chart) png(chart, 'ws-chart.png'); else console.log('  (no chronicle chart rendered)');
+if (chart) {
+  png(chart, 'ws-chart.png');
+  for (const series of game.ui.chartSeries()) if (series.k !== 1) game.ui.chartHiddenSet().add(series.k);
+  game.ui.drawHistoryChart(state);
+  png(chart, 'ws-chart-herds.png');
+  game.ui.chartHiddenSet().clear();
+} else console.log('  (no chronicle chart rendered)');
 
 // the title-screen portrait of this saved world, from the save itself
 state.save();

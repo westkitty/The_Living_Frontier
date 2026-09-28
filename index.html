@@ -74,6 +74,7 @@
         <figcaption id="save-thumb-cap">surveyed</figcaption>
       </figure>
       <div id="save-summary" class="save-summary"></div>
+      <p id="save-recovery" class="hint" role="status" aria-live="polite"></p>
     </div>
     <div class="boot-actions">
       <button id="btn-continue" class="btn primary">Continue</button>
@@ -102,7 +103,7 @@
       <span id="day-label">Day 1</span>
       <span id="time-label">06:42</span>
     </div>
-    <div class="weather-row"><svg class="ic sm" id="weather-icon" aria-hidden="true"><use href="#i-sun"/></svg><span id="weather-label">Clear</span><span id="temp-dot"></span></div>
+    <div class="weather-row"><svg class="ic sm" id="weather-icon" aria-hidden="true"><use href="#i-sun"/></svg><span id="weather-label">Clear</span><span id="temp-dot"></span><span id="fire-risk" role="status" aria-live="polite" aria-label="Fire risk: dry">dry</span></div>
   </div>
 
   <div id="top-right">
@@ -169,9 +170,9 @@
             <button class="map-btn" id="map-all" aria-label="Fit the whole frontier" title="Fit the whole frontier"><svg class="ic" aria-hidden="true"><use href="#i-expand"/></svg></button>
           </div>
           <div class="map-key" id="map-key">
-            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-pact"/></svg>Verdant Pact — round</span>
-            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-legion"/></svg>Ashen Legion — square</span>
-            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-kin"/></svg>Hollow Kin — triangle</span>
+            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-pact"/></svg>Verdant Pact — round · solid-light land</span>
+            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-legion"/></svg>Ashen Legion — square · hatched land</span>
+            <span><svg class="ic" aria-hidden="true"><use href="#i-crest-kin"/></svg>Hollow Kin — triangle · dotted land</span>
           </div>
           <div class="map-hint" id="map-hint">drag to pan · pinch or scroll to zoom · tap to set a waypoint</div>
         </div>

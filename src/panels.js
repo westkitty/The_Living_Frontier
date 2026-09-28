@@ -118,8 +118,8 @@ export const PanelsMixin = {
       const r = cv.getBoundingClientRect();
       const w = r.width || cv.width;
       const t = w ? (clientX - r.left) / w : 0;
-      const pad = 16 / cv.width;
-      const u = Math.max(0, Math.min(1, (t - pad) / Math.max(1e-6, 1 - pad * 2)));
+      const left = (cv._plotLeft || 16) / cv.width, right = 16 / cv.width;
+      const u = Math.max(0, Math.min(1, (t - left) / Math.max(1e-6, 1 - left - right)));
       const h = this.state.history;
       this.chartDay = h[Math.round(u * (h.length - 1))][0];
       this.drawHistoryChart(this.state);
@@ -168,22 +168,25 @@ export const PanelsMixin = {
     const events = st.journal.filter(e => e.day === row[0]);
     const text = `Day ${row[0]} · ${row[1]} herd animals · ${row[2]} predators · `
       + `${row[3]}% forest · ${row[4]} scorched cells · prosperity ${(row[8] / 100).toFixed(2)}`;
-    el.innerHTML = `<b>${text}</b>`
+    const visible = this.chartSeries().filter(s => !this.chartHiddenSet().has(s.k));
+    const scale = visible.length === 1 ? `Y-axis: ${visible[0].unit}.`
+      : visible.length ? 'Normalised view: each line uses its own range.' : 'No series visible.';
+    el.innerHTML = `<b>${text}</b><span>${scale}</span>`
       + (events.length
         ? `<ul>${events.slice(0, 4).map(e => `<li class="k-${e.kind}">${e.text}</li>`).join('')}</ul>`
         : `<span class="none">nothing was written in the chronicle that day</span>`);
-    return text + (events.length ? `. Chronicle: ${events.slice(0, 4).map(e => e.text).join(' ')}` : '. Nothing recorded.');
+    return text + '. ' + scale + (events.length ? `. Chronicle: ${events.slice(0, 4).map(e => e.text).join(' ')}` : '. Nothing recorded.');
   },
 
   // The five tracked quantities, in one place so the chart, the legend and the
   // readout can never disagree about what is being drawn.
   chartSeries() {
     return [
-      { k: 1, c: '#9ec98a', label: 'herds', fmt: (v) => String(v) },
-      { k: 2, c: '#ef6a54', label: 'predators', fmt: (v) => String(v) },
-      { k: 3, c: '#68d18a', label: 'forest', fmt: (v) => v + '%' },
-      { k: 4, c: '#8a6a4a', label: 'scorched', fmt: (v) => v + ' cells' },
-      { k: 8, c: '#e0b661', label: 'prosperity', fmt: (v) => (v / 100).toFixed(2) },
+      { k: 1, c: '#9ec98a', label: 'herds', unit: 'herd animals', fmt: (v) => String(v) },
+      { k: 2, c: '#ef6a54', label: 'predators', unit: 'predators', fmt: (v) => String(v) },
+      { k: 3, c: '#68d18a', label: 'forest', unit: 'forest cover (%)', fmt: (v) => v + '%' },
+      { k: 4, c: '#8a6a4a', label: 'scorched', unit: 'scorched ground cells', fmt: (v) => v + ' cells' },
+      { k: 8, c: '#e0b661', label: 'prosperity', unit: 'prosperity (0–1)', fmt: (v) => (v / 100).toFixed(2) },
     ];
   },
 
@@ -232,7 +235,10 @@ export const PanelsMixin = {
     g.fillStyle = '#12150f';
     g.fillRect(0, 0, W, H);
     const h = st.history;
-    const x = (i) => pad + (i / (h.length - 1)) * (W - pad * 2);
+    const series = this.chartSeries().filter(s => !this.chartHiddenSet().has(s.k));
+    const left = series.length === 1 ? 100 : pad;
+    cv._plotLeft = left;
+    const x = (i) => left + (i / (h.length - 1)) * (W - left - pad);
 
     // day gridlines every 5 in-world days
     g.strokeStyle = 'rgba(226,208,164,.09)'; g.lineWidth = 1;
@@ -241,13 +247,20 @@ export const PanelsMixin = {
       g.beginPath(); g.moveTo(x(i), pad * 0.4); g.lineTo(x(i), H - foot); g.stroke();
     }
 
-    const series = this.chartSeries().filter(s => !this.chartHiddenSet().has(s.k));
     for (const s of series) {
       let lo = Infinity, hi = -Infinity;
       for (const row of h) { lo = Math.min(lo, row[s.k]); hi = Math.max(hi, row[s.k]); }
       const range = hi - lo;
       const top = pad, bot = H - foot;
       const y = (v) => range < 1e-6 ? (top + bot) / 2 : bot - ((v - lo) / range) * (bot - top);
+      if (series.length === 1) {
+        g.font = '12px system-ui, sans-serif';
+        g.fillStyle = '#e6d9b8'; g.strokeStyle = 'rgba(226,208,164,.22)';
+        for (const [value, yy] of [[lo, bot], [(lo + hi) / 2, (top + bot) / 2], [hi, top]]) {
+          g.beginPath(); g.moveTo(left, yy); g.lineTo(W - pad, yy); g.stroke();
+          g.fillText(s.fmt(value), 5, yy + 4);
+        }
+      }
       g.beginPath();
       for (let i = 0; i < h.length; i++) {
         const px = x(i), py = y(h[i][s.k]);

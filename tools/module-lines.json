@@ -1,0 +1,36 @@
+{
+  "worst": {
+    "module": "worldstate.js",
+    "lines": 680
+  },
+  "modules": {
+    "audio.js": 137,
+    "cartography.js": 537,
+    "chronology.js": 193,
+    "deeprecord.js": 423,
+    "dialogue.js": 130,
+    "entities.js": 574,
+    "fx.js": 398,
+    "guidance.js": 46,
+    "history.js": 94,
+    "interaction.js": 217,
+    "loop.js": 187,
+    "main.js": 268,
+    "map-ui.js": 357,
+    "panels.js": 394,
+    "persistence.js": 188,
+    "player.js": 365,
+    "quests.js": 45,
+    "rng.js": 65,
+    "save-recovery.js": 111,
+    "settings.js": 64,
+    "streaming.js": 183,
+    "structures.js": 472,
+    "terrain.js": 261,
+    "ui.js": 608,
+    "uikit.js": 24,
+    "veg.js": 460,
+    "worldgen.js": 321,
+    "worldstate.js": 680
+  }
+}

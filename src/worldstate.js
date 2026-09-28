@@ -1,57 +1,14 @@
 // The persistent, simulated world. Everything the player changes lives here,
 // is ticked over time (even while the game is closed) and is saved to localStorage.
 import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, heightAt, moistureAt } from './worldgen.js';
+import { HistoryMixin, HomecomingMixin } from './history.js';
+import { PersistenceMixin, LoadMixin } from './persistence.js';
 import { clamp, lerp, mulberry32 } from './rng.js';
 
-export const SAVE_KEY = 'living_frontier_save_v1';
+export { SAVE_KEY, rleDecode } from './persistence.js';
 export const DAY_LENGTH = 420;       // real seconds for a full day/night cycle
 const R = WORLD.stateRes, FR = WORLD.fireRes, RR = WORLD.regionRes;
 const XR = WORLD.exploreRes;
-
-// ---------------------------------------------------------------------------
-// Compression helpers (RLE + base64) so a 256KB ground map fits in localStorage
-// ---------------------------------------------------------------------------
-function deinterleave(u8, ch) {
-  const n = u8.length / 4;
-  const out = new Uint8Array(n);
-  for (let i = 0; i < n; i++) out[i] = u8[i * 4 + ch];
-  return out;
-}
-function interleaveInto(u8, plane, ch) {
-  for (let i = 0; i < plane.length; i++) u8[i * 4 + ch] = plane[i];
-}
-function rleEncode(u8) {
-  const out = [];
-  let i = 0;
-  while (i < u8.length) {
-    const v = u8[i]; let n = 1;
-    while (i + n < u8.length && u8[i + n] === v && n < 65535) n++;
-    out.push(v, n); i += n;
-  }
-  const buf = new Uint8Array(out.length * 3 / 2 | 0 + 8);
-  const arr = [];
-  for (let k = 0; k < out.length; k += 2) { arr.push(out[k], out[k + 1] & 255, (out[k + 1] >> 8) & 255); }
-  const bytes = new Uint8Array(arr);
-  let s = '';
-  for (let k = 0; k < bytes.length; k += 4096) s += String.fromCharCode.apply(null, bytes.subarray(k, k + 4096));
-  return btoa(s);
-}
-function quantize(u8, step) {
-  const out = new Uint8Array(u8.length);
-  for (let i = 0; i < u8.length; i++) out[i] = Math.round(u8[i] / step) * step;
-  return out;
-}
-export function rleDecode(b64, length) {
-  const bin = atob(b64);
-  const out = new Uint8Array(length);
-  let p = 0;
-  for (let i = 0; i + 2 < bin.length + 1 && p < length; i += 3) {
-    const v = bin.charCodeAt(i);
-    const n = bin.charCodeAt(i + 1) | (bin.charCodeAt(i + 2) << 8);
-    for (let k = 0; k < n && p < length; k++) out[p++] = v;
-  }
-  return out;
-}
 
 // ---------------------------------------------------------------------------
 export function worldToState(x, z) {
@@ -220,93 +177,6 @@ export class WorldState {
     this.groundDirty = true; this.groundStamp++;
   }
 
-  // ------------------------------------------------------------- homecoming
-  // A compact photograph of the frontier, written into every save. When the
-  // player returns it is compared against the world that kept running without
-  // them, so "come back and see what changed" can actually be shown.
-  // A day's vital signs, quantised small enough to keep 90 of them in the save.
-  // This is what lets the world draw its own biography on the world screen.
-  recordHistory() {
-    let prey = 0, pred = 0, trees = 0;
-    for (const r of this.regions) { prey += r.prey; pred += r.pred; trees += r.trees; }
-    const n = this.regions.length;
-    let alive = 0, pros = 0;
-    for (const s of this.settlements) { if (!s.abandoned) { alive++; pros += s.prosperity; } }
-    this.history.push([
-      this.day,
-      Math.round(prey),
-      Math.round(pred),
-      Math.round((trees / n) * 100),
-      this.scorchedCells(),
-      this.factions[0].territory, this.factions[1].territory, this.factions[2].territory,
-      Math.round((alive ? pros / alive : 0) * 100),
-    ]);
-    if (this.history.length > 90) this.history.splice(0, this.history.length - 90);
-  }
-
-  snapshot() {
-    let prey = 0, pred = 0, trees = 0;
-    for (const r of this.regions) { prey += r.prey; pred += r.pred; trees += r.trees; }
-    return {
-      day: this.day,
-      set: this.settlements.map(s => ({
-        n: s.name, p: +s.prosperity.toFixed(3), b: s.buildings, w: s.walls,
-        ban: s.banner, ab: !!s.abandoned, st: s.status, pop: Math.round(s.population),
-      })),
-      ter: this.factions.map(f => f.territory),
-      eco: { prey: Math.round(prey), pred: Math.round(pred), trees: +(trees / this.regions.length).toFixed(3) },
-      burn: this.scorchedCells(),
-    };
-  }
-  scorchedCells() {
-    let n = 0;
-    for (let i = 0; i < this.ground.length; i += 4) if (this.ground[i] > 60) n++;
-    return n;
-  }
-
-  // Produces the plain-language account of what happened while away.
-  static diffSnapshots(before, after, awaySeconds) {
-    if (!before || !after) return [];
-    const lines = [];
-    const days = after.day - before.day;
-    const byName = Object.fromEntries((before.set || []).map(s => [s.n, s]));
-    for (const a of after.set || []) {
-      const b = byName[a.n];
-      if (!b) continue;
-      if (a.ab && !b.ab) { lines.push({ kind: 'bad', text: `${a.n} was abandoned. Nothing is left but rubble.` }); continue; }
-      if (!a.ab && b.ab) { lines.push({ kind: 'good', text: `${a.n} was resettled.` }); continue; }
-      if (a.ban !== b.ban) lines.push({ kind: 'faction', text: `${a.n} now flies a different banner.`, banner: a.ban });
-      if (a.b > b.b) lines.push({ kind: 'good', text: `${a.n} raised ${a.b - b.b} new building${a.b - b.b > 1 ? 's' : ''} (${a.pop} souls).` });
-      else if (a.b < b.b) lines.push({ kind: 'bad', text: `${a.n} lost ${b.b - a.b} building${b.b - a.b > 1 ? 's' : ''} to neglect.` });
-      else if (a.st !== b.st) lines.push({ kind: a.p > b.p ? 'good' : 'bad', text: `${a.n} is ${a.st} now, where it was ${b.st}.` });
-      if (a.w > b.w) lines.push({ kind: 'world', text: `${a.n} put up new walls.` });
-    }
-    for (let i = 0; i < (after.ter || []).length; i++) {
-      const d = after.ter[i] - (before.ter[i] || 0);
-      if (Math.abs(d) >= 3) {
-        lines.push({
-          kind: 'faction', faction: i,
-          text: d > 0 ? `${FACTIONS[i].name} pushed into ${d} more regions.` : `${FACTIONS[i].name} was driven out of ${-d} regions.`,
-        });
-      }
-    }
-    const e0 = before.eco || {}, e1 = after.eco || {};
-    if (e0.prey && Math.abs(e1.prey - e0.prey) / Math.max(1, e0.prey) > 0.18) {
-      lines.push({ kind: 'world', text: e1.prey > e0.prey ? 'The herds have grown fat in your absence.' : 'The herds have thinned.' });
-    }
-    if (e0.pred && Math.abs(e1.pred - e0.pred) / Math.max(1, e0.pred) > 0.22) {
-      lines.push({ kind: e1.pred > e0.pred ? 'bad' : 'world', text: e1.pred > e0.pred ? 'Wolves are bolder and more numerous.' : 'The wolf packs have shrunk.' });
-    }
-    if (e0.trees !== undefined && Math.abs(e1.trees - e0.trees) > 0.045) {
-      lines.push({ kind: e1.trees > e0.trees ? 'good' : 'bad', text: e1.trees > e0.trees ? 'The woods have crept back in.' : 'The woods are thinner than you left them.' });
-    }
-    const burnDelta = (after.burn || 0) - (before.burn || 0);
-    if (burnDelta > 40) lines.push({ kind: 'bad', text: 'Fire took more ground while you were gone.' });
-    else if (burnDelta < -40) lines.push({ kind: 'good', text: 'Old burn scars have greened over.' });
-    if (!lines.length && days > 0) lines.push({ kind: 'world', text: 'The frontier turned quietly. Nothing of note changed.' });
-    return lines.slice(0, 8);
-  }
-
   // -------------------------------------------------------------- discovery
   // Reveals the map around a point. Sight reaches further from high ground, so
   // climbing a ridge genuinely rewards you with more of the world.
@@ -354,9 +224,20 @@ export class WorldState {
   }
   burningCount() { return this.burningList.length; }
 
+  fireConditions() {
+    const w = this.weather;
+    const rain = w.type === 'rain' || w.type === 'storm' ? 1 : w.type === 'snow' ? 0.8 : 0;
+    const wetness = Math.max(rain, clamp(w.groundWetness || 0, 0, 1));
+    const wind = Math.max(0, w.windSpeed) / 0.45;
+    // The displayed risk is the maximum directional spread multiplier, not a second model.
+    const multiplier = along => (0.45 + wind * (along * 0.5 + 0.5)) * (1 - wetness);
+    const risk = wetness >= 0.5 ? 'damp' : multiplier(1) >= 1.15 ? 'tinder' : 'dry';
+    return { wetness, multiplier, risk };
+  }
+
   tickFire(dt) {
     const w = this.weather;
-    const wetness = w.type === 'rain' || w.type === 'storm' ? 1 : w.type === 'snow' ? 0.8 : 0;
+    const { wetness, multiplier } = this.fireConditions();
     const wx = Math.cos(w.windDir), wz = Math.sin(w.windDir);
     let any = false;
     const spread = [];
@@ -396,7 +277,7 @@ export class WorldState {
             const nidx = nj * FR + ni;
             if (this.burning[nidx] > 0.1 || this.fuel[nidx] < 40) continue;
             const along = clamp(dx * wx + dz * wz, -1, 1);
-            const chance = dt * (0.008 + 0.055 * (this.fuel[nidx] / 255)) * (0.45 + 1.0 * (along * 0.5 + 0.5)) * (1 - wetness);
+            const chance = dt * (0.008 + 0.055 * (this.fuel[nidx] / 255)) * multiplier(along);
             if (Math.random() < chance) spread.push(nidx);
           }
         }
@@ -643,6 +524,8 @@ export class WorldState {
     }
     w.intensity = lerp(w.intensity, w.target, clamp(dt * 0.12, 0, 1));
     w.windSpeed = lerp(w.windSpeed, 0.25 + (w.type === 'storm' ? 0.9 : w.type === 'rain' ? 0.5 : 0.2) * w.intensity + 0.15, clamp(dt * 0.2, 0, 1));
+    const soaking = w.type === 'rain' || w.type === 'storm' || w.type === 'snow';
+    w.groundWetness = clamp((w.groundWetness || 0) + dt * (soaking ? 0.025 : -0.003), 0, 1);
     // Rain regrows the land a little and douses scars slowly
     if (w.type === 'rain' || w.type === 'storm') this.rainAccum = (this.rainAccum || 0) + dt * w.intensity;
   }
@@ -790,128 +673,8 @@ export class WorldState {
     while (left > 0 && guard++ < 2600) { this.update(Math.min(step, left), true); left -= step; }
   }
 
-  // ------------------------------------------------------------------- save
-  serialize() {
-    return {
-      v: this.version, seed: this.seed, time: this.time, day: this.day, elapsed: this.elapsed,
-      savedAt: Date.now(),
-      ground: [0, 1, 2, 3].map(ch => rleEncode(deinterleave(this.ground, ch))),
-      fuel: rleEncode(quantize(this.fuel, 16)),
-      weather: this.weather,
-      regions: this.regions.map(r => [+r.prey.toFixed(2), +r.pred.toFixed(2), r.cap, +r.trees.toFixed(3), Math.round(r.ore), r.owner, r.pressure.map(p => Math.round(p)), +r.heat.toFixed(2)]),
-      settlements: this.settlements,
-      factions: this.factions,
-      explored: rleEncode(this.explored),
-      vegRemoved: this.vegRemoved,
-      plantings: this.plantings || [],
-      discovered: this.discovered,
-      journal: this.journal.slice(0, 60),
-      quests: this.quests,
-      player: this.player,
-      snap: this.snapshot(),
-      history: this.history.slice(-90),
-    };
-  }
 
-  static deserialize(obj) {
-    const s = new WorldState(obj.seed ?? WORLD.seed);
-    s.burningList = [];
-    s.time = obj.time; s.day = obj.day; s.elapsed = obj.elapsed || 0;
-    if (Array.isArray(obj.ground)) {
-      for (let ch = 0; ch < 4; ch++) interleaveInto(s.ground, rleDecode(obj.ground[ch], R * R), ch);
-    } else if (obj.ground) s.ground = rleDecode(obj.ground, R * R * 4);
-    if (obj.fuel) s.fuel = rleDecode(obj.fuel, FR * FR);
-    Object.assign(s.weather, obj.weather || {});
-    if (obj.regions) obj.regions.forEach((a, i) => {
-      const r = s.regions[i]; if (!r) return;
-      r.prey = a[0]; r.pred = a[1]; r.cap = a[2]; r.trees = a[3]; r.ore = a[4]; r.owner = a[5]; r.pressure = a[6]; r.heat = a[7];
-    });
-    if (obj.settlements) obj.settlements.forEach((o, i) => { if (s.settlements[i]) Object.assign(s.settlements[i], o); });
-    if (obj.factions) obj.factions.forEach((o, i) => { if (s.factions[i]) Object.assign(s.factions[i], o); });
-    if (Array.isArray(obj.history)) {
-      s.history = obj.history.filter(h => Array.isArray(h) && h.length >= 9 && Number.isFinite(h[0])).slice(-90);
-    }
-    if (obj.explored) {
-      s.explored = rleDecode(obj.explored, XR * XR);
-    } else {
-      // Saves from before the map existed: reconstruct the remembered map from
-      // the trails the player actually wore into the ground.
-      for (let j = 0; j < XR; j++) for (let i = 0; i < XR; i++) {
-        const x = (i + 0.5) * WORLD.exploreCell - WORLD.half;
-        const z = (j + 0.5) * WORLD.exploreCell - WORLD.half;
-        if (s.getGround.call(s, x, z, 1) > 0.12) s.markExplored(x, z, 130);
-      }
-    }
-    s.vegRemoved = obj.vegRemoved || {};
-    s.plantings = obj.plantings || [];
-    s.discovered = obj.discovered || {};
-    s.journal = obj.journal || [];
-    s.events = (obj.journal || []).slice(0, 20);
-    s.quests = obj.quests || [];
-    Object.assign(s.player, obj.player || {});
-    s.player.firstRun = false;
-    s.recountTerritory();
-    s.groundDirty = true;
-    return s;
-  }
-
-  save() {
-    let payload;
-    try {
-      payload = JSON.stringify(this.serialize());
-    } catch (e) {
-      console.warn('could not serialise world', e);
-      this.saveError = 'serialise';
-      return false;
-    }
-    try {
-      localStorage.setItem(SAVE_KEY, payload);
-      this.lastSave = Date.now();
-      this.saveBytes = payload.length;
-      this.saveError = null;
-      return true;
-    } catch (e) {
-      // Quota or a blocked storage partition. Try once more without the
-      // chronicle, which is the largest expendable part of the save.
-      this.saveError = (e && e.name) || 'blocked';
-      try {
-        const slim = this.serialize();
-        slim.journal = slim.journal.slice(0, 10);
-        localStorage.setItem(SAVE_KEY, JSON.stringify(slim));
-        this.lastSave = Date.now();
-        this.saveError = null;
-        return true;
-      } catch (e2) {
-        console.warn('save failed', e2);
-        return false;
-      }
-    }
-  }
-
-  // Returns { state, status } so the caller can tell the player the truth:
-  //   'new'      no save present
-  //   'ok'       loaded
-  //   'damaged'  a save existed but could not be read — a fresh world is given
-  static loadResult() {
-    let raw = null;
-    try { raw = localStorage.getItem(SAVE_KEY); }
-    catch (e) { return { state: null, status: 'new', reason: 'storage-blocked' }; }
-    if (!raw) return { state: null, status: 'new' };
-    try {
-      const obj = JSON.parse(raw);
-      const s = WorldState.deserialize(obj);
-      const away = Math.max(0, (Date.now() - (obj.savedAt || Date.now())) / 1000);
-      s.awaySeconds = away;
-      if (away > 30) s.fastForward(Math.min(away * 6, 60 * 60 * 6));
-      s.homecoming = away > 120 ? WorldState.diffSnapshots(obj.snap, s.snapshot(), away) : [];
-      s.homecomingDays = obj.snap ? s.day - obj.snap.day : 0;
-      return { state: s, status: 'ok' };
-    } catch (e) {
-      console.warn('load failed', e);
-      // keep the unreadable save aside rather than overwriting it immediately
-      try { localStorage.setItem(SAVE_KEY + '_damaged', raw.slice(0, 200000)); } catch (e2) { }
-      return { state: null, status: 'damaged', reason: (e && e.message) || 'unreadable' };
-    }
-  }
-  static load() { return WorldState.loadResult().state; }
 }
+
+Object.assign(WorldState.prototype, PersistenceMixin, HistoryMixin);
+Object.assign(WorldState, LoadMixin, HomecomingMixin);

@@ -91,6 +91,19 @@ for (const m of html.matchAll(/<canvas\b([^>]*)>/g)) {
   if (!/aria-label=|role="img"|aria-hidden/.test(a)) warn.push(`<canvas id="${id}"> has no text alternative`);
 }
 
+// Focusable canvases are gesture controls, including runtime template markup.
+const gestureRules = [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+  .filter(([, , declarations]) => /(?:^|;)\s*touch-action\s*:\s*none\s*(?:;|$)/.test(declarations));
+for (const [file, markup] of Object.entries({ 'index.html': html, ...src })) {
+  for (const [, attrs] of markup.matchAll(/<canvas\b([^>]*)>/g)) {
+    if (!/\btabindex\s*=/.test(attrs)) continue;
+    const id = attrs.match(/\bid=["']([^"']+)["']/)?.[1];
+    const covered = id && gestureRules.some(([ , selectors]) =>
+      selectors.split(',').some(selector => selector.trim() === '#' + id));
+    if (!covered) problems.push(`${file}: focusable canvas #${id || '?'} needs touch-action:none`);
+  }
+}
+
 // modal surfaces need dialog semantics
 for (const id of ['panel', 'menu', 'dialog', 'confirm']) {
   const tag = html.match(new RegExp(`<div id="${id}"[^>]*>`));

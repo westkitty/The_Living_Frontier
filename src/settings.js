@@ -10,6 +10,7 @@ const DEFAULTS = {
   sensitivity: 1,         // look speed multiplier, 0.4 – 2
   invertY: false,
   hints: true,
+  seenHints: {},
   lastTab: 'map',
   mapView: null,          // where the player last had the survey map
 };
@@ -23,12 +24,15 @@ export const Settings = {
   values: { ...DEFAULTS },
 
   load() {
+    this.values = { ...DEFAULTS, seenHints: {} };
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) Object.assign(this.values, JSON.parse(raw) || {});
     } catch (e) { /* corrupt or unavailable storage: fall back to defaults */ }
     // clamp anything a hand-edited/corrupt store could have broken
     const v = this.values;
+    v.seenHints = Object.fromEntries(['night', 'tree', 'fire', 'village', 'banner', 'landmark']
+      .filter(key => v.seenHints && v.seenHints[key] === true).map(key => [key, true]));
     if (!['high', 'medium', 'low'].includes(v.quality)) v.quality = 'high';
     v.sensitivity = Math.min(2, Math.max(0.4, Number(v.sensitivity) || 1));
     v.volume = Math.min(1, Math.max(0, Number(v.volume) >= 0 ? Number(v.volume) : 0.7));

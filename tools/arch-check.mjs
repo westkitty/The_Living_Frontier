@@ -7,6 +7,7 @@
 // every other check, so that class of mistake is now a build failure.
 //
 //   node tools/arch-check.mjs
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -29,6 +30,43 @@ for (const f of files) {
   graph.set(f, deps);
 }
 console.log(`  read ${graph.size} modules`);
+
+// --- module size ratchet ----------------------------------------------------
+// Per-module ceilings catch filler even in a small leaf. When reducing a file,
+// lower its recorded ceiling too; do not raise a ceiling to accommodate growth.
+const lineBudget = JSON.parse(readFileSync(resolve(root, 'tools/module-lines.json'), 'utf8'));
+// A ceiling may be tightened but not quietly raised relative to the last commit.
+let previousBudget = null;
+try {
+  previousBudget = JSON.parse(execFileSync('git', ['show', 'HEAD:tools/module-lines.json'],
+    { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+} catch { /* first introduction of this gate, or a source archive without Git */ }
+if (previousBudget) {
+  if (lineBudget.worst.lines > previousBudget.worst.lines) problems.push('worst-module ceiling may only decrease');
+  for (const [f, limit] of Object.entries(previousBudget.modules)) {
+    if (f in lineBudget.modules && lineBudget.modules[f] > limit) problems.push(`${f}: line ceiling may only decrease`);
+  }
+}
+let largest = { module: '', lines: 0 };
+for (const f of files) {
+  const text = readFileSync(resolve(srcDir, f), 'utf8');
+  const lines = text.split('\n').length - (text.endsWith('\n') ? 1 : 0);
+  if (lines > largest.lines) largest = { module: f, lines };
+  if (!(f in lineBudget.modules)) problems.push(`${f} needs a recorded line ceiling`);
+  else if (lines > lineBudget.modules[f]) problems.push(`${f}: ${lines} lines exceeds its ratchet ${lineBudget.modules[f]}`);
+  if (lines > 700) problems.push(`${f}: ${lines} lines exceeds the absolute 700-line limit`);
+}
+if (lineBudget.worst.lines > 700 || Object.values(lineBudget.modules).some(n => n > lineBudget.worst.lines)) {
+  problems.push('line budget itself exceeds the recorded worst module');
+}
+if (largest.lines > lineBudget.worst.lines) problems.push('worst module grew beyond its recorded ceiling');
+else ok(`largest module: ${largest.module} (${largest.lines} lines; ratchet ${lineBudget.worst.lines}, hard limit 700)`);
+const mainCode = readFileSync(resolve(srcDir, 'main.js'), 'utf8');
+for (const name of ['LoopMixin', 'StreamingMixin']) {
+  if (!new RegExp(`Object\\.assign\\(Game\\.prototype,[^;]*\\b${name}\\b`).test(mainCode)) {
+    problems.push(`${name} must be applied to Game.prototype`);
+  }
+}
 
 // --- no import cycles -------------------------------------------------------
 const state = new Map();          // 0 = visiting, 1 = done
@@ -53,10 +91,10 @@ else ok('no import cycles');
 // place this ordering is written down, so keep them honest.
 const LAYER = {
   'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
-  'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
+  'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
   'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'audio.js': 3,
-  'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'ui.js': 5,
-  'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
+  'guidance.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'ui.js': 5,
+  'loop.js': 6, 'streaming.js': 6, 'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };
 const unplaced = files.filter(f => !(f in LAYER));
@@ -73,7 +111,7 @@ if (!problems.some(p => p.includes('upward'))) ok('every import points down the 
 // --- the simulation stays headless -----------------------------------------
 // worldstate/worldgen/rng must run with no DOM at all: that is what makes the
 // headless smoke test, the offline fast-forward and the save format testable.
-const HEADLESS = ['rng.js', 'worldgen.js', 'worldstate.js', 'chronology.js'];
+const HEADLESS = ['history.js', 'persistence.js', 'save-recovery.js', 'rng.js', 'worldgen.js', 'worldstate.js', 'chronology.js'];
 for (const f of HEADLESS) {
   for (const d of graph.get(f) || []) {
     if (!HEADLESS.includes(d)) problems.push(`${f} must stay headless but imports ${d}`);

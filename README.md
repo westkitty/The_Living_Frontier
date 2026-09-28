@@ -44,7 +44,9 @@ Nothing above is scripted — it all falls out of the simulation.
 **World** — deterministic seeded heightfield (fBm + ridged mountains + warped
 river network), streamed as 180 m chunks with three LOD levels around the
 player, instanced vegetation, procedural biome colouring, bounded by an
-impassable mountain ring. ~85 draw calls and ~80k triangles in a forest.
+impassable mountain ring. 92 draw calls and ~80k triangles in the standard forest probe. Distant dense
+forest patches use a single low-poly, vertex-coloured canopy mesh per chunk;
+scorched patches omit those shells, and unloading disposes their geometry.
 
 **Ground memory** — a 512×512 persistent RGBA state map covering the whole world
 (burn / trail / lushness / development). Terrain, trees and grass all sample it
@@ -57,15 +59,27 @@ distance, light colour, wind strength, precipitation particles and fire spread.
 **Ecology** — 144 regions each run a predator/prey model with carrying capacity
 tied to forest health. Live animals near the player are spawned in proportion to
 their region's population, so a hunted-out valley really does feel empty.
+Killed animals leave small dark carcasses for one in-world day. Nearby predators
+prefer that scent over hunting, consume the carcass and gain a small population
+benefit. Press E to harvest hide before they reach it. Carcasses are temporary
+live-scene objects, not saved inventory caches; at most 48 are kept at once.
 
 **Fire** — a 96×96 fuel/burning grid. Fire consumes fuel, spreads downwind, is
 extinguished by rain, kills wildlife, strips forest health, and paints permanent
-scars that take many days to green over.
+scars that take many days to green over. The HUD's **damp / dry / tinder** risk
+uses the same rain, lingering ground wetness and wind multiplier as fire spread;
+it is not a separate prediction model. Tinder conditions also appear in the
+strike-to-ignite prompt. Rain leaves damp ground after the weather clears.
 
 **Settlements** — five villages whose prosperity chases the carrying capacity of
 the land around them. Buildings, fields, walls, scaffolding, banners, rubble and
 population all rebuild from world state. Villagers have day/night routines
 (fields in the morning, work at midday, the fire in the evening, home at night).
+Hunter villagers make return journeys to the nearest living neighbouring village.
+Moving villagers and patrols sample candidate steps, prefer worn ground and
+leave a little more wear with each metre. Paths emerge from active actors, not
+from authored road geometry or a pathfinding graph. Distant/offline abstract
+population simulation does not lay down trails.
 
 **Factions** — three powers with campaigns, patrols, strongholds, supply
 projection and overextension. Territory changes hands region by region; camps,
@@ -87,10 +101,17 @@ persistent, so the map is a record of your own travels. Tap it to plant a
 waypoint; it rides the compass until you arrive.
 
 **Persistence** — the whole world (ground memory, surveyed map, waypoint,
-plantings, quests, chronicle) is saved to `localStorage` in under 40 KB, all
-run-length encoded. On return, the simulation fast-forwards through the time
+plantings, quests, chronicle) is saved to `localStorage` with run-length encoded ground and survey planes.
+Saves start small and grow with the land changed and explored (the smoke
+scenario is about 53 KB), rather than having a fixed 40 KB ceiling. On return, the simulation fast-forwards through the time
 you were away. If storage is full or blocked the game says so instead of
-quietly losing your frontier.
+quietly losing your frontier. A damaged save is quarantined when storage allows,
+then intact sections are recovered independently. The boot screen names what
+survived and what was lost or reset. A torn journal loses its diary, not intact
+ground, survey, regions, settlements or player position. Unknown loss counts
+are explicitly reported as unknown. Recovery does not fast-forward the land
+before handing it back; an unreadable shell with no world data is not called a
+recovery.
 
 ## Controls
 
@@ -100,18 +121,21 @@ quietly losing your frontier.
 | Look | drag, or move the mouse | drag the right side |
 | Sprint | Shift | `»` toggle |
 | Jump | Space | `⤒` |
-| Interact | E | `E` |
+| Interact / harvest carcass hide | E | `E` |
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
 | Map / Bag / Journal / World | M / I / J / V | HUD icons |
-| The Long Record | R | world screen → Read the Long Record |
+| The Long Record | R; focus a sealed readout and press Enter/Space to set its waypoint | world screen → Read the Long Record; tap a sealed readout to set its waypoint |
 | Help | H | Menu → Controls |
 | Menu | Esc | ☰ |
 
 The survey map supports drag to pan, scroll or pinch to zoom, arrow keys and
 `+` / `-` when focused, and tap-to-set-waypoint. Sound, detail level, look
 speed, volume, inverted look and reduced motion are all remembered between
-sessions, separately from the world save.
+sessions, separately from the world save. Contextual guidance gives one short
+line on first nightfall, tree felled, fire lit, village entered, banner change
+and landmark discovery. Each is remembered in `living_frontier_settings_v1`
+across save loads and new worlds, and suppressed when `hints` is false.
 
 Sound is fully procedural WebAudio — no audio files. The beds are driven by
 simulation state rather than by a playlist: wind and rain from the weather,
@@ -133,7 +157,10 @@ the save (a few hundred bytes). The world screen draws them as a chronicle:
 five lines, each normalised against its own range, so an over-hunted herd
 crashing or a burn scar spreading is visible as a shape rather than a number.
 The chart carries a plain-language summary as its accessible label, generated
-from the same rows it draws.
+from the same rows it draws. Isolate one series using the legend and three
+y-axis gridlines show its real minimum, midpoint and maximum; the readout names
+the unit. Multiple visible lines explicitly report that they are normalised.
+Both chart canvases reserve touch drags for scrubbing instead of page scrolling.
 
 It can be read, not just looked at. Drag across it — or focus it and use the
 arrow keys, Home and End — and a cursor lands on a day, reports that day's
@@ -155,8 +182,10 @@ text for assistive technology, so ownership is never signalled by colour alone.
 
 On the maps the same rule holds in pixels: each faction owns a silhouette as
 well as a colour — the Pact round, the Legion square, the Kin triangular — used
-for both settlements and patrols, with a key printed under the survey map. A
-greyscale screenshot still tells you who holds what.
+for both settlements and patrols. Territory has a second non-colour cue:
+solid-light Pact land, diagonal-hatched Legion land and dotted Kin land, all
+below 20% fill opacity. The key beneath the survey map names both marker and
+land patterns. A greyscale screenshot still distinguishes the factions.
 
 The survey map describes itself too: its aria-label reports how wide the view
 is, how much of the frontier you have surveyed, the settlements inside the
@@ -184,6 +213,11 @@ aqueduct raised in 344 and *cut* in 761 — not fallen, cut, from the inside —
 and the Drowned Halls flooded the same night, their doors barred from the
 outside. Entries stay **SEALED** until you have stood in front of the stone
 that carries them, so the archive is unlocked by walking, not by reading.
+Scrub to a sealed year and its readout offers a native button: activate it to
+mark that stone on your compass, write a journal reminder and close the record.
+Discovery replaces that control with the unsealed account. The living band's
+war ending measures banner changes recorded during your tenancy, not the
+territory factions already held when you arrived.
 
 At the closest reading, each hair in your own band is a day you wrote something
 on. At the widest, the readout does the arithmetic you were avoiding:
@@ -217,10 +251,14 @@ index.html          shell, HUD markup, import map
 styles.css          all UI styling and transitions
 vendor/three.module.js
 src/rng.js          seeded hashing, value noise, fBm, ridged noise
-src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs
+src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs and patterns
+src/map-ui.js       survey gestures and drawing, mixed onto UI
 src/settings.js     player preferences, stored apart from the world
 src/worldgen.js     heightfield, biomes, rivers, landmark & settlement siting
-src/worldstate.js   the persistent simulation + save/load + fast-forward
+src/worldstate.js   persistent simulation + fast-forward
+src/persistence.js  save/load, compression and recovery orchestration
+src/save-recovery.js section validation and conservative damaged-JSON recovery
+src/history.js      daily measurements and homecoming comparisons
 src/terrain.js      chunk streaming, LOD, ground-memory shader, water
 src/veg.js          instanced procedural vegetation, wind, harvest, regrowth
 src/structures.js   landmarks, villages, caves, camps, banners (merged meshes)
@@ -234,27 +272,36 @@ src/audio.js        fully procedural WebAudio: state-driven beds and effects
 src/interaction.js  what you are looking at, and what acting on it does
 src/dialogue.js     villagers, soldiers and settlement halls
 src/quests.js       quests generated from world state, and their consequences
-src/main.js         bootstrap, systems wiring, discoveries, frame loop
+src/guidance.js     once-only contextual teaching, backed by settings
+src/loop.js         frame loop, discovery, sight and ambient helpers
+src/streaming.js    chunk lifetime, ground uploads and structure syncing
+src/main.js         bootstrap and systems wiring
 ```
 
 ## Development checks
 
-Because the sandbox this was built in has no GPU, two headless checks stand in
-for manual testing:
+Because the sandbox this was built in has no GPU or audio device, automated
+checks cover logic, shader syntax and rasterised 2D surfaces, not WebGL pixels
+or audible output:
 
 ```
 npm install
-npm run check      # arch + ui + shaders + smoke, in that order
+npm run check      # arch + ui + shaders + visit + smoke, in that order
 npm run arch       # module boundaries: no import cycles, no upward imports,
                    #   the simulation core stays DOM-free, no unused imports,
                    #   no module using a name it never imported, one entry
-                   #   point, no orphaned modules
+                   #   point, no orphaned modules; 700-line absolute limit,
+                   #   per-module shrinking ceilings in tools/module-lines.json
 npm run ui         # wiring & accessibility gate: dangling selectors, missing
                    # icons, duplicate ids, unnamed buttons, modal semantics,
                    # live regions, unstyled classes, touch target sizes, and
-                   # that every control in the markup reaches a real handler
+                   # that every control in the markup reaches a real handler;
+                   # focusable canvases in HTML and runtime templates must
+                   # declare touch-action:none in their id rule
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
+npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
+                   # six hints firing only once across independent processes
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection
@@ -282,10 +329,28 @@ turns standing trees into charred snags in the scene without re-scattering
 that chunk every frame, that hunting a valley out leaves it visibly emptier,
 that walking a four-kilometre round trip leaves the scene the size it started
 — no leaked chunks, no detached meshes — that the deep record is deterministic
-per seed and chronological, that its entries stay sealed until the matching
-landmark is found, that reading a year reports what actually stood there, that
+per seed and chronological, that fresh tenancies are not branded as war,
+that journalled banner changes yield war and heavy hunting overrides it,
+that sealed readout buttons focus, set the correct waypoint, journal the trip
+and close the record, that entries unseal when the matching landmark is found,
+that reading a year reports what actually stood there, that
 the opening pull-back ends at the whole record, that footfalls change with the
 ground underfoot, and that preferences persist across sessions.
+
+The smoke gate also runs `tools/refinement-test.mjs`: real raster alpha signatures
+for all three territory patterns; 20 actor-simulation days comparing a village
+route with a parallel control 100 m away; worn-step preference; canopy ownership,
+burn exclusion and disposal; actual drawn isolated-series tick labels; predator
+attraction, feeding, carcass decay, hide harvest and scene cleanup; identically
+seeded damp/tinder ignitions; and damaged-diary salvage with byte-for-byte ground
+and survey comparisons. `npm run perf` enforces the canopy budget: at most 96
+meshes and 99,915 triangles in its standard route.
+
+The module-size ratchet records the largest module and individual ceilings.
+Lower ceilings when shrinking modules; adding 200 lines to **any** source module
+fails. A ceiling cannot be raised relative to the preceding commit to bypass the
+gate. See [verification notes](tools/VERIFICATION.md) for deliberate failure tests
+and the paired performance comparison.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once
@@ -294,5 +359,5 @@ than looking like a pass.
 
 Known gap: there is no GPU in the build environment, so the WebGL render path
 itself is exercised against a stub renderer. Shaders are validated by parsing,
-the 2D map surfaces are validated by rasterising them for real, and everything
-else is validated by running it.
+the 2D map surfaces are validated by rasterising them for real, and game behaviour is exercised headlessly. Audible output and actual WebGL
+pixels remain unverified; these checks are not substitutes for device playtesting.
