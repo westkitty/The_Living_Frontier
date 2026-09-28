@@ -444,3 +444,6 @@ h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)
 }
 
 #ws-chart{touch-action:none}
+
+button.rec-line{display:block;width:100%;min-height:44px;text-align:left;background:transparent;cursor:pointer}
+button.rec-line:focus-visible{outline:2px solid var(--amber);outline-offset:3px}

@@ -345,9 +345,19 @@ export const RecordMixin = {
     const box = $('#rec-lines');
     box.innerHTML = '';
     for (const line of here) {
-      const p = document.createElement('p');
+      const p = document.createElement(line.target ? 'button' : 'p');
       p.className = 'rec-line ' + (line.kind || '');
       p.textContent = line.text;
+      if (line.target) {
+        p.type = 'button';
+        p.dataset.recordLandmark = line.target.landmark;
+        p.addEventListener('click', () => {
+          const e = line.target;
+          this.waypoint = { x: e.x, z: e.z, name: e.place };
+          st.note(`Something is recorded at ${e.place} that cannot be read from here.`, 'discovery');
+          this.closeRecord();
+        });
+      }
       box.appendChild(p);
     }
     const wt = weight(st.seed);
@@ -367,8 +377,9 @@ export const RecordMixin = {
       if (Math.abs(e.at - year) > Math.max(1, Math.round(this.recordWindow().span / 90))) continue;
       out.push({
         kind: 'event',
+        target: e.sealed ? e : null,
         text: e.sealed
-          ? `Year ${e.at}: something is recorded here and cannot be read. The stone that carries it is still standing somewhere in the frontier, unvisited.`
+          ? `SEALED · Year ${e.at} · ${e.place}. Set a waypoint to the unread stone.`
           : `Year ${e.at} — ${e.title}. ${e.line} ${e.after}`,
       });
     }

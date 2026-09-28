@@ -104,7 +104,7 @@ quietly losing your frontier.
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
 | Map / Bag / Journal / World | M / I / J / V | HUD icons |
-| The Long Record | R | world screen → Read the Long Record |
+| The Long Record | R; focus a sealed readout and press Enter/Space to set its waypoint | world screen → Read the Long Record; tap a sealed readout to set its waypoint |
 | Help | H | Menu → Controls |
 | Menu | Esc | ☰ |
 
@@ -184,6 +184,11 @@ aqueduct raised in 344 and *cut* in 761 — not fallen, cut, from the inside —
 and the Drowned Halls flooded the same night, their doors barred from the
 outside. Entries stay **SEALED** until you have stood in front of the stone
 that carries them, so the archive is unlocked by walking, not by reading.
+Scrub to a sealed year and its readout offers a native button: activate it to
+mark that stone on your compass, write a journal reminder and close the record.
+Discovery replaces that control with the unsealed account. The living band's
+war ending measures banner changes recorded during your tenancy, not the
+territory factions already held when you arrived.
 
 At the closest reading, each hair in your own band is a day you wrote something
 on. At the widest, the readout does the arithmetic you were avoiding:
@@ -239,8 +244,9 @@ src/main.js         bootstrap, systems wiring, discoveries, frame loop
 
 ## Development checks
 
-Because the sandbox this was built in has no GPU, two headless checks stand in
-for manual testing:
+Because the sandbox this was built in has no GPU or audio device, automated
+checks cover logic, shader syntax and rasterised 2D surfaces, not WebGL pixels
+or audible output:
 
 ```
 npm install
@@ -252,7 +258,9 @@ npm run arch       # module boundaries: no import cycles, no upward imports,
 npm run ui         # wiring & accessibility gate: dangling selectors, missing
                    # icons, duplicate ids, unnamed buttons, modal semantics,
                    # live regions, unstyled classes, touch target sizes, and
-                   # that every control in the markup reaches a real handler
+                   # that every control in the markup reaches a real handler;
+                   # focusable canvases in HTML and runtime templates must
+                   # declare touch-action:none in their id rule
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
 npm run smoke      # boots the whole game in jsdom with a stub renderer
@@ -282,8 +290,10 @@ turns standing trees into charred snags in the scene without re-scattering
 that chunk every frame, that hunting a valley out leaves it visibly emptier,
 that walking a four-kilometre round trip leaves the scene the size it started
 — no leaked chunks, no detached meshes — that the deep record is deterministic
-per seed and chronological, that its entries stay sealed until the matching
-landmark is found, that reading a year reports what actually stood there, that
+per seed and chronological, that fresh tenancies are not branded as war,
+that journalled banner changes yield war and heavy hunting overrides it,
+that sealed readout buttons focus, set the correct waypoint, journal the trip
+and close the record, that entries unseal when the matching landmark is found, that reading a year reports what actually stood there, that
 the opening pull-back ends at the whole record, that footfalls change with the
 ground underfoot, and that preferences persist across sessions.
 
@@ -296,3 +306,8 @@ Known gap: there is no GPU in the build environment, so the WebGL render path
 itself is exercised against a stub renderer. Shaders are validated by parsing,
 the 2D map surfaces are validated by rasterising them for real, and everything
 else is validated by running it.
+
+
+The current check chain is **arch → ui → shaders → smoke**. There is no
+separate `visit` script in this checkout; first-visit/no-WebGL coverage must not
+be inferred from a passing chain.
