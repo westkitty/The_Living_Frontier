@@ -29,3 +29,5 @@ console.log('heightAt: ', (200000/((performance.now()-t0)/1000)/1000).toFixed(0)
 let tris=0, meshes=0;
 scene.traverse(o=>{ if(o.isMesh){meshes++; const g=o.geometry; tris += (g.index?g.index.count:g.attributes.position.count)/3 * (o.isInstancedMesh?o.count:1);} });
 console.log('scene meshes(draw calls):', meshes, '| triangles:', Math.round(tris).toLocaleString());
+
+if (meshes > 96 || tris > 79932 * 1.25) throw new Error('Canopy budget exceeded: max 96 draws / 99,915 triangles');

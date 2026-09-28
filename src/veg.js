@@ -1,7 +1,7 @@
 // Procedural, instanced vegetation. Trees can be harvested, burned (they turn
 // to charred snags) and regrow - all driven by the persistent world state.
 import * as THREE from 'three';
-import { WORLD, treeDensityFrom, heightAt, moistureFrom, slopeAt } from './worldgen.js';
+import { WORLD, treeDensityAt, treeDensityFrom, heightAt, moistureFrom, slopeAt } from './worldgen.js';
 import { hash2i, clamp, lerp, mulberry32 } from './rng.js';
 import { shared } from './terrain.js';
 import { CH, regionIndex } from './worldstate.js';
@@ -180,6 +180,7 @@ export class Vegetation {
       berry: berryBushGeo(), rock: rockGeo(), ore: oreRockGeo(), fern: fernGeo(),
       grass: grassGeo(), sapling: saplingGeo(),
     };
+    this.matCanopy = new THREE.MeshLambertMaterial({ vertexColors: true });
     this.matTree = makeFoliageMaterial(1.0);
     this.matSmall = makeFoliageMaterial(1.6);
     this.matRock = makeFoliageMaterial(0.0);
@@ -230,8 +231,32 @@ export class Vegetation {
     };
   }
 
+  buildCanopy(key, rec) {
+    const parts = [], st = this.state;
+    for (let z = 30; z < WORLD.chunk; z += 60) for (let x = 30; x < WORLD.chunk; x += 60) {
+      const wx = rec.ox + x, wz = rec.oz + z;
+      if (treeDensityAt(wx, wz) * st.regions[regionIndex(wx, wz)].trees < 0.5) continue;
+      if ([[0, 0], [-18, 0], [18, 0], [0, -18], [0, 18]].some(([dx, dz]) =>
+        st.getGround(wx + dx, wz + dz, CH.BURN) > 0.35)) continue;
+      // Wide, shallow crown shells: six triangles, no trunks and no shadows.
+      const shell = new THREE.ConeGeometry(22, 4, 6, 1, true);
+      shell.translate(wx, heightAt(wx, wz) + 7, wz);
+      parts.push({ geo: shell, color: 0x41682d, jitter: 0.06 });
+    }
+    const meshes = {};
+    if (parts.length) {
+      const canopy = new THREE.Mesh(mergeGeos(parts), this.matCanopy);
+      canopy.name = 'distant-canopy';
+      canopy.castShadow = canopy.receiveShadow = false;
+      this.scene.add(canopy);
+      meshes.canopy = canopy;
+    }
+    this.chunks.set(key, { meshes, grassMesh: null, items: [], ring: 2, rec });
+  }
+
   buildChunk(key, rec, ring) {
-    if (ring > 1) return;
+    if (ring === 2) { this.buildCanopy(key, rec); return; }
+    if (ring > 2) return;
     const C = WORLD.chunk, ox = rec.ox, oz = rec.oz;
     const st = this.state;
     const smp = this.sampler(rec);
@@ -371,6 +396,12 @@ export class Vegetation {
   setRing(key, ring) {
     const c = this.chunks.get(key);
     if (!c) return;
+    if ((c.ring > 1 || ring > 1) && c.ring !== ring) {
+      const rec = c.rec;
+      this.removeChunk(key);
+      this.buildChunk(key, rec, ring);
+      return;
+    }
     c.ring = ring;
     if (ring === 0) this.buildGrass(key);
     else if (c.grassMesh) { this.scene.remove(c.grassMesh); c.grassMesh.dispose(); c.grassMesh = null; }
@@ -379,7 +410,11 @@ export class Vegetation {
   removeChunk(key) {
     const c = this.chunks.get(key);
     if (!c) return;
-    for (const t in c.meshes) { this.scene.remove(c.meshes[t]); c.meshes[t].dispose(); }
+    for (const t in c.meshes) {
+      const mesh = c.meshes[t];
+      this.scene.remove(mesh);
+      if (t === 'canopy') mesh.geometry.dispose(); else mesh.dispose();
+    }
     if (c.grassMesh) { this.scene.remove(c.grassMesh); c.grassMesh.dispose(); }
     this.chunks.delete(key);
   }
@@ -388,11 +423,6 @@ export class Vegetation {
     const c = this.chunks.get(key);
     if (!c) return;
     const rec = c.rec, ring = c.ring;
-    // Distant chunks keep the trees they were built with — buildChunk refuses
-    // to scatter beyond ring 1, so re-scattering one here would delete its
-    // forest and leave bare ground until the terrain LOD changes. It gets a
-    // fresh scatter, burn scars and all, when the player comes closer.
-    if (ring > 1) return;
     this.removeChunk(key);
     this.buildChunk(key, rec, ring);
   }

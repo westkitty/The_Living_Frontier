@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { createCanvas } from '@napi-rs/canvas';
 import { Cartographer } from '../src/cartography.js';
 import * as THREE from 'three';
+import { Vegetation } from '../src/veg.js';
+import { ChunkManager } from '../src/terrain.js';
 import { ActorSystem } from '../src/entities.js';
 import { DAY_LENGTH, CH } from '../src/worldstate.js';
 import { heightAt } from '../src/worldgen.js';
@@ -59,4 +61,28 @@ import { WORLD } from '../src/worldgen.js';
   state.paintGround(Math.cos(0.6) * 8, Math.sin(0.6) * 8, CH.TRAIL, 1, 0);
   actors.moveActor(walker, 1, 0, 2, 0.1);
   assert(walker.pos.x > 0 && walker.pos.z > 0.02, 'human steering must prefer an existing trail');
+}
+
+{
+  const state = new WorldState(), scene = new THREE.Scene();
+  const terrain = new ChunkManager(scene, state), veg = new Vegetation(scene, state);
+  terrain.onChunkBuild = (key, rec, ring) => veg.buildChunk(key, rec, ring);
+  terrain.onChunkRemove = key => veg.removeChunk(key);
+  terrain.onRingChange = (key, rec, ring) => veg.setRing(key, ring);
+  terrain.update(0, 180, 999);
+  const found = [...veg.chunks].find(([, c]) => c.ring === 2 && c.meshes.canopy);
+  assert(found, 'ring two forests need a canopy');
+  const [key, chunk] = found, canopy = chunk.meshes.canopy;
+  assert.equal(Object.keys(chunk.meshes).length, 1, 'one canopy mesh per distant forest chunk');
+  assert.equal(canopy.material.vertexColors, true);
+  assert.equal(canopy.castShadow, false);
+  let disposed = false;
+  canopy.geometry.addEventListener('dispose', () => { disposed = true; });
+  terrain.disposeChunk(key);
+  assert(!canopy.parent && disposed && !veg.chunks.has(key), 'unloading must remove and dispose canopy');
+  // Rebuilding a completely burnt patch cannot leave a green shell behind.
+  state.ground.forEach((v, i) => { if (i % 4 === CH.BURN) state.ground[i] = 255; });
+  veg.buildChunk(key, chunk.rec, 2);
+  assert(!veg.chunks.get(key).meshes.canopy, 'burn scars must suppress distant canopy');
+  console.log('  ✓ ring-two canopy ownership, burn exclusion and disposal');
 }
