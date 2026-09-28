@@ -348,6 +348,19 @@ export class ActorSystem {
       }
       if (s.constructing > 0 && a.job === 'builder') { tx = s.x + 9; tz = s.z - 12; }
       if (st.player.rep[s.banner] < -50 && a.pos.distanceTo(p) < 14) { tx = s.x + (a.pos.x - p.x); tz = s.z + (a.pos.z - p.z); }
+      // Hunters carry supplies to the nearest living neighbour, then walk home.
+      // This is a journey, not a painted road: every step uses the same steering.
+      if (a.job === 'hunter') {
+        if (!a.destination || a.destination.abandoned) {
+          a.destination = st.settlements.filter(v => v !== s && !v.abandoned)
+            .sort((u, v) => Math.hypot(u.x - s.x, u.z - s.z) - Math.hypot(v.x - s.x, v.z - s.z))[0];
+        }
+        const dest = a.returning ? s : a.destination;
+        if (dest) {
+          tx = dest.x; tz = dest.z;
+          if (Math.hypot(tx - a.pos.x, tz - a.pos.z) < 4) a.returning = !a.returning;
+        }
+      }
       const dx = tx - a.pos.x, dz = tz - a.pos.z;
       const d = Math.hypot(dx, dz);
       const moving = d > 2.2;
@@ -400,7 +413,7 @@ export class ActorSystem {
         // patrolling projects faction pressure and wears trails
         const r = st.regions[regionIndex(a.pos.x, a.pos.z)];
         r.pressure[a.faction] = clamp(r.pressure[a.faction] + dt * 1.2, 0, 120);
-        st.paintGround(a.pos.x, a.pos.z, CH.TRAIL, dt * 0.012, 3);
+
       }
     }
   }
@@ -409,6 +422,18 @@ export class ActorSystem {
     const len = Math.hypot(dirX, dirZ) || 1;
     dirX /= len; dirZ /= len;
     if (speed > 0) {
+      if (a.kind === 'human') {
+        let best = -Infinity, bx = dirX, bz = dirZ;
+        for (const angle of [0, -0.3, 0.3, -0.6, 0.6]) {
+          const x = dirX * Math.cos(angle) - dirZ * Math.sin(angle);
+          const z = dirX * Math.sin(angle) + dirZ * Math.cos(angle);
+          const trail = this.state.getGround(a.pos.x + x * 8, a.pos.z + z * 8, CH.TRAIL);
+          const score = trail * 0.8 - Math.abs(angle) * 0.3;
+          if (score > best) { best = score; bx = x; bz = z; }
+        }
+        dirX = bx; dirZ = bz;
+      }
+      const oldX = a.pos.x, oldZ = a.pos.z;
       const nx = a.pos.x + dirX * speed * dt;
       const nz = a.pos.z + dirZ * speed * dt;
       if (Math.abs(nx) < WORLD.half - 12 && Math.abs(nz) < WORLD.half - 12) {
@@ -417,6 +442,14 @@ export class ActorSystem {
           a.pos.x = nx; a.pos.z = nz;
         } else { a.wanderDir = Math.random() * 6.28; }
       } else { a.wanderDir = Math.random() * 6.28; }
+      if (a.kind === 'human') {
+        a.trailStride = (a.trailStride || 0) + Math.hypot(a.pos.x - oldX, a.pos.z - oldZ);
+        // Accumulate distance before quantising to bytes; sub-frame wear must not round to zero.
+        if (a.trailStride >= 1) {
+          this.state.paintGround(a.pos.x, a.pos.z, CH.TRAIL, a.trailStride * 0.008, 3);
+          a.trailStride = 0;
+        }
+      }
       const want = Math.atan2(dirX, dirZ);
       let diff = want - a.yaw;
       while (diff > Math.PI) diff -= 6.283;
