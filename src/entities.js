@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { WORLD, FACTIONS, heightAt } from './worldgen.js';
 import { clamp, mulberry32, damp } from './rng.js';
 import { Builder } from './structures.js';
-import { regionIndex, regionCenter, CH } from './worldstate.js';
+import { regionIndex, regionCenter, CH, DAY_LENGTH } from './worldstate.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 
@@ -112,6 +112,8 @@ export class ActorSystem {
     this.npcs = [];
     this.soldiers = [];
     this.corpses = [];
+    this.carcassGeo = new THREE.IcosahedronGeometry(1, 0);
+    this.carcassMat = new THREE.MeshLambertMaterial({ color: 0x30251f });
     this.mats = new Map();
     for (const k of ['deer', 'wolf', 'boar', 'rabbit', 'human']) {
       this.mats.set(k, new THREE.MeshLambertMaterial({ vertexColors: true }));
@@ -258,6 +260,11 @@ export class ActorSystem {
     const dayT = st.time;
     const night = dayT < 0.22 || dayT > 0.80;
 
+    for (const corpse of [...this.corpses]) {
+      corpse.deadTime += dt;
+      if (corpse.deadTime >= DAY_LENGTH) this.remove(corpse, this.corpses);
+    }
+
     // ---- animals
     for (const a of [...this.animals]) {
       if (!a.alive) { this.decayCorpse(a, dt, this.animals); continue; }
@@ -267,6 +274,18 @@ export class ActorSystem {
       const distToPlayer = a.pos.distanceTo(p);
 
       if (def.pred) {
+        const carcass = this.corpses.filter(c => c.pos.distanceTo(a.pos) < c.scentRadius)
+          .sort((b, c) => b.pos.distanceToSquared(a.pos) - c.pos.distanceToSquared(a.pos))[0];
+        if (carcass) {
+          a.state = 'feed';
+          const d = a.pos.distanceTo(carcass.pos);
+          if (d < 2.2) {
+            this.remove(carcass, this.corpses);
+            st.regions[regionIndex(a.pos.x, a.pos.z)].pred += 0.08;
+          } else this.moveActor(a, carcass.pos.x - a.pos.x, carcass.pos.z - a.pos.z, def.speed * 0.65, dt);
+          this.animate(a, dt, d < 2.2 ? 0 : def.speed * 0.65);
+          continue;
+        }
         // hunt nearest prey
         let prey = null, bd = 60 * 60;
         for (const o of this.animals) {
@@ -476,7 +495,16 @@ export class ActorSystem {
     if (!a.alive) return;
     a.alive = false;
     a.deadTime = 0;
-    a.group.rotation.z = 1.4;
+    this.remove(a, this.animals);
+    a.group = new THREE.Mesh(this.carcassGeo, this.carcassMat);
+    a.group.name = 'carcass';
+    a.group.scale.set(a.kind === 'rabbit' ? 0.4 : 0.8, 0.3, a.kind === 'rabbit' ? 0.6 : 1.4);
+    a.pos.y = heightAt(a.pos.x, a.pos.z) + 0.3;
+    a.group.position.copy(a.pos);
+    a.scentRadius = 120;
+    this.corpses.push(a);
+    this.scene.add(a.group);
+    if (this.corpses.length > 48) this.remove(this.corpses[0], this.corpses);
     const st = this.state;
     const r = st.regions[regionIndex(a.pos.x, a.pos.z)];
     if (a.def.pred) r.pred = Math.max(0, r.pred - 1);
@@ -484,10 +512,9 @@ export class ActorSystem {
     if (byPlayer) {
       st.player.stats.hunted++;
       const inv = st.player.inv;
-      inv.hide += a.kind === 'rabbit' ? 1 : 2;
       if (a.kind !== 'wolf') inv.berry += 1;
       this.world.fx.bloodPuff(a.pos);
-      this.world.ui.toast(`${a.kind[0].toUpperCase() + a.kind.slice(1)} killed  +${a.kind === 'rabbit' ? 1 : 2} hide`);
+      this.world.ui.toast(`${a.kind[0].toUpperCase() + a.kind.slice(1)} killed — harvest its hide before the wolves arrive.`);
       // villagers dislike over-hunting near their homes
       for (const s of st.settlements) {
         if (Math.hypot(s.x - a.pos.x, s.z - a.pos.z) < 120 && !s.abandoned) {
@@ -516,6 +543,10 @@ export class ActorSystem {
 
   nearestInteractable(pos, radius = 3.4) {
     let best = null, bd = radius * radius;
+    for (const a of this.corpses) {
+      const d = a.pos.distanceToSquared(pos);
+      if (d < bd) { bd = d; best = { type: 'carcass', actor: a }; }
+    }
     for (const a of this.animals) {
       if (!a.alive) continue;
       const d = a.pos.distanceToSquared(pos);

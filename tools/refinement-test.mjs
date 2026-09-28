@@ -1,5 +1,6 @@
 // Behavioural refinement assertions, also executed by the real-game smoke gate.
 import { JSDOM } from 'jsdom';
+import { InteractionMixin } from '../src/interaction.js';
 import { PanelsMixin } from '../src/panels.js';
 import assert from 'node:assert/strict';
 import { createCanvas } from '@napi-rs/canvas';
@@ -113,4 +114,42 @@ import { WORLD } from '../src/worldgen.js';
     assert(canvas.getAttribute('aria-label').includes('Y-axis: herd animals'));
     console.log('  ✓ isolated herd axis labels and units match history');
   } finally { globalThis.document = savedDocument; dom.window.close(); }
+}
+
+{
+  const state = new WorldState(), scene = new THREE.Scene();
+  const player = { pos: new THREE.Vector3(1000, 0, 1000), hp: 100, damage() {} };
+  const world = { state, player, audio: { play() {} }, ui: { toast() {} }, fx: { bloodPuff() {} } };
+  const actors = world.actors = new ActorSystem(scene, state, world);
+  actors.spawnTimer = Infinity;
+  const baseline = scene.children.length;
+  const deer = actors.spawnAnimal('deer', 0, 0), wolf = actors.spawnAnimal('wolf', 30, 0);
+  actors.killAnimal(deer, false);
+  assert.equal(actors.corpses.length, 1, 'killed animal must leave a carcass');
+  const distance = wolf.pos.distanceTo(deer.pos);
+  for (let i = 0; i < 20; i++) actors.update(0.05, player);
+  assert(wolf.pos.distanceTo(deer.pos) < distance - 1, 'predator must approach nearest carcass');
+  const pred = state.regions[wolf.region].pred;
+  wolf.setPos(deer.pos.x + 1, deer.pos.y, deer.pos.z);
+  actors.update(0.05, player);
+  assert.equal(actors.corpses.length, 0, 'feeding removes carcass early');
+  assert(state.regions[wolf.region].pred > pred, 'feeding improves region predator population');
+  actors.remove(wolf, actors.animals);
+  const decay = actors.spawnAnimal('rabbit', 0, 0);
+  actors.killAnimal(decay, false);
+  actors.update(DAY_LENGTH - 1, player);
+  assert.equal(actors.corpses.length, 1, 'carcass should remain for roughly a day');
+  actors.update(2, player);
+  assert.equal(actors.corpses.length, 0, 'carcass must decay after one day');
+  assert.equal(scene.children.length, baseline, 'decay must restore scene object baseline');
+  const harvest = actors.spawnAnimal('deer', 0, 0);
+  actors.killAnimal(harvest, true);
+  const hide = state.player.inv.hide;
+  assert.equal(actors.nearestInteractable(harvest.pos).type, 'carcass');
+  world.interactTarget = { type: 'carcass', actor: harvest };
+  InteractionMixin.interact.call(world);
+  InteractionMixin.interact.call(world);
+  assert.equal(state.player.inv.hide, hide + 2, 'harvesting gives hide exactly once');
+  assert.equal(scene.children.length, baseline);
+  console.log('  ✓ carcass attraction, feeding, day-long decay, harvest and cleanup');
 }
