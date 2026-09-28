@@ -163,6 +163,9 @@ export class FX {
       this.scene.add(m);
       this.flamePool.push(m);
     }
+    // Reuse fixed slots for the nearest visible fires instead of allocating
+    // and sorting a fresh candidate list on every rendered frame.
+    this.fireCandidates = this.flamePool.map(() => ({ x: 0, z: 0, v: 0, d2: Infinity }));
     this.fireLight = new THREE.PointLight(0xff9040, 0, 60, 2);
     this.scene.add(this.fireLight);
 
@@ -344,16 +347,29 @@ export class FX {
 
   updateFire(dt, playerPos) {
     const st = this.state;
-    // nearby burning cells (list is rebuilt by the fire simulation, not here)
-    const cells = [];
+    // Keep the same nearest 16 flames as the old full sort, using reusable
+    // slots. Fire can spread across many cells, but only 16 are ever drawn.
+    const candidates = this.fireCandidates;
+    const limitSq = 220 * 220;
+    let candidateCount = 0;
     for (const c of st.burningList) {
-      const d = Math.hypot(c.x - playerPos.x, c.z - playerPos.z);
-      if (d < 220) cells.push({ x: c.x, z: c.z, v: c.v, d });
+      const dx = c.x - playerPos.x, dz = c.z - playerPos.z;
+      const d2 = dx * dx + dz * dz;
+      if (d2 >= limitSq) continue;
+      if (candidateCount === candidates.length && d2 >= candidates[candidateCount - 1].d2) continue;
+      let at = Math.min(candidateCount, candidates.length - 1);
+      if (candidateCount < candidates.length) candidateCount++;
+      while (at > 0 && candidates[at - 1].d2 > d2) {
+        const dst = candidates[at], src = candidates[at - 1];
+        dst.x = src.x; dst.z = src.z; dst.v = src.v; dst.d2 = src.d2;
+        at--;
+      }
+      const nearest = candidates[at];
+      nearest.x = c.x; nearest.z = c.z; nearest.v = c.v; nearest.d2 = d2;
     }
-    cells.sort((a, c) => a.d - c.d);
     for (let i = 0; i < this.flamePool.length; i++) {
       const m = this.flamePool[i];
-      const c = cells[i];
+      const c = i < candidateCount ? candidates[i] : null;
       if (!c) { m.visible = false; continue; }
       m.visible = true;
       const y = heightAt(c.x, c.z);
@@ -366,9 +382,10 @@ export class FX {
       // smoke
       if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 3, c.z);
     }
-    if (cells.length) {
-      this.fireLight.position.set(cells[0].x, heightAt(cells[0].x, cells[0].z) + 4, cells[0].z);
-      this.fireLight.intensity = clamp(6 * cells[0].v, 0, 8) * (0.8 + Math.sin(shared.uTime.value * 9) * 0.2);
+    if (candidateCount) {
+      const nearest = candidates[0];
+      this.fireLight.position.set(nearest.x, heightAt(nearest.x, nearest.z) + 4, nearest.z);
+      this.fireLight.intensity = clamp(6 * nearest.v, 0, 8) * (0.8 + Math.sin(shared.uTime.value * 9) * 0.2);
       this.fireLight.distance = 70;
     } else this.fireLight.intensity = lerp(this.fireLight.intensity, 0, dt * 4);
 

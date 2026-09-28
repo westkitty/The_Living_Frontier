@@ -147,7 +147,7 @@ export const RecordMixin = {
     ctx.fillStyle = '#07090a';
     ctx.fillRect(0, 0, W, H);
 
-    const colX = W * 0.30, colW = W * 0.30;
+    const colX = W * 0.30, colW = W * 0.30, rightLabelX = colX + colW + 17 * s, rightLabelWidth = Math.max(1, W - rightLabelX - 8 * s);
     const yearRows = [];                    // where event years are printed, so the
                                             // depth scale can get out of their way
 
@@ -205,7 +205,7 @@ export const RecordMixin = {
     if (ly1 > -20 && ly0 < H + 20) {
       const py0 = clamp(ly0, 6 * s, H - 14 * s);
       ctx.fillStyle = '#f0d698';
-      ctx.fillText(lh < 3 * s ? 'you — thinner than this line' : 'you', colX + colW + 17 * s, py0 + 3 * s);
+      ctx.fillText(lh < 3 * s ? 'you — thinner than this line' : 'you', rightLabelX, py0 + 3 * s, rightLabelWidth);
       ctx.strokeStyle = 'rgba(240,214,152,.45)';
       ctx.beginPath();
       ctx.moveTo(colX + colW, ly0 + lh / 2); ctx.lineTo(colX + colW + 15 * s, py0);
@@ -215,7 +215,7 @@ export const RecordMixin = {
       const below = Math.round(live.start - (win.top + win.span));
       ctx.fillStyle = 'rgba(240,214,152,.65)';
       ctx.fillText(below > 0 ? `your years: ${below} further down` : `your years: ${Math.round(win.top - live.end)} above`,
-        colX + colW + 17 * s, H - 8 * s);
+        rightLabelX, H - 8 * s, rightLabelWidth);
     }
 
     // ---- close reading: at a lifetime or less, name what you are inside of
@@ -236,9 +236,9 @@ export const RecordMixin = {
         ctx.fillStyle = BAND_INK[t.band];
         ctx.fillRect(colX + colW + 17 * s, ly - 9 * s, 3 * s, 8 * s);
         ctx.fillStyle = 'rgba(236,226,200,.9)';
-        ctx.fillText(t.name, colX + colW + 24 * s, ly - 2 * s);
+        ctx.fillText(t.name, colX + colW + 24 * s, ly - 2 * s, Math.max(1, W - colX - colW - 32 * s));
         ctx.fillStyle = 'rgba(190,178,150,.55)';
-        ctx.fillText(`${t.span} years, then ${t.verb} — ${t.souls} souls`, colX + colW + 24 * s, ly + 10 * s);
+        ctx.fillText(`${t.span} years, then ${t.verb} — ${t.souls} souls`, colX + colW + 24 * s, ly + 10 * s, Math.max(1, W - colX - colW - 32 * s));
       }
       // inside your own band the hairs are days you wrote something on
       if (ly1 > 0 && ly0 < H) {
@@ -285,7 +285,7 @@ export const RecordMixin = {
       }
       ctx.textAlign = 'left';
       ctx.fillStyle = e.sealed ? 'rgba(150,140,120,.6)' : '#e2d0a4';
-      ctx.fillText(e.sealed ? 'SEALED' : e.title, colX + colW + 17 * s, ly + 3.5 * s);
+      ctx.fillText(e.sealed ? 'SEALED' : e.title, rightLabelX, ly + 3.5 * s, rightLabelWidth);
       ctx.textAlign = 'right';
       ctx.fillStyle = 'rgba(190,178,150,.55)';
       ctx.fillText(String(e.at), colX - 16 * s, clamp(y, 9 * s, H - 5 * s) + 3.5 * s);
