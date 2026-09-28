@@ -3,6 +3,7 @@
 import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, heightAt, moistureAt } from './worldgen.js';
 import { HistoryMixin, HomecomingMixin } from './history.js';
 import { PersistenceMixin, LoadMixin } from './persistence.js';
+import { recoverWorldState } from './world-recovery.js';
 import { clamp, lerp, mulberry32 } from './rng.js';
 
 export { SAVE_KEY, rleDecode } from './persistence.js';
@@ -54,7 +55,7 @@ export class WorldState {
     this.exploredDirty = true;
     // one compact sample per in-world day, so the world can show its own past
     this.history = [];
-    this.fuel = new Uint8Array(FR * FR);
+    this.fuel = new Uint8Array(FR * FR); this.fuelDensity = new Float64Array(FR * FR);
     this.burning = new Float32Array(FR * FR);
     this.burnTimer = new Float32Array(FR * FR);
 
@@ -88,9 +89,9 @@ export class WorldState {
     // Fuel map from base vegetation density
     for (let j = 0; j < FR; j++) {
       for (let i = 0; i < FR; i++) {
-        const x = (i + 0.5) * WORLD.fireCell - WORLD.half;
-        const z = (j + 0.5) * WORLD.fireCell - WORLD.half;
-        this.fuel[j * FR + i] = Math.round(clamp(treeDensityAt(x, z) * 1.1 + moistureAt(x, z) * 0.25, 0, 1) * 255);
+        const idx = j * FR + i, x = (i + 0.5) * WORLD.fireCell - WORLD.half, z = (j + 0.5) * WORLD.fireCell - WORLD.half;
+        this.fuelDensity[idx] = treeDensityAt(x, z);
+        this.fuel[idx] = Math.round(clamp(this.fuelDensity[idx] * 1.1 + moistureAt(x, z) * 0.25, 0, 1) * 255);
       }
     }
     // Regions: ecology + faction ownership
@@ -532,46 +533,7 @@ export class WorldState {
   timeOfYearWet() { return 0.5 + 0.5 * Math.sin(this.day * 0.12); }
 
   // ------------------------------------------------------------- recovery
-  tickRecovery(dt) {
-    // Slowly heal burn scars, fade trails that aren't used, regrow lushness, regrow fuel.
-    this.recoverAccum = (this.recoverAccum || 0) + dt;
-    if (this.recoverAccum < 4) return;
-    const step = this.recoverAccum; this.recoverAccum = 0;
-    const rain = clamp((this.rainAccum || 0) * 0.02, 0, 1); this.rainAccum = 0;
-    // Scars are slow to heal: a burn takes many in-world days to green over,
-    // and unused trails fade slower still.
-    this._healFrac = (this._healFrac || 0) + step * (0.006 + rain * 0.06);
-    const burnHeal = Math.floor(this._healFrac); this._healFrac -= burnHeal;
-    this._trailFrac = (this._trailFrac || 0) + step * 0.004;
-    const trailFade = Math.floor(this._trailFrac); this._trailFrac -= trailFade;
-    this._lushFrac = (this._lushFrac || 0) + step * (0.03 + rain * 0.25);
-    const lushGain = Math.floor(this._lushFrac); this._lushFrac -= lushGain;
-    const g = this.ground;
-    for (let i = 0; i < g.length; i += 4) {
-      if (burnHeal && g[i]) g[i] = Math.max(0, g[i] - burnHeal);
-      if (trailFade && g[i + 1]) g[i + 1] = Math.max(0, g[i + 1] - trailFade);
-      if (lushGain && g[i + 2] < 255 && g[i] < 40) g[i + 2] = Math.min(255, g[i + 2] + lushGain);
-    }
-    this.groundDirty = true; this.groundStamp++;
-    // fuel regrowth follows region tree health
-    for (let j = 0; j < FR; j++) for (let i = 0; i < FR; i++) {
-      const idx = j * FR + i;
-      const x = (i + 0.5) * WORLD.fireCell - WORLD.half;
-      const z = (j + 0.5) * WORLD.fireCell - WORLD.half;
-      const target = clamp(treeDensityAt(x, z) * this.regions[regionIndex(x, z)].trees * 1.1, 0, 1) * 255;
-      if (this.fuel[idx] < target) this.fuel[idx] = Math.min(target, this.fuel[idx] + step * (0.06 + rain * 0.5));
-    }
-    // vegetation regrowth
-    for (const key in this.vegRemoved) {
-      const m = this.vegRemoved[key];
-      let empty = true;
-      for (const i in m) {
-        if (m[i] <= this.elapsed) { delete m[i]; this.vegDirty = true; this.vegDirtyKeys = this.vegDirtyKeys || new Set(); this.vegDirtyKeys.add(key); }
-        else empty = false;
-      }
-      if (empty) delete this.vegRemoved[key];
-    }
-  }
+  tickRecovery(dt) { recoverWorldState(this, dt); }
 
   // The vegetation renderer owns the meshes; the simulation only says which
   // chunk stopped being true. Key format matches Terrain.keyOf.

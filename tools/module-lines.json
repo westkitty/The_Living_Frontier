@@ -32,6 +32,7 @@
     "uikit.js": 24,
     "veg.js": 460,
     "worldgen.js": 321,
+    "world-recovery.js": 52,
     "worldstate.js": 680
   }
 }

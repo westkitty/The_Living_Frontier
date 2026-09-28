@@ -17,6 +17,8 @@ const { window } = dom;
 
 // back jsdom canvases with a real rasteriser
 const backing = new WeakMap();
+const recordLabelBounds = [];
+const recordTitles = new Set(['The Starfall', 'The Aqueduct is raised', 'Cliffhold is cut', 'The Aqueduct is cut', 'The Drowning', 'The Hollow Giant dies', 'Fort Ashken is raised', 'Fort Ashken falls']);
 window.HTMLCanvasElement.prototype.getContext = function (type) {
   if (type !== '2d') return null;
   let b = backing.get(this);
@@ -31,6 +33,11 @@ window.HTMLCanvasElement.prototype.getContext = function (type) {
     ctx.drawImage = (img, ...rest) => di(backing.get(img) || img, ...rest);
     const cp = ctx.createPattern.bind(ctx);
     ctx.createPattern = (img, repeat) => cp(backing.get(img) || img, repeat);
+    const ft = ctx.fillText.bind(ctx);
+    ctx.fillText = (text, x, y, maxWidth) => {
+      if (recordTitles.has(String(text))) recordLabelBounds.push({ text, x, maxWidth, width: b.width });
+      return ft(text, x, y, maxWidth);
+    };
   }
   try { ctx.canvas = this; } catch (e) { /* read-only */ }
   return ctx;
@@ -134,6 +141,13 @@ if (state.history.length > 4) {
     console.log('   ', document.querySelector('#rec-share').textContent);
   }
   game.ui.closeRecord();
+  if (!recordLabelBounds.length) throw new Error('Long Record visual QA did not exercise event labels');
+  for (const label of recordLabelBounds) {
+    if (!Number.isFinite(label.maxWidth) || label.maxWidth <= 0 || label.x + label.maxWidth > label.width + 0.5) {
+      throw new Error(`Long Record label exceeds its canvas: ${label.text}`);
+    }
+  }
+  console.log(`  bounded ${recordLabelBounds.length} Long Record event-label draws within the canvas`);
 }
 
 const chart = document.querySelector('#ws-chart');

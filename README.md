@@ -305,7 +305,7 @@ npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection
-npm run perf       # chunk streaming cost, draw calls and triangle counts
+npm run perf       # scene budget, FX/fire/recovery probes and adaptive-quality regressions
 ```
 
 `npm run smoke` asserts behaviour, not just absence of crashes: that forward
@@ -350,7 +350,10 @@ The module-size ratchet records the largest module and individual ceilings.
 Lower ceilings when shrinking modules; adding 200 lines to **any** source module
 fails. A ceiling cannot be raised relative to the preceding commit to bypass the
 gate. See [verification notes](tools/VERIFICATION.md) for deliberate failure tests
-and the paired performance comparison.
+and historical refinement data. [Current performance notes](tools/PERFORMANCE.md)
+record paired before/after scorecards, methodology and limitations, and link the
+[fire](tools/fire-perf-probe.mjs) and [recovery](tools/recovery-perf-probe.mjs)
+probes.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once

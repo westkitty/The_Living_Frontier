@@ -62,13 +62,11 @@ export const LoopMixin = {
   },
 
   frame() {
-    const dtRaw = Math.min(this.clock.getDelta(), 0.05);
-    const blocking = this.ui.blocking;
+    const frameSeconds = Math.max(0, this.clock.getDelta()), dtRaw = Math.min(frameSeconds, 0.05), blocking = this.ui.blocking;
     // a few frames of slow-motion on a landed blow: the hit gets weight
     let impact = 1;
     if (this.hitStop > 0) { this.hitStop -= dtRaw; impact = 0.25; }
-    const dt = (blocking ? dtRaw * 0.15 : dtRaw) * impact;
-    const st = this.state;
+    const dt = (blocking ? dtRaw * 0.15 : dtRaw) * impact, st = this.state;
 
     st.update(dt * this.timeScale);
 
@@ -139,14 +137,16 @@ export const LoopMixin = {
 
     this.renderer.render(this.scene, this.camera);
 
-    // adaptive quality
-    this.frameTimes.push(dtRaw);
-    if (this.frameTimes.length > 120) {
-      const avg = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
-      this.frameTimes.length = 0;
-      if (avg > 0.055 && this.quality === 'high') { this.cycleQuality(); this.ui.toast('Quality lowered for smoother play'); }
-      else if (avg > 0.07 && this.quality === 'medium') { this.cycleQuality(); }
-    }
+    this.sampleAdaptiveQuality(frameSeconds);
+  },
+
+  sampleAdaptiveQuality(frameSeconds) {
+    // A 250 ms ceiling ignores tab-resume gaps; don't use dtRaw's 50 ms cap.
+    this.frameTimes.push(Number.isFinite(frameSeconds) ? Math.min(Math.max(frameSeconds, 0), 0.25) : 0);
+    if (this.frameTimes.length <= 120) return;
+    const avg = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length; this.frameTimes.length = 0;
+    if (avg > 0.055 && this.quality === 'high') { this.cycleQuality(); this.ui.toast('Quality lowered for smoother play'); }
+    else if (avg > 0.07 && this.quality === 'medium') this.cycleQuality();
   },
 
   // how close the player is to moving water: the shoreline, or a river bed
