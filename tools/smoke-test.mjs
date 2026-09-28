@@ -545,6 +545,14 @@ game.ui.closeDialog();
 // tenancy is.
 {
   const chron = await import('../src/chronology.js');
+  const { WorldState: FreshState } = await import('../src/worldstate.js');
+  const fresh = new FreshState();
+  if (chron.livingBand(fresh).fate !== 'leave') errors.push('fresh tenancy must not inherit ancient border wars');
+  fresh.note('A banner changed hands.', 'faction');
+  if (chron.livingBand(fresh).fate !== 'war') errors.push('player-era banner change must yield war');
+  fresh.player.stats.hunted = 40;
+  if (chron.livingBand(fresh).fate !== 'starve') errors.push('hunting starvation must outrank banner changes');
+
   const seed = st.seed;
   const a = JSON.stringify(chron.tenancies(seed));
   const b = JSON.stringify(chron.tenancies(seed));

@@ -143,11 +143,12 @@ export function livingBand(state) {
   const burnt = state.scorchedCells();
   const lost = state.settlements.filter(x => x.abandoned).length;
   const built = state.settlements.reduce((n, x) => n + Math.max(0, x.buildings - 4), 0);
+  const bannerChanged = (state.journal || []).some(j => j.kind === 'faction');
   let fate = 'leave';
   if (s.fires > 0 && burnt > 200) fate = 'burn';
   else if (s.hunted > 30) fate = 'starve';
   else if (lost > 0) fate = 'starve';
-  else if (state.factions.some(f => f.territory > 30)) fate = 'war';
+  else if (bannerChanged) fate = 'war';
   return {
     start: arrivalYear(state.seed),
     end: presentYear(state),
