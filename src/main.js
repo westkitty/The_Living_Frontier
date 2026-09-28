@@ -4,6 +4,7 @@ import { WORLD, LANDMARKS, SETTLEMENTS, FACTIONS, CAMPS, heightAt, caveFloor, pl
 import { clamp } from './rng.js';
 import { WorldState, regionIndex, SAVE_KEY } from './worldstate.js';
 import { drawSurveyThumb } from './cartography.js';
+import { invalidSaveSections, recoverSave } from './save-recovery.js';
 import { Guidance } from './guidance.js';
 import { Settings } from './settings.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
@@ -493,8 +494,18 @@ async function boot() {
   addEventListener('error', (e) => {
     if (window.GAME && window.GAME.ui) window.GAME.ui.toast('⚠ ' + (e.message || 'error'));
   });
-  let raw = null;
-  try { raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { raw = null; }
+  let raw = null, savedText = null, recoveryReport = '';
+  try {
+    savedText = localStorage.getItem(SAVE_KEY);
+    raw = JSON.parse(savedText || 'null');
+    if (raw && invalidSaveSections(raw).length) throw new Error('Invalid sections');
+  } catch (e) {
+    const recovered = savedText && recoverSave(savedText);
+    raw = recovered ? recovered.payload : null;
+    recoveryReport = recovered ? recovered.report : 'The saved world is unreadable. No world data could be recovered.';
+    try { if (savedText) localStorage.setItem(SAVE_KEY + '_damaged', savedText); } catch (storageError) { }
+  }
+  $('#save-recovery').textContent = recoveryReport;
   const summary = describeSave(raw);
   $('#save-summary').innerHTML = summary || 'No world yet. The frontier is waiting to be shaped — and it will remember everything you do to it.';
   $('#btn-continue').classList.toggle('hidden', !summary);
@@ -518,12 +529,12 @@ async function boot() {
       fatal('WebGL is not available in this browser.', 'Try a different browser, or enable hardware acceleration.');
       return;
     }
-    let state, loadStatus = 'new';
+    let state, loadStatus = 'new', loadReport = '';
     try {
       if (fresh) { localStorage.removeItem(SAVE_KEY); state = new WorldState(); }
       else {
         const res = WorldState.loadResult();
-        loadStatus = res.status;
+        loadStatus = res.status; loadReport = res.report || '';
         state = res.state || new WorldState();
       }
     } catch (e) { state = new WorldState(); loadStatus = 'damaged'; }
@@ -563,6 +574,7 @@ async function boot() {
     $('#hud').classList.remove('hidden');
     game.start();
 
+    if (loadStatus === 'salvaged') game.ui.toast(loadReport, 'good');
     if (fresh || state.player.firstRun) {
       state.note('You arrive on the frontier.', 'world');
       state.quests.push({

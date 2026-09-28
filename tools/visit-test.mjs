@@ -18,6 +18,7 @@ if (process.argv[2] !== '--worker') {
   run('no-webgl');
   const first = run('first');
   run('return', first);
+  run('salvage', { ...first, save: first.save.replace(/("journal":\[)[\s\S]*?(,"quests":)/, '$1{"text":"torn$2') });
   run('disabled');
   console.log(' VISIT CHECK PASSED — first visit, no-WebGL, six hints once across two boots, hints disabled');
 } else {
@@ -89,6 +90,7 @@ if (input.settings) localStorage.setItem(key, input.settings);
 if (mode === 'disabled') localStorage.setItem(key, JSON.stringify({ hints: false }));
 await import('../src/main.js');
 assert.equal(document.querySelector('#btn-continue').classList.contains('hidden'), !input.save);
+if (mode === 'salvage') assert(/Recovered:.*lost or reset:.*journal/.test(document.querySelector('#save-recovery').textContent), 'boot must honestly report salvage before continuing');
 document.querySelector(input.save ? '#btn-continue' : '#btn-new').click();
 await new Promise(r => setTimeout(r, 2500));
 if (mode === 'no-webgl') {

@@ -1,6 +1,7 @@
 // The persistent, simulated world. Everything the player changes lives here,
 // is ticked over time (even while the game is closed) and is saved to localStorage.
 import { WORLD, SETTLEMENTS, FACTIONS, LANDMARKS, STRONGHOLDS, treeDensityAt, heightAt, moistureAt } from './worldgen.js';
+import { invalidSaveSections, recoverSave } from './save-recovery.js';
 import { clamp, lerp, mulberry32 } from './rng.js';
 
 export const SAVE_KEY = 'living_frontier_save_v1';
@@ -829,7 +830,7 @@ export class WorldState {
   static deserialize(obj) {
     const s = new WorldState(obj.seed ?? WORLD.seed);
     s.burningList = [];
-    s.time = obj.time; s.day = obj.day; s.elapsed = obj.elapsed || 0;
+    s.time = obj.time ?? s.time; s.day = obj.day ?? s.day; s.elapsed = obj.elapsed || 0;
     if (Array.isArray(obj.ground)) {
       for (let ch = 0; ch < 4; ch++) interleaveInto(s.ground, rleDecode(obj.ground[ch], R * R), ch);
     } else if (obj.ground) s.ground = rleDecode(obj.ground, R * R * 4);
@@ -912,6 +913,8 @@ export class WorldState {
     if (!raw) return { state: null, status: 'new' };
     try {
       const obj = JSON.parse(raw);
+      const invalid = invalidSaveSections(obj);
+      if (invalid.length) throw new Error('Broken save sections: ' + invalid.join(', '));
       const s = WorldState.deserialize(obj);
       const away = Math.max(0, (Date.now() - (obj.savedAt || Date.now())) / 1000);
       s.awaySeconds = away;
@@ -922,7 +925,15 @@ export class WorldState {
     } catch (e) {
       console.warn('load failed', e);
       // keep the unreadable save aside rather than overwriting it immediately
-      try { localStorage.setItem(SAVE_KEY + '_damaged', raw.slice(0, 200000)); } catch (e2) { }
+      try { localStorage.setItem(SAVE_KEY + '_damaged', raw); } catch (e2) { }
+      const recovered = recoverSave(raw);
+      if (recovered) {
+        const state = WorldState.deserialize(recovered.payload);
+        // Do not fast-forward a recovery: preserve its ground byte-for-byte and
+        // let the player read the recovery report before further simulation.
+        state.awaySeconds = 0;
+        return { state, status: 'salvaged', report: recovered.report };
+      }
       return { state: null, status: 'damaged', reason: (e && e.message) || 'unreadable' };
     }
   }

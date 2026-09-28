@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { Vegetation } from '../src/veg.js';
 import { ChunkManager } from '../src/terrain.js';
 import { ActorSystem } from '../src/entities.js';
-import { DAY_LENGTH, CH } from '../src/worldstate.js';
+import { DAY_LENGTH, CH, SAVE_KEY } from '../src/worldstate.js';
 import { mulberry32 } from '../src/rng.js';
 import { heightAt } from '../src/worldgen.js';
 import { WorldState } from '../src/worldstate.js';
@@ -181,4 +181,40 @@ import { WORLD } from '../src/worldgen.js';
   state.tickWeather(30); state.weather.type = 'clear';
   assert.equal(state.fireConditions().risk, 'damp', 'rain-wetted ground must still damp fire after rain stops');
   console.log(`  ✓ shared fire model: damp ${damp} cells, tinder ${tinder} cells`);
+}
+
+{
+  const oldStorage = globalThis.localStorage;
+  const store = new Map();
+  globalThis.localStorage = { getItem: k => store.get(k) || null, setItem: (k, v) => store.set(k, v) };
+  try {
+    const state = new WorldState();
+    state.paintGround(0, 0, CH.BURN, 0.8, 30);
+    state.markExplored(0, 0, 180);
+    for (let i = 0; i < 43; i++) state.note('A diary entry ' + i);
+    const obj = state.serialize(), raw = JSON.stringify(obj);
+    const torn = raw.replace(/("journal":\[)[\s\S]*?(,"quests":)/, '$1{"text":"torn$2');
+    store.set(SAVE_KEY, torn);
+    const result = WorldState.loadResult();
+    assert.equal(result.status, 'salvaged', 'truncated journal must not destroy the world');
+    assert.deepEqual(result.state.ground, state.ground, 'salvage must preserve every ground byte');
+    assert.deepEqual(result.state.explored, state.explored);
+    assert.deepEqual(result.state.serialize().regions, obj.regions);
+    assert.deepEqual(result.state.settlements, obj.settlements);
+    assert.equal(result.state.player.x, state.player.x);
+    assert.equal(result.state.player.z, state.player.z);
+    assert.equal(result.state.journal.length, 0);
+    assert(result.report.includes('journal') && result.report.includes('Recovered:'));
+    assert.equal(store.get(SAVE_KEY + '_damaged'), torn, 'retain original damaged bytes');
+    obj.journal[5].text = null;
+    store.set(SAVE_KEY, JSON.stringify(obj));
+    const invalid = WorldState.loadResult();
+    assert.equal(invalid.status, 'salvaged');
+    assert(invalid.report.includes('43 journal entries'), 'known losses must be counted honestly');
+    store.set(SAVE_KEY, '{"day":3,"ground":["AAA');
+    assert.equal(WorldState.loadResult().status, 'damaged', 'metadata alone is not salvageable');
+    store.set(SAVE_KEY, raw);
+    assert.equal(WorldState.loadResult().status, 'ok', 'healthy save must still load normally');
+    console.log('  ✓ broken journal salvage preserves world bytes and reports losses');
+  } finally { globalThis.localStorage = oldStorage; }
 }
