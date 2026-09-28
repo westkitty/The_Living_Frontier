@@ -137,7 +137,13 @@ if (state.history.length > 4) {
 }
 
 const chart = document.querySelector('#ws-chart');
-if (chart) png(chart, 'ws-chart.png'); else console.log('  (no chronicle chart rendered)');
+if (chart) {
+  png(chart, 'ws-chart.png');
+  for (const series of game.ui.chartSeries()) if (series.k !== 1) game.ui.chartHiddenSet().add(series.k);
+  game.ui.drawHistoryChart(state);
+  png(chart, 'ws-chart-herds.png');
+  game.ui.chartHiddenSet().clear();
+} else console.log('  (no chronicle chart rendered)');
 
 // the title-screen portrait of this saved world, from the save itself
 state.save();
