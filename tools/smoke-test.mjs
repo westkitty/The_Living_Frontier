@@ -537,6 +537,48 @@ game.ui.closeDialog();
 
 
 
+
+// ---- streaming does not leak ----------------------------------------------
+// Walking a long way and coming back must leave the scene the size it was:
+// chunk churn is the one thing in this game that runs thousands of times.
+{
+  const objs0 = game.scene.children.length;
+  const veg0 = game.veg.chunks.size, ter0 = game.chunks.chunks.size;
+  const home = p.pos.clone();
+  const peaks = [];
+  for (const [dx, dz] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+    for (let i = 0; i < 90; i++) {
+      p.pos.x += dx * 12; p.pos.z += dz * 12;
+      game.chunks.update(p.pos.x, p.pos.z, 8);
+      game.frame();
+      peaks.push(game.scene.children.length);
+    }
+  }
+  p.pos.copy(home);
+  for (let i = 0; i < 60; i++) { game.chunks.update(p.pos.x, p.pos.z, 8); game.frame(); }
+  const objs1 = game.scene.children.length;
+  const veg1 = game.veg.chunks.size, ter1 = game.chunks.chunks.size;
+  const peak = Math.max(...peaks);
+  log(`streamed ~4.3 km round trip: scene objects ${objs0} -> ${objs1} (peak ${peak}),`,
+    `terrain chunks ${ter0} -> ${ter1}, veg chunks ${veg0} -> ${veg1}`,
+    objs1 <= objs0 + 12 && objs1 > objs0 * 0.5 && ter1 <= ter0 + 2 && veg1 <= veg0 + 2 ? '✓ nothing left behind' : '✗');
+  // the count may fall (wildlife wanders off, grass only lives underfoot) but
+  // it must not creep upward, and the world must not empty out either
+  if (objs1 > objs0 + 12) errors.push('the scene grows after streaming back to where it started');
+  if (objs1 <= objs0 * 0.5) errors.push('streaming back home leaves the world half empty');
+  if (ter1 > ter0 + 2 || veg1 > veg0 + 2) errors.push('chunk bookkeeping leaks entries while streaming');
+  if (peak > objs0 * 2.2) errors.push('streaming lets the scene balloon while moving');
+  // and no key may hold two sets of meshes
+  let dupes = 0;
+  for (const [, c] of game.veg.chunks) {
+    const seen = new Set();
+    for (const t in c.meshes) { if (seen.has(c.meshes[t].uuid)) dupes++; seen.add(c.meshes[t].uuid); }
+    if (c.meshes.pine && !game.scene.children.includes(c.meshes.pine)) dupes++;
+  }
+  log('  every live vegetation mesh is attached exactly once:', dupes === 0 ? '✓' : `✗ (${dupes})`);
+  if (dupes) errors.push('vegetation meshes are detached or duplicated after streaming');
+}
+
 // ---- consequences you can see, not merely count ---------------------------
 // The premise of the game is that the world visibly remembers. These check the
 // scene graph itself, not the numbers that feed it.

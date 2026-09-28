@@ -245,8 +245,9 @@ a village timber raises a real building in the scene geometry, that a captured
 settlement's banner cloth changes colour, that setting a wooded chunk alight
 turns standing trees into charred snags in the scene without re-scattering
 that chunk every frame, that hunting a valley out leaves it visibly emptier,
-that footfalls change with the ground underfoot, and that preferences persist
-across sessions.
+that walking a four-kilometre round trip leaves the scene the size it started
+— no leaked chunks, no detached meshes — that footfalls change with the ground
+underfoot, and that preferences persist across sessions.
 
 The harness also proves it finished: if the run stops early — an exception in
 a jsdom callback used to end it quietly, which is how a missing import once
