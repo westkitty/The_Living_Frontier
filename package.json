@@ -1,0 +1,23 @@
+{
+  "name": "the-living-frontier",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "THE LIVING FRONTIER - a systemic open-world Three.js game that remembers what you do.",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "smoke": "node tools/smoke-test.mjs",
+    "shaders": "node tools/shader-check.mjs",
+    "ui": "node tools/ui-check.mjs",
+    "visual": "node tools/visual-qa.mjs",
+    "perf": "node tools/perf-probe.mjs",
+    "check": "npm run arch && npm run ui && npm run shaders && npm run smoke",
+    "arch": "node tools/arch-check.mjs"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "@shaderfrog/glsl-parser": "^7.0.1",
+    "jsdom": "^24.1.0",
+    "three": "0.160.1"
+  }
+}
