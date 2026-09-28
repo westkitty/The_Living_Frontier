@@ -1,4 +1,6 @@
 // Behavioural refinement assertions, also executed by the real-game smoke gate.
+import { JSDOM } from 'jsdom';
+import { PanelsMixin } from '../src/panels.js';
 import assert from 'node:assert/strict';
 import { createCanvas } from '@napi-rs/canvas';
 import { Cartographer } from '../src/cartography.js';
@@ -85,4 +87,30 @@ import { WORLD } from '../src/worldgen.js';
   veg.buildChunk(key, chunk.rec, 2);
   assert(!veg.chunks.get(key).meshes.canopy, 'burn scars must suppress distant canopy');
   console.log('  ✓ ring-two canopy ownership, burn exclusion and disposal');
+}
+
+{
+  const savedDocument = globalThis.document;
+  const dom = new JSDOM('<canvas id="ws-chart" width="720" height="240"></canvas><div id="ws-read"></div><div id="ws-legend"></div>');
+  globalThis.document = dom.window.document;
+  try {
+    const state = new WorldState();
+    state.history = [[1, 102, 12, 90, 4, 0, 0, 0, 41], [2, 201, 20, 91, 8, 0, 0, 0, 51], [3, 130, 15, 95, 6, 0, 0, 0, 45]];
+    const panel = Object.assign({ state }, PanelsMixin);
+    const canvas = document.querySelector('#ws-chart'), ctx = createCanvas(720, 240).getContext('2d');
+    const drawn = [], fill = ctx.fillText.bind(ctx);
+    ctx.fillText = (text, x, y) => { drawn.push(String(text)); fill(text, x, y); };
+    canvas.getContext = () => ctx;
+    panel.drawHistoryChart(state);
+    assert(document.querySelector('#ws-read').textContent.includes('Normalised view'));
+    // Isolate through the actual legend buttons, not a fabricated hidden-set result.
+    for (const k of [2, 3, 4, 8]) document.querySelector(`[data-k="${k}"]`).click();
+    drawn.length = 0;
+    panel.drawHistoryChart(state);
+    const min = Math.min(...state.history.map(r => r[1])), max = Math.max(...state.history.map(r => r[1]));
+    assert.deepEqual(drawn.filter(v => !v.startsWith('day ')), [min, (min + max) / 2, max].map(String), 'isolated chart must draw true min/mid/max');
+    assert(document.querySelector('#ws-read').textContent.includes('Y-axis: herd animals'));
+    assert(canvas.getAttribute('aria-label').includes('Y-axis: herd animals'));
+    console.log('  ✓ isolated herd axis labels and units match history');
+  } finally { globalThis.document = savedDocument; dom.window.close(); }
 }
