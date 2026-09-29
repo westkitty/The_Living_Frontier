@@ -187,7 +187,6 @@ export class Player {
     if (this.dead) {
       this.deathTimer += dt;
       this.group.rotation.z = 0;
-    this.fallbackRoot.rotation.z = 0;
       this.fallbackRoot.rotation.z = lerp(this.fallbackRoot.rotation.z, 1.5, dt * 3);
       if (this.deathTimer > 3.2) this.respawn();
       this.visual?.update(dt, 'dead', 0);
@@ -195,6 +194,7 @@ export class Player {
       return;
     }
     this.group.rotation.z = 0;
+    this.fallbackRoot.rotation.z = 0;
     // --- gather input
     let [mx, my, sprintKey] = input.keyboardMove();
     if (input.move.lengthSq() > 0.001) { mx = input.move.x; my = input.move.y; }
