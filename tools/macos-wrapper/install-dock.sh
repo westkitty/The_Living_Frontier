@@ -15,7 +15,10 @@ trap cleanup EXIT
 
 /bin/mkdir -p "$CONTENTS_DIR/MacOS" "$RESOURCES_DIR"
 /bin/cp "$SCRIPT_DIR/Info.plist" "$CONTENTS_DIR/Info.plist"
-/usr/bin/sed "s|__REPO_DIR__|$REPO_DIR|g" "$SCRIPT_DIR/Launcher.in" >"$CONTENTS_DIR/MacOS/Launcher"
+/bin/rm -rf "$RESOURCES_DIR/site"
+/bin/mkdir -p "$RESOURCES_DIR/site"
+/usr/bin/rsync -a --delete --exclude '.git' --exclude 'node_modules' --exclude '.DS_Store' "$REPO_DIR/" "$RESOURCES_DIR/site/"
+/usr/bin/sed "s|__SITE_DIR__|$RESOURCES_DIR/site|g" "$SCRIPT_DIR/Launcher.in" >"$CONTENTS_DIR/MacOS/Launcher"
 /bin/chmod 755 "$CONTENTS_DIR/MacOS/Launcher"
 
 for size in 16 32 128 256 512 1024; do
@@ -33,3 +36,4 @@ done
 
 echo "Installed and Dock-registered: $APP_DIR"
 echo "Launcher target: $REPO_DIR"
+echo "Bundled site: $RESOURCES_DIR/site"
