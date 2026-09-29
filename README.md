@@ -4,12 +4,14 @@ A mobile-first, third-person open-world exploration game built with Three.js.
 One seamless wilderness of forests, rivers, mountains, ruins, caves, villages and
 contested territory — and **the world remembers what you do in it**.
 
-Everything is procedural: terrain, vegetation, creatures, buildings, landmarks,
-weather, audio and maps. There are no downloaded assets, no texture files and
-no model files; the interface iconography is a hand-drawn inline SVG family
-defined once in `index.html`. The only third-party code is a vendored copy of
-Three.js (`vendor/three.module.js`, MIT — see `vendor/README.md`), so the game
-has no network dependency at all.
+The frontier itself remains procedural: terrain, vegetation placement, buildings,
+landmarks, weather, audio, maps, ecology and world-state consequences are generated
+by the game. Living actors use verified, self-hosted GLB presentation assets behind
+stable manifest IDs; their movement, AI, combat, ecology and persistence remain
+owned by the existing gameplay systems. Procedural actor geometry stays available
+as a load-failure fallback. Runtime assets and Three.js are served from this
+repository — there are no third-party runtime hotlinks. Source, license, provenance
+and validation records live under `docs/resources/`.
 
 ```
 open index.html through any static server, e.g.
@@ -59,10 +61,11 @@ distance, light colour, wind strength, precipitation particles and fire spread.
 **Ecology** — 144 regions each run a predator/prey model with carrying capacity
 tied to forest health. Live animals near the player are spawned in proportion to
 their region's population, so a hunted-out valley really does feel empty.
-Killed animals leave small dark carcasses for one in-world day. Nearby predators
-prefer that scent over hunting, consume the carcass and gain a small population
-benefit. Press E to harvest hide before they reach it. Carcasses are temporary
-live-scene objects, not saved inventory caches; at most 48 are kept at once.
+Killed animals remain visibly represented by their species model and death pose
+for one in-world day. Nearby predators prefer that scent over hunting, consume
+the carcass and gain a small population benefit. Press E to harvest hide before
+they reach it. Carcasses are temporary live-scene objects, not saved inventory
+caches; at most 48 are kept at once.
 
 **Fire** — a 96×96 fuel/burning grid. Fire consumes fuel, spreads downwind, is
 extinguished by rain, kills wildlife, strips forest health, and paints permanent
@@ -250,6 +253,9 @@ is also filed in the journal.
 index.html          shell, HUD markup, import map
 styles.css          all UI styling and transitions
 vendor/three.module.js
+assets/runtime/     self-hosted validated GLB delivery assets
+docs/resources/     visual manifest, provenance, licenses and validator evidence
+src/assets/         AssetManager, actor-presentation adapter and animation runtime
 src/rng.js          seeded hashing, value noise, fBm, ridged noise
 src/cartography.js  the atlas, fog of war, ground-memory wash, map glyphs and patterns
 src/map-ui.js       survey gestures and drawing, mixed onto UI
@@ -360,7 +366,9 @@ a jsdom callback used to end it quietly, which is how a missing import once
 slipped through — it prints `SMOKE TEST ENDED EARLY` and exits non-zero rather
 than looking like a pass.
 
-Known gap: there is no GPU in the build environment, so the WebGL render path
-itself is exercised against a stub renderer. Shaders are validated by parsing,
-the 2D map surfaces are validated by rasterising them for real, and game behaviour is exercised headlessly. Audible output and actual WebGL
-pixels remain unverified; these checks are not substitutes for device playtesting.
+The core smoke harness still uses a stub renderer for deterministic logic checks,
+but the asset and living-actor release gates additionally run the real Three.js
+WebGL path in headless Chromium/SwiftShader at desktop and narrow-mobile viewport
+sizes and retain canvas screenshots. Audible output and representative physical
+mobile-device thermals remain unverified; CI browser proof is not a substitute for
+device playtesting.

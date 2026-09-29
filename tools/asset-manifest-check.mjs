@@ -13,6 +13,7 @@ const ids = new Set();
 let total = 0;
 let phase1Total = 0;
 let phase2WildlifeTotal = 0;
+let phase2HumanTotal = 0;
 
 function digest(file) {
   const b = fs.readFileSync(file);
@@ -42,6 +43,7 @@ for (const a of manifest.assets) {
   const bytes = fs.statSync(file).size; total += bytes;
   if (policy.phase1RequiredIds.includes(a.id)) phase1Total += bytes;
   if ((policy.phase2WildlifeRequiredIds || []).includes(a.id)) phase2WildlifeTotal += bytes;
+  if ((policy.phase2HumanRequiredIds || []).includes(a.id)) phase2HumanTotal += bytes;
   if (bytes !== a.bytes) throw new Error(`byte count mismatch: ${a.id}`);
   if (digest(file) !== a.runtimeHash) throw new Error(`runtime hash mismatch: ${a.id}`);
   if (!/^sha256:[0-9a-f]{64}$/.test(a.sourceHash || '')) throw new Error(`source hash invalid: ${a.id}`);
@@ -76,11 +78,27 @@ for (const a of manifest.assets) {
       if ((a.stats?.nodeNames || []).includes(excluded)) throw new Error(`excluded source object leaked into runtime GLB: ${a.id} -> ${excluded}`);
     }
   }
+  if ((policy.phase2HumanRequiredIds || []).includes(a.id)) {
+    if (!(json.meshes?.length && json.skins?.length && json.animations?.length)) {
+      throw new Error(`Phase 2 human lacks mesh/skin/animation: ${a.id}`);
+    }
+    if (!Array.isArray(a.stats?.animationNames) || a.stats.animationNames.length !== a.stats.animations) {
+      throw new Error(`Phase 2 human lacks verified clip-name metadata: ${a.id}`);
+    }
+    for (const clip of ['Idle', 'Walk', 'Run', 'Death']) {
+      if (!a.stats.animationNames.includes(clip)) throw new Error(`Phase 2 human lacks required verified clip ${clip}: ${a.id}`);
+    }
+    if (a.collisionStrategy !== 'existing-gameplay-controller-no-model-collider') {
+      throw new Error(`Phase 2 human collision authority is not explicit: ${a.id}`);
+    }
+  }
 }
 for (const id of policy.phase1RequiredIds) if (!ids.has(id)) throw new Error(`required Phase 1 id missing: ${id}`);
 for (const id of policy.phase2WildlifeRequiredIds || []) if (!ids.has(id)) throw new Error(`required Phase 2 wildlife id missing: ${id}`);
+for (const id of policy.phase2HumanRequiredIds || []) if (!ids.has(id)) throw new Error(`required Phase 2 human id missing: ${id}`);
 if (phase1Total > policy.budgets.phase1TotalRuntimeBytes) throw new Error(`Phase 1 runtime bundle ${phase1Total} exceeds budget`);
 if (phase2WildlifeTotal > (policy.budgets.phase2WildlifeTotalRuntimeBytes || Infinity)) throw new Error(`Phase 2 wildlife runtime bundle ${phase2WildlifeTotal} exceeds budget`);
+if (phase2HumanTotal > (policy.budgets.phase2HumanTotalRuntimeBytes || Infinity)) throw new Error(`Phase 2 human runtime bundle ${phase2HumanTotal} exceeds budget`);
 for (const rec of licenses.records) {
   if (!policy.acceptedLicenses.includes(rec.license)) throw new Error(`unaccepted license ${rec.id}`);
   for (const key of ['commercialUse','modificationAllowed','browserDistributionAllowed']) {
