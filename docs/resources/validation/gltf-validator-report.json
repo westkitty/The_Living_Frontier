@@ -5,20 +5,26 @@
   "totals": {
     "assets": 5,
     "errors": 0,
-    "warnings": 5
+    "warnings": 4
   },
   "reports": [
     {
       "id": "prop.axe.phase1",
       "uri": "../../assets/runtime/props/axe.glb",
-      "bytes": 32728,
+      "bytes": 48512,
       "issueCounts": {
         "errors": 0,
         "warnings": 0,
-        "infos": 1,
+        "infos": 2,
         "hints": 0
       },
       "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
         {
           "code": "UNUSED_OBJECT",
           "message": "This object may be unused.",
@@ -34,7 +40,7 @@
             "pointer": "/buffers/0",
             "mimeType": "application/gltf-buffer",
             "storage": "glb",
-            "byteLength": 31316
+            "byteLength": 46956
           }
         ],
         "animationCount": 0,
@@ -44,29 +50,29 @@
         "hasTextures": false,
         "hasDefaultScene": true,
         "drawCallCount": 1,
-        "totalVertexCount": 659,
+        "totalVertexCount": 750,
         "totalTriangleCount": 826,
         "maxUVs": 1,
         "maxInfluences": 0,
-        "maxAttributes": 4
+        "maxAttributes": 5
       }
     },
     {
       "id": "vegetation.pine.phase1",
       "uri": "../../assets/runtime/vegetation/pine.glb",
-      "bytes": 929912,
+      "bytes": 1102148,
       "issueCounts": {
         "errors": 0,
-        "warnings": 1,
-        "infos": 0,
+        "warnings": 0,
+        "infos": 1,
         "hints": 0
       },
       "issues": [
         {
-          "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
-          "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
-          "severity": 1,
-          "pointer": "/meshes/0/primitives/0/material"
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/1/attributes/TANGENT"
         }
       ],
       "info": {
@@ -77,7 +83,7 @@
             "pointer": "/buffers/0",
             "mimeType": "application/gltf-buffer",
             "storage": "glb",
-            "byteLength": 926920
+            "byteLength": 1098856
           },
           {
             "pointer": "/images/0",
@@ -126,11 +132,11 @@
         "hasTextures": true,
         "hasDefaultScene": true,
         "drawCallCount": 2,
-        "totalVertexCount": 5391,
+        "totalVertexCount": 6921,
         "totalTriangleCount": 3947,
         "maxUVs": 1,
         "maxInfluences": 0,
-        "maxAttributes": 4
+        "maxAttributes": 5
       }
     },
     {
@@ -172,14 +178,20 @@
     {
       "id": "player.phase1",
       "uri": "../../assets/runtime/characters/player.glb",
-      "bytes": 296220,
+      "bytes": 384696,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
-        "infos": 1,
+        "infos": 2,
         "hints": 0
       },
       "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
         {
           "code": "UNUSED_OBJECT",
           "message": "This object may be unused.",
@@ -205,7 +217,7 @@
             "pointer": "/buffers/0",
             "mimeType": "application/gltf-buffer",
             "storage": "glb",
-            "byteLength": 250052
+            "byteLength": 338380
           }
         ],
         "animationCount": 1,
@@ -215,24 +227,30 @@
         "hasTextures": false,
         "hasDefaultScene": true,
         "drawCallCount": 1,
-        "totalVertexCount": 4492,
+        "totalVertexCount": 4734,
         "totalTriangleCount": 1578,
         "maxUVs": 1,
         "maxInfluences": 4,
-        "maxAttributes": 5
+        "maxAttributes": 6
       }
     },
     {
       "id": "creature.deer.phase1",
       "uri": "../../assets/runtime/creatures/deer.glb",
-      "bytes": 785292,
+      "bytes": 837840,
       "issueCounts": {
         "errors": 0,
         "warnings": 3,
-        "infos": 6,
+        "infos": 9,
         "hints": 0
       },
       "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
         {
           "code": "UNUSED_OBJECT",
           "message": "This object may be unused.",
@@ -246,6 +264,12 @@
           "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
         },
         {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TANGENT"
+        },
+        {
           "code": "UNUSED_OBJECT",
           "message": "This object may be unused.",
           "severity": 2,
@@ -256,6 +280,12 @@
           "message": "This object may be unused.",
           "severity": 2,
           "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TANGENT"
         },
         {
           "code": "UNUSED_OBJECT",
@@ -296,7 +326,7 @@
             "pointer": "/buffers/0",
             "mimeType": "application/gltf-buffer",
             "storage": "glb",
-            "byteLength": 547980
+            "byteLength": 600076
           }
         ],
         "animationCount": 11,
@@ -306,11 +336,11 @@
         "hasTextures": false,
         "hasDefaultScene": true,
         "drawCallCount": 4,
-        "totalVertexCount": 3222,
+        "totalVertexCount": 3230,
         "totalTriangleCount": 4786,
         "maxUVs": 2,
         "maxInfluences": 4,
-        "maxAttributes": 6
+        "maxAttributes": 7
       }
     }
   ]

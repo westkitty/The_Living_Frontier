@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "project": "The Living Frontier",
-  "generatedAt": "2026-09-29T02:57:14.539Z",
+  "generatedAt": "2026-09-29T03:03:41.910Z",
   "assets": [
     {
       "id": "prop.axe.phase1",
       "type": "model",
       "uri": "../../assets/runtime/props/axe.glb",
       "sourceHash": "sha256:0bc1e5843c9f245c44bda82f97f738b09f88fe51bb34d2a69a7847a969f868e3",
-      "runtimeHash": "sha256:0055b059790f12607059de02550dbfc88a16fc9805731d5c3b1417c23299270e",
-      "bytes": 32728,
+      "runtimeHash": "sha256:f8e17bf58357962ca667be0aea5c98370801d4a78f85a81a5b91c1b87fb83179",
+      "bytes": 48512,
       "dependencies": [],
       "preload": false,
       "streamGroup": "phase1-probe",
@@ -17,6 +17,8 @@
       "licenseRecordId": "quaternius-fantasy-props-megakit-cc0",
       "provenanceRecordId": "quaternius-fantasy-props-megakit",
       "disposalPolicy": "asset-manager-refcount-cache",
+      "collisionStrategy": "none-phase1-probe",
+      "lodGroup": null,
       "presentation": {
         "targetMaxDimension": 1.2,
         "ground": true,
@@ -24,13 +26,25 @@
       },
       "stats": {
         "nodes": 1,
+        "nodeNames": [
+          "Axe_Bronze"
+        ],
         "meshes": 1,
+        "meshNames": [
+          "Cylinder.004"
+        ],
         "primitives": 1,
         "materials": 1,
+        "materialNames": [
+          "MI_Trim_Props_Vertex"
+        ],
         "textures": 0,
         "images": 0,
         "skins": 0,
         "animations": 0,
+        "animationNames": [],
+        "extensionsUsed": [],
+        "extensionsRequired": [],
         "externalUris": []
       }
     },
@@ -39,8 +53,8 @@
       "type": "model",
       "uri": "../../assets/runtime/vegetation/pine.glb",
       "sourceHash": "sha256:298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
-      "runtimeHash": "sha256:fe927655337e35f3c06b3f8285020327c933e8a9afe7fba33a7904c0273fef98",
-      "bytes": 929912,
+      "runtimeHash": "sha256:6c2df89979f29c6e3ed6fe9ee4db858b0ff7b3d9308938a839c158709b5e3aba",
+      "bytes": 1102148,
       "dependencies": [],
       "preload": false,
       "streamGroup": "phase1-probe",
@@ -48,6 +62,8 @@
       "licenseRecordId": "quaternius-stylized-nature-megakit-cc0",
       "provenanceRecordId": "quaternius-stylized-nature-megakit",
       "disposalPolicy": "asset-manager-refcount-cache",
+      "collisionStrategy": "none-phase1-probe",
+      "lodGroup": null,
       "presentation": {
         "targetHeight": 10,
         "ground": true,
@@ -55,13 +71,26 @@
       },
       "stats": {
         "nodes": 1,
+        "nodeNames": [
+          "Pine_1"
+        ],
         "meshes": 1,
+        "meshNames": [
+          "tree.028"
+        ],
         "primitives": 2,
         "materials": 2,
+        "materialNames": [
+          "Bark_NormalTree",
+          "Leaves_Pine"
+        ],
         "textures": 3,
         "images": 3,
         "skins": 0,
         "animations": 0,
+        "animationNames": [],
+        "extensionsUsed": [],
+        "extensionsRequired": [],
         "externalUris": []
       }
     },
@@ -79,6 +108,8 @@
       "licenseRecordId": "quaternius-medieval-village-pack-cc0",
       "provenanceRecordId": "quaternius-medieval-village-pack",
       "disposalPolicy": "asset-manager-refcount-cache",
+      "collisionStrategy": "none-phase1-probe",
+      "lodGroup": null,
       "presentation": {
         "targetHeight": 6,
         "ground": true,
@@ -86,13 +117,30 @@
       },
       "stats": {
         "nodes": 1,
+        "nodeNames": [
+          "House_3"
+        ],
         "meshes": 1,
+        "meshNames": [
+          "Cube.305"
+        ],
         "primitives": 6,
         "materials": 6,
+        "materialNames": [
+          "Stone_Dark",
+          "Stone",
+          "Wood",
+          "Wood_Side",
+          "Wood_Light",
+          "Stone_Light"
+        ],
         "textures": 0,
         "images": 0,
         "skins": 0,
         "animations": 0,
+        "animationNames": [],
+        "extensionsUsed": [],
+        "extensionsRequired": [],
         "externalUris": []
       }
     },
@@ -101,8 +149,8 @@
       "type": "model",
       "uri": "../../assets/runtime/characters/player.glb",
       "sourceHash": "sha256:dcd72162b5e59495efc629fb624d9e1deb12124b68291ad4fa3ce66b4fc24db3",
-      "runtimeHash": "sha256:fe5924008ebae169c17f5f69b9f1e01616e251eefb71b71c061653191474511f",
-      "bytes": 296220,
+      "runtimeHash": "sha256:ce8e0a92532411151b24311eda568ba1bc06b32b4e40779fbe357f05d9490c1e",
+      "bytes": 384696,
       "dependencies": [],
       "preload": false,
       "streamGroup": "phase1-probe",
@@ -110,6 +158,8 @@
       "licenseRecordId": "quaternius-animated-human-cc0",
       "provenanceRecordId": "quaternius-animated-human",
       "disposalPolicy": "asset-manager-refcount-cache",
+      "collisionStrategy": "none-phase1-probe",
+      "lodGroup": null,
       "presentation": {
         "targetHeight": 1.8,
         "ground": true,
@@ -117,13 +167,79 @@
       },
       "stats": {
         "nodes": 50,
+        "nodeNames": [
+          "HeadTop_End_end",
+          "HeadTop_End",
+          "Head",
+          "Neck",
+          "LeftHandThumb4_end",
+          "LeftHandThumb4",
+          "LeftHandThumb3",
+          "LeftHandThumb2",
+          "LeftHandThumb1",
+          "LeftHandIndex4_end",
+          "LeftHandIndex4",
+          "LeftHandIndex3",
+          "LeftHandIndex2",
+          "LeftHandIndex1",
+          "LeftHand",
+          "LeftForeArm",
+          "LeftArm",
+          "LeftShoulder",
+          "RightHandThumb4_end",
+          "RightHandThumb4",
+          "RightHandThumb3",
+          "RightHandThumb2",
+          "RightHandThumb1",
+          "RightHandIndex4_end",
+          "RightHandIndex4",
+          "RightHandIndex3",
+          "RightHandIndex2",
+          "RightHandIndex1",
+          "RightHand",
+          "RightForeArm",
+          "RightArm",
+          "RightShoulder",
+          "Spine2",
+          "Spine1",
+          "Spine",
+          "LeftToe_End_end",
+          "LeftToe_End",
+          "LeftToeBase",
+          "LeftFoot",
+          "LeftLeg",
+          "LeftUpLeg",
+          "RightToe_End_end",
+          "RightToe_End",
+          "RightToeBase",
+          "RightFoot",
+          "RightLeg",
+          "RightUpLeg",
+          "Hips",
+          "Human_Mesh",
+          "Human Armature"
+        ],
         "meshes": 1,
+        "meshNames": [
+          "Human_CylinderMesh.003"
+        ],
         "primitives": 1,
         "materials": 1,
+        "materialNames": [
+          "Texture"
+        ],
         "textures": 0,
         "images": 0,
         "skins": 1,
         "animations": 1,
+        "animationNames": [
+          "Human Armature|Human Armature|ArmatureAction.001"
+        ],
+        "extensionsUsed": [
+          "KHR_materials_specular",
+          "KHR_materials_ior"
+        ],
+        "extensionsRequired": [],
         "externalUris": []
       }
     },
@@ -132,8 +248,8 @@
       "type": "model",
       "uri": "../../assets/runtime/creatures/deer.glb",
       "sourceHash": "sha256:577b9e48ce7cee955c6dac1b0a70333eccdfcad3f11eaa1f96a15900b64ca25e",
-      "runtimeHash": "sha256:1d563c039d8493c00b6d173237c7fe031268211a5e27375b1ade40c0ddaa4005",
-      "bytes": 785292,
+      "runtimeHash": "sha256:e60c0563199368cbfd7c349576eeb05bc672054fbd693df351649ed877f6a456",
+      "bytes": 837840,
       "dependencies": [],
       "preload": false,
       "streamGroup": "phase1-probe",
@@ -141,6 +257,8 @@
       "licenseRecordId": "cdmir-deer-female-cc0",
       "provenanceRecordId": "cdmir-deer-female",
       "disposalPolicy": "asset-manager-refcount-cache",
+      "collisionStrategy": "none-phase1-probe",
+      "lodGroup": null,
       "presentation": {
         "targetHeight": 1.5,
         "ground": true,
@@ -148,13 +266,78 @@
       },
       "stats": {
         "nodes": 36,
+        "nodeNames": [
+          "IK-Backleg_L",
+          "IK-Backleg_R",
+          "IK-Frontleg_L",
+          "IK-Frontleg_R",
+          "IK-FrontlegTarget_L",
+          "IK-FrontlegTarget_R",
+          "IK-BacklegTarget_R",
+          "IK-BacklegTarget_L",
+          "IK-Head",
+          "Backleg_L.002",
+          "Backleg_L.001",
+          "Backleg_L",
+          "Backleg_R.002",
+          "Backleg_R.001",
+          "Backleg_R",
+          "Head_L.001",
+          "Head_R.001",
+          "Head",
+          "Backbone.002",
+          "Frontleg_L.002",
+          "Frontleg_L.001",
+          "Frontleg_L",
+          "Frontleg_R.002",
+          "Frontleg_R.001",
+          "Frontleg_R",
+          "Backbone.001",
+          "Backbone",
+          "Hip",
+          "IK-Hip",
+          "IK-Backbone",
+          "Main",
+          "Body",
+          "Eyes",
+          "Head",
+          "Armature",
+          "Plane"
+        ],
         "meshes": 4,
+        "meshNames": [
+          "Cylinder",
+          "Cylinder.001",
+          "Cylinder.002",
+          "Plane"
+        ],
         "primitives": 4,
         "materials": 4,
+        "materialNames": [
+          "body",
+          "Eye",
+          "head",
+          "Material"
+        ],
         "textures": 0,
         "images": 0,
         "skins": 1,
         "animations": 11,
+        "animationNames": [
+          "Die.000",
+          "Die.001",
+          "Die.002",
+          "Eat.001",
+          "Idle",
+          "Idle.000",
+          "Idle.001",
+          "LookAround.000",
+          "LookAround.001",
+          "Run",
+          "Stand"
+        ],
+        "extensionsUsed": [],
+        "extensionsRequired": [],
         "externalUris": []
       }
     }
