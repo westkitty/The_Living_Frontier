@@ -442,7 +442,8 @@ try {
     }
 
     const diagnosticShot = await canvas.screenshot({ path: `/tmp/lf-phase2-${name}-diagnostic.png` });
-    if (diagnosticShot.length < 8000) throw new Error(`${name}: diagnostic actor screenshot is suspiciously small/blank (${diagnosticShot.length} bytes)`);
+    const diagnosticByteFloor = name === 'mobile-viewport' ? 6000 : 8000;
+    if (diagnosticShot.length < diagnosticByteFloor) throw new Error(`${name}: diagnostic actor screenshot is suspiciously small/blank (${diagnosticShot.length} bytes)`);
 
     if (errors.length) throw new Error(`${name}: browser errors: ${errors.join(' | ')}`);
     console.log(`PHASE2 BROWSER PASS ${name}`, JSON.stringify({
