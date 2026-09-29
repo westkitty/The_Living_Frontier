@@ -78,7 +78,13 @@ jobs:
           else
             printf '{"label":"wolf","sourceFile":null,"objects":[],"armatures":[],"actions":[],"images":[],"note":"No Wolf-named Blend file found; inspect archive inventory before conversion."}\n' > /tmp/lf-phase2-sources/inspection/wolf.json
           fi
-          mkdir -p /tmp/lf-phase2-sources/inspection/rpg-humans
+          mkdir -p /tmp/lf-phase2-sources/inspection/humans /tmp/lf-phase2-sources/inspection/rpg-humans
+          for label in BaseCharacter Worker_Male Worker_Female Soldier_Male Soldier_Female Casual_Male Casual_Female Viking_Male Viking_Female Wizard Witch; do
+            blend="$(find /tmp/lf-phase2-sources/humans -type f -path "*/Blends/$label.blend" | head -n1 || true)"
+            if [ -n "$blend" ]; then
+              blender --background "$blend" --python "$GITHUB_WORKSPACE/tools/blender-source-inspect.py" -- "$label" "/tmp/lf-phase2-sources/inspection/humans/$label.json"
+            fi
+          done
           while IFS= read -r blend; do
             label="$(basename "$blend" .blend | tr ' ' '_' | tr -cd '[:alnum:]_-')"
             blender --background "$blend" --python "$GITHUB_WORKSPACE/tools/blender-source-inspect.py" -- "$label" "/tmp/lf-phase2-sources/inspection/rpg-humans/$label.json"
@@ -127,6 +133,7 @@ jobs:
                 license: 'CC0-1.0',
                 sha256: hash('humans.zip'),
                 inventory: lines('human-files.txt'),
+                inspections: readDirJson('humans'),
               },
               rpgHumans: {
                 sourcePage: 'https://opengameart.org/content/lowpoly-rpg-characters',
@@ -182,5 +189,6 @@ jobs:
             /tmp/lf-phase2-sources/human-files.txt
             /tmp/lf-phase2-sources/rpg-human-files.txt
             /tmp/lf-phase2-sources/inspection/*.json
+            /tmp/lf-phase2-sources/inspection/humans/*.json
             /tmp/lf-phase2-sources/inspection/rpg-humans/*.json
           if-no-files-found: error
