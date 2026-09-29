@@ -95,19 +95,11 @@ jobs:
           set -euo pipefail
           mkdir -p assets/runtime/{props,vegetation,structures,characters,creatures}
           cd /tmp/lf-assets
-          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.gltf(filepath=r'$(cat pine.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb', export_format='GLB')"
-          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.gltf(filepath=r'$(cat axe.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/props/axe.glb', export_format='GLB')"
-          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.fbx(filepath=r'$(cat hut.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb', export_format='GLB')"
-          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.fbx(filepath=r'$(cat player.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/characters/player.glb', export_format='GLB')"
-          blender --background /tmp/lf-assets/deer.blend --python-expr "import bpy; bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb', export_format='GLB')"
-          for f in \
-            "$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb" \
-            "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" \
-            "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" \
-            "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" \
-            "$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb"; do
-            test -s "$f" || { echo "missing converted GLB: $f"; exit 1; }
-          done
+          blender --background --factory-startup --python "$GITHUB_WORKSPACE/tools/blender-export-runtime.py" -- gltf "$(cat pine.path)" "$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb" 512
+          blender --background --factory-startup --python "$GITHUB_WORKSPACE/tools/blender-export-runtime.py" -- gltf "$(cat axe.path)" "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" 512
+          blender --background --factory-startup --python "$GITHUB_WORKSPACE/tools/blender-export-runtime.py" -- fbx "$(cat hut.path)" "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" 512
+          blender --background --factory-startup --python "$GITHUB_WORKSPACE/tools/blender-export-runtime.py" -- fbx "$(cat player.path)" "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" 512
+          blender --background /tmp/lf-assets/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-runtime.py" -- blend - "$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb" 512
 
       - name: Vendor matching Three.js loader support
         shell: bash
