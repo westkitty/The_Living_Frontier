@@ -52,6 +52,12 @@ for (const a of manifest.assets) {
   if ((a.id === 'player.phase1' || a.id === 'creature.deer.phase1') && !(json.skins?.length && json.animations?.length)) {
     throw new Error(`animated representative lacks skin/animation: ${a.id}`);
   }
+  if ((a.id === 'player.phase1' || a.id === 'creature.deer.phase1') &&
+      (!Array.isArray(a.stats?.animationNames) || a.stats.animationNames.length !== a.stats.animations)) {
+    throw new Error(`animated representative lacks verified clip-name metadata: ${a.id}`);
+  }
+  if (a.collisionStrategy !== 'none-phase1-probe') throw new Error(`Phase 1 collision policy is not explicit: ${a.id}`);
+  if (a.lodGroup !== null) throw new Error(`Phase 1 fixture unexpectedly declares LOD authority: ${a.id}`);
 }
 for (const id of policy.phase1RequiredIds) if (!ids.has(id)) throw new Error(`required Phase 1 id missing: ${id}`);
 if (total > policy.budgets.phase1TotalRuntimeBytes) throw new Error(`Phase 1 runtime bundle ${total} exceeds budget`);

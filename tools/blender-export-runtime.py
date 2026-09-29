@@ -36,6 +36,7 @@ result = bpy.ops.export_scene.gltf(
     filepath=output,
     export_format="GLB",
     export_yup=True,
+    export_tangents=True,
 )
 if "FINISHED" not in result:
     raise RuntimeError(f"glTF export failed for {source}: {result}")

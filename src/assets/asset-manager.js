@@ -69,7 +69,12 @@ export class AssetManager {
       const pending = this.loader.loadAsync(url).then((gltf) => ({ record, gltf }));
       this.cache.set(id, pending);
       try { await pending; }
-      catch (error) { this.cache.delete(id); throw error; }
+      catch (error) {
+        this.cache.delete(id);
+        const wrapped = new Error(`asset load failed [${id}] at ${url}: ${error?.message || error}`);
+        wrapped.cause = error;
+        throw wrapped;
+      }
     }
     return this.cache.get(id);
   }

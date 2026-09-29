@@ -50,6 +50,17 @@ try {
       if (!r.skinned || !r.animations) throw new Error(`${name}: ${id} lacks skinned/animated runtime proof`);
     }
 
+    for (const id of ['player.phase1','creature.deer.phase1']) {
+      await page.evaluate((assetId) => window.__LF_ASSET_PROBE.show(assetId), id);
+      await page.waitForTimeout(60);
+      const anim0 = await page.evaluate(() => window.__LF_ASSET_PROBE.animationState());
+      await page.waitForTimeout(260);
+      const anim1 = await page.evaluate(() => window.__LF_ASSET_PROBE.animationState());
+      if (!anim0.clip || !anim0.running || !anim1.running || Math.abs(anim1.time - anim0.time) < 0.01) {
+        throw new Error(`${name}: ${id} animation mixer did not demonstrably advance: ${JSON.stringify({ anim0, anim1 })}`);
+      }
+    }
+
     const canvas = page.locator('#probe-canvas');
     const box = await canvas.boundingBox();
     if (!box) throw new Error(`${name}: probe canvas has no layout box`);

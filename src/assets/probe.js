@@ -125,6 +125,11 @@ window.__LF_ASSET_PROBE = {
   results: {},
   show,
   cameraState: () => ({ yaw, pitch, distance, position: camera.position.toArray() }),
+  animationState: () => ({
+    clip: clipPlayer?.action?.getClip()?.name || null,
+    time: clipPlayer?.action?.time || 0,
+    running: !!clipPlayer?.action?.isRunning?.(),
+  }),
   assetManagerStats: () => assets.stats(),
   rendererInfo: () => ({ memory: { ...renderer.info.memory }, render: { ...renderer.info.render } }),
   disposeProbe,

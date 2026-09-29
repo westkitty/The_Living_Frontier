@@ -69,13 +69,19 @@ function inspectGlb(buf) {
   const primitives = (json.meshes || []).reduce((n, m) => n + (m.primitives?.length || 0), 0);
   return {
     nodes: json.nodes?.length || 0,
+    nodeNames: (json.nodes || []).map((n, i) => n.name || `node_${i}`),
     meshes: json.meshes?.length || 0,
+    meshNames: (json.meshes || []).map((m, i) => m.name || `mesh_${i}`),
     primitives,
     materials: json.materials?.length || 0,
+    materialNames: (json.materials || []).map((m, i) => m.name || `material_${i}`),
     textures: json.textures?.length || 0,
     images: json.images?.length || 0,
     skins: json.skins?.length || 0,
     animations: json.animations?.length || 0,
+    animationNames: (json.animations || []).map((a, i) => a.name || `animation_${i}`),
+    extensionsUsed: json.extensionsUsed || [],
+    extensionsRequired: json.extensionsRequired || [],
     externalUris,
   };
 }
@@ -105,6 +111,8 @@ const assets = specs.map((spec) => {
     licenseRecordId: spec.licenseRecordId,
     provenanceRecordId: spec.provenanceRecordId,
     disposalPolicy: 'asset-manager-refcount-cache',
+    collisionStrategy: 'none-phase1-probe',
+    lodGroup: null,
     presentation: spec.presentation,
     stats,
   };
