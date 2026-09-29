@@ -26,14 +26,17 @@ for image in bpy.data.images:
     scale = max_texture / max(width, height)
     image.scale(max(1, round(width * scale)), max(1, round(height * scale)))
 
+def srgb_to_linear(channel):
+    c = channel / 255.0
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
 def hex_rgba(value):
     raw = value.lstrip("#")
     if len(raw) not in {6, 8}:
         raise ValueError(f"invalid color {value}")
-    vals = [int(raw[i:i+2], 16) / 255.0 for i in range(0, len(raw), 2)]
-    if len(vals) == 3:
-        vals.append(1.0)
-    return tuple(vals)
+    rgb = tuple(srgb_to_linear(int(raw[i:i+2], 16)) for i in (0, 2, 4))
+    alpha = int(raw[6:8], 16) / 255.0 if len(raw) == 8 else 1.0
+    return (*rgb, alpha)
 
 applied_palette = {}
 for name, value in palette.items():
