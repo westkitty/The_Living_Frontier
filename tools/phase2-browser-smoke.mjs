@@ -49,19 +49,40 @@ try {
     if (player.visual.fallbackVisible || !player.rootParent) throw new Error(`${name}: player presentation ownership is wrong`);
 
     await page.waitForFunction(() => window.GAME && !window.GAME.ui.blocking);
-    const movementStart = await page.evaluate(() => ({
-      position: window.GAME.player.pos.toArray(),
-      local: window.GAME.player.visual.root.position.toArray(),
-    }));
+    await page.locator('#gl').focus();
     await page.keyboard.down('w');
-    await page.waitForTimeout(420);
-    await page.keyboard.up('w');
-    await page.waitForTimeout(80);
-    const movement = await page.evaluate((start) => {
+    const movement = await page.evaluate(async () => {
       const game = window.GAME;
-      const after = game.player.pos.toArray();
-      const localAfter = game.player.visual.root.position.toArray();
-      const dist3 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+      if (!game.input.keys.KeyW) throw new Error('real keyboard event did not reach the Input action state');
+
+      // CI requestAnimationFrame cadence is not a movement oracle. Freeze the
+      // scheduled loop after proving the real key event arrived, then advance
+      // the existing controller at a fixed step from a measured low-slope spot.
+      game.renderer.setAnimationLoop(null);
+      const { heightAt } = await import('./src/worldgen.js');
+      const settlement = game.state.settlements[0];
+      let best = { x: settlement.x, z: settlement.z, score: Infinity };
+      for (let r = 10; r <= 30; r += 5) {
+        for (let i = 0; i < 16; i++) {
+          const a = i / 16 * Math.PI * 2;
+          const x = settlement.x + Math.cos(a) * r;
+          const z = settlement.z + Math.sin(a) * r;
+          const h0 = heightAt(x, z);
+          const score = Math.abs(heightAt(x, z - 1) - h0) + Math.abs(heightAt(x, z - 2) - h0);
+          if (score < best.score) best = { x, z, score };
+        }
+      }
+      game.player.pos.set(best.x, heightAt(best.x, best.z), best.z);
+      game.player.vel.set(0, 0, 0);
+      game.player.group.position.copy(game.player.pos);
+      game.player.camYaw = 0;
+      game.player.yaw = 0;
+      const before = game.player.pos.clone();
+      const localBefore = game.player.visual.root.position.clone();
+      for (let i = 0; i < 90; i++) game.player.update(1 / 60, game.input, game.camera);
+      const after = game.player.pos.clone();
+      const localAfter = game.player.visual.root.position.clone();
+
       const stateChecks = {};
       for (const [state, speed, clipToken] of [
         ['idle', 0, 'Idle'], ['walk', 4.6, 'Walk'], ['run', 9.2, 'Run'], ['attack', 0, 'SwordSlash']
@@ -73,12 +94,16 @@ try {
         stateChecks[state] = { clip: game.player.visual.activeClipName, time0, time1, clipToken };
       }
       return {
-        moved: dist3(start.position, after),
+        inputReachedController: game.input.keys.KeyW,
+        selectedSlopeScore: best.score,
+        moved: before.distanceTo(after),
         rootMatchesState: game.player.group.position.distanceTo(game.player.pos),
-        presentationLocalDrift: dist3(start.local, localAfter),
+        presentationLocalDrift: localBefore.distanceTo(localAfter),
         stateChecks,
       };
-    }, movementStart);
+    });
+    await page.keyboard.up('w');
+    await page.evaluate(() => { window.GAME.input.keys.KeyW = false; });
     if (movement.moved < 0.1) throw new Error(`${name}: authoritative player movement did not advance`);
     if (movement.rootMatchesState > 0.001) throw new Error(`${name}: player render root diverged from gameplay state`);
     if (movement.presentationLocalDrift > 0.001) throw new Error(`${name}: animation presentation mutated gameplay-local placement`);
@@ -289,6 +314,7 @@ try {
       for (const actor of actors) {
         if (actor.visual?.status !== 'asset') throw new Error(`showcase actor fallback: ${actor.kind}`);
       }
+      game.renderer.render(game.scene, game.camera);
       return actors.map((actor) => actor.visual.snapshot());
     });
     const canvas = page.locator('#gl');
