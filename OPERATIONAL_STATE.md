@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 2 — Living Actors — RELEASE CANDIDATE
+Phases 1–2 verified; Phase 3 authored world presentation in progress
 
 ## Verified baseline
 
@@ -52,7 +52,17 @@ The report/contract update at this stage exists to trigger one final combined li
 
 Do not merge until that run passes and its final integrated live/diagnostic screenshots are manually inspected.
 
-## Remaining Phase 2 work
+## Verified Phase 3 presentation seam
+
+The existing procedural world remains authoritative. One verified Quaternius
+pine presentation is attached to each active near streamed chunk, and one
+verified Quaternius hut presentation is attached to each non-abandoned active
+settlement. These are hybrid presentation overlays with explicit asset-manager
+release on chunk unload and settlement rebuild; all other vegetation and
+settlement families remain procedural by design pending their own source and
+visual acceptance.
+
+## Remaining release work
 
 - pass final combined living-actor CI on the latest production assets
 - manually inspect final integrated desktop and narrow/mobile screenshots

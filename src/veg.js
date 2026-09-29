@@ -5,7 +5,7 @@ import { WORLD, treeDensityAt, treeDensityFrom, heightAt, moistureFrom, slopeAt 
 import { hash2i, clamp, lerp, mulberry32 } from './rng.js';
 import { shared } from './terrain.js';
 import { CH, regionIndex } from './worldstate.js';
-
+import { acquireStaticWorldAsset, releaseStaticWorldAsset } from './assets/actor-visual.js';
 // ---------------------------------------------------------------- geometry
 function ensureIndex(geo) {
   if (!geo.index) {
@@ -172,9 +172,10 @@ export function makeFoliageMaterial(swayAmount = 1.0, extraGlsl = '') {
 const TYPES = ['pine', 'broad', 'charred', 'bush', 'berry', 'rock', 'ore', 'fern', 'sapling'];
 
 export class Vegetation {
-  constructor(scene, state) {
+  constructor(scene, state, assets = null) {
     this.scene = scene;
     this.state = state;
+    this.assets = assets;
     this.geos = {
       pine: pineGeo(), broad: broadGeo(), charred: charredGeo(), bush: bushGeo(),
       berry: berryBushGeo(), rock: rockGeo(), ore: oreRockGeo(), fern: fernGeo(),
@@ -190,7 +191,6 @@ export class Vegetation {
     this.dummy = new THREE.Object3D();
     this.plantings = state.plantings || [];
   }
-
   capFor(type, ring) {
     if (ring > 1) return 0;
     switch (type) {
@@ -353,12 +353,11 @@ export class Vegetation {
       this.scene.add(mesh);
       meshes[t] = mesh;
     }
-
-    this.chunks.set(key, { meshes, grassMesh: null, items, ring, rec });
+    this.chunks.set(key, { meshes, grassMesh: null, items, ring, rec, authoredPine: null });
     if (ring === 0) this.buildGrass(key);
+    const chunk = this.chunks.get(key), item = chunk.items.find((candidate) => candidate.type === 'pine');
+    if (this.assets && !globalThis.__LF_RENDERER && ring <= 1 && item) void acquireStaticWorldAsset(this.assets, this.scene, 'vegetation.pine.phase1', { name: `world-visual:pine:${key}`, position: new THREE.Vector3(item.x, item.y, item.z), rotationY: item.rot, scale: item.scale, isCurrent: () => this.chunks.get(key) === chunk }).then((record) => { if (record) chunk.authoredPine = record; }).catch((error) => console.warn(`[vegetation] authored pine unavailable for ${key}; procedural family retained`, error?.message || error));
   }
-
-  // Grass only exists in the ring of chunks the player is standing in.
   buildGrass(key) {
     const c = this.chunks.get(key);
     if (!c || c.grassMesh) return;
@@ -416,6 +415,7 @@ export class Vegetation {
       if (t === 'canopy') mesh.geometry.dispose(); else mesh.dispose();
     }
     if (c.grassMesh) { this.scene.remove(c.grassMesh); c.grassMesh.dispose(); }
+    if (c.authoredPine) { releaseStaticWorldAsset(this.assets, this.scene, c.authoredPine); c.authoredPine = null; }
     this.chunks.delete(key);
   }
 

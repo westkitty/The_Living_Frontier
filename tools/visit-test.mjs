@@ -74,7 +74,7 @@ class FakeRenderer {
     this.info = { render: { calls: 0, triangles: 0 } };
   }
   setPixelRatio() { } setSize() { } setClearColor() { } render() { drawCalls++; }
-  setAnimationLoop(cb) { frameCb = cb; }
+  setAnimationLoop(cb) { frameCb = cb; if (cb) cb(); }
   dispose() { }
   get capabilities() { return { isWebGL2: true, getMaxAnisotropy: () => 1 }; }
 }

@@ -4,6 +4,7 @@ import { LANDMARKS, FACTIONS, CAMPS, heightAt, caveFloor, placeOnLand } from './
 import { regionIndex } from './worldstate.js';
 import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
 import { Vegetation } from './veg.js';
+import { acquireStaticWorldAsset, releaseStaticWorldAsset } from './assets/actor-visual.js';
 import { buildLandmarks, buildSettlementGeometry, makeStructureMaterial, makeBanner, buildCaveGlow, buildCampGeometry } from './structures.js';
 
 export const StreamingMixin = {
@@ -11,7 +12,7 @@ export const StreamingMixin = {
     const state = this.state;
     makeGroundTexture(state);
     this.chunks = new ChunkManager(this.scene, state);
-    this.veg = new Vegetation(this.scene, state);
+    this.veg = new Vegetation(this.scene, state, this.assets);
     this.chunks.onChunkBuild = (k, rec, ring) => this.veg.buildChunk(k, rec, ring);
     this.chunks.onChunkRemove = (k) => this.veg.removeChunk(k);
     this.chunks.onRingChange = (k, rec, ring) => this.veg.setRing(k, ring);
@@ -25,7 +26,6 @@ export const StreamingMixin = {
     this.buildLandmarkBanners();
     this.buildCaves();
     this.buildCamps();
-
   },
   streamChunks(blocking) {
     this.chunks.update(this.player.pos.x, this.player.pos.z, blocking ? 1 : 2);
@@ -39,14 +39,12 @@ export const StreamingMixin = {
       st.groundDirty = false;
       this.groundTexTimer = 0.4;
     }
-
     // Vegetation regrowth / burn refresh
     if (st.vegDirtyKeys && st.vegDirtyKeys.size) {
       const k = st.vegDirtyKeys.values().next().value;
       st.vegDirtyKeys.delete(k);
       this.veg.rebuild(k);
     }
-
   },
   // ------------------------------------------------------------ settlements
   settlementHash(s) {
@@ -58,7 +56,7 @@ export const StreamingMixin = {
   rebuildSettlement(i) {
     const s = this.state.settlements[i];
     const old = this.settlementMeshes[i];
-    if (old) { this.scene.remove(old.mesh); old.mesh.geometry.dispose(); if (old.banner) this.scene.remove(old.banner); }
+    if (old) { this.scene.remove(old.mesh); old.mesh.geometry.dispose(); if (old.banner) this.scene.remove(old.banner); if (old.authoredHut) releaseStaticWorldAsset(this.assets, this.scene, old.authoredHut); }
     const { geo, baseY } = buildSettlementGeometry(s, i);
     const mesh = new THREE.Mesh(geo, this.structMat);
     mesh.position.set(s.x, baseY, s.z);
@@ -73,7 +71,9 @@ export const StreamingMixin = {
       this.scene.add(banner);
       this.banners.push(banner);
     }
-    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY };
+    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY, authoredHut: null };
+    const rec = this.settlementMeshes[i], x = s.x - 12 - i * 2, z = s.z - 7;
+    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'structure.hut.phase1', { name: `world-visual:hut:${s.id}`, position: new THREE.Vector3(x, heightAt(x, z), z), rotationY: i * 0.73, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredHut = record; }).catch((error) => console.warn(`[settlement] authored hut unavailable for ${s.id}; procedural family retained`, error?.message || error));
   },
   buildCaves() {
     this.caves = [];

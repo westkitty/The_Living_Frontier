@@ -213,6 +213,31 @@ export function createActorAssetManager() {
   return assets;
 }
 
+export async function acquireStaticWorldAsset(assets, scene, assetId, {
+  name, position, rotationY = 0, scale = 1, isCurrent = null,
+} = {}) {
+  const handle = await assets.acquire(assetId);
+  if (isCurrent && !isCurrent()) { assets.release(handle); return null; }
+  const root = handle.root;
+  root.name = name || `world-visual:${assetId}`;
+  if (position) root.position.copy(position);
+  root.rotation.y = rotationY;
+  root.scale.multiplyScalar(scale);
+  root.traverse((object) => {
+    if (!object.isMesh) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+  });
+  scene.add(root);
+  return { root, handle };
+}
+
+export function releaseStaticWorldAsset(assets, scene, record) {
+  if (!record) return;
+  scene.remove(record.root);
+  assets.release(record.handle);
+}
+
 export function attachPlayerVisual(player, world) {
   return new ActorVisual({
     gameplayRoot: player.group,
