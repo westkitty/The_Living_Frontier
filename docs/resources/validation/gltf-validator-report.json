@@ -656,7 +656,7 @@
     {
       "id": "player.phase2",
       "uri": "../../assets/runtime/characters/player-phase2.glb",
-      "bytes": 872528,
+      "bytes": 872540,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
@@ -699,7 +699,7 @@
     {
       "id": "human.villager-male.phase2",
       "uri": "../../assets/runtime/characters/villager-male-phase2.glb",
-      "bytes": 644728,
+      "bytes": 644736,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
@@ -742,7 +742,7 @@
     {
       "id": "human.villager-female.phase2",
       "uri": "../../assets/runtime/characters/villager-female-phase2.glb",
-      "bytes": 830996,
+      "bytes": 831008,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
@@ -785,7 +785,7 @@
     {
       "id": "human.soldier-male.phase2",
       "uri": "../../assets/runtime/characters/soldier-male-phase2.glb",
-      "bytes": 686908,
+      "bytes": 686916,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
@@ -828,7 +828,7 @@
     {
       "id": "human.soldier-female.phase2",
       "uri": "../../assets/runtime/characters/soldier-female-phase2.glb",
-      "bytes": 896232,
+      "bytes": 896240,
       "issueCounts": {
         "errors": 0,
         "warnings": 1,
