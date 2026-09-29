@@ -1,5 +1,4 @@
-// Third-person player: movement over the heightfield, smooth spring camera,
-// unified keyboard/mouse + touch input, stamina, damage and animation.
+// Third-person player: heightfield movement, spring camera, unified input, stamina, damage and animation.
 import * as THREE from 'three';
 import { WORLD, heightAt, normalAt } from './worldgen.js';
 import { clamp, lerp, damp } from './rng.js';
