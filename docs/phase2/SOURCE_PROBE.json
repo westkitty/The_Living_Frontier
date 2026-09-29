@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-29T04:11:39.798Z",
+  "generatedAt": "2026-09-29T04:15:33.272Z",
   "candidates": {
     "wolf": {
       "sourcePage": "https://opengameart.org/content/animated-animales-low-poly",
@@ -325,6 +325,1797 @@
         "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Male.obj",
         "Ultimate Animated Character Pack - Nov 2019/Preview.png"
       ]
+    },
+    "rpgHumans": {
+      "sourcePage": "https://opengameart.org/content/lowpoly-rpg-characters",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip",
+      "creator": "quaternius",
+      "license": "CC0-1.0",
+      "sha256": "5399e0cfaf313ff362455de4086488d093465434b1b93b0ced649f3773a15fd7",
+      "inventory": [
+        "RPG Characters - Nov 2020/Blends/Cleric.blend",
+        "RPG Characters - Nov 2020/Blends/Monk.blend",
+        "RPG Characters - Nov 2020/Blends/Only Weapons/Cleric_Staff.blend",
+        "RPG Characters - Nov 2020/Blends/Only Weapons/Ranger_Bow.blend",
+        "RPG Characters - Nov 2020/Blends/Only Weapons/Rogue_Dagger.blend",
+        "RPG Characters - Nov 2020/Blends/Only Weapons/Warrior_Sword.blend",
+        "RPG Characters - Nov 2020/Blends/Only Weapons/Wizard_Staff.blend",
+        "RPG Characters - Nov 2020/Blends/Ranger.blend",
+        "RPG Characters - Nov 2020/Blends/Rogue.blend",
+        "RPG Characters - Nov 2020/Blends/Warrior.blend",
+        "RPG Characters - Nov 2020/Blends/Wizard.blend",
+        "RPG Characters - Nov 2020/FBX/Cleric.fbx",
+        "RPG Characters - Nov 2020/FBX/Monk.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Cleric_Staff.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Ranger_Arrow.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Ranger_Bow.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Rogue_Dagger.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Warrior_Sword.fbx",
+        "RPG Characters - Nov 2020/FBX/Only Weapons/Wizard_Staff.fbx",
+        "RPG Characters - Nov 2020/FBX/Ranger.fbx",
+        "RPG Characters - Nov 2020/FBX/Rogue.fbx",
+        "RPG Characters - Nov 2020/FBX/Warrior.fbx",
+        "RPG Characters - Nov 2020/FBX/Wizard.fbx",
+        "RPG Characters - Nov 2020/License.txt",
+        "RPG Characters - Nov 2020/OBJ/Cleric.mtl",
+        "RPG Characters - Nov 2020/OBJ/Cleric.obj",
+        "RPG Characters - Nov 2020/OBJ/Monk.mtl",
+        "RPG Characters - Nov 2020/OBJ/Monk.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Cleric_Staff.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Cleric_Staff.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Ranger_Arrow.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Ranger_Arrow.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Ranger_Bow.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Ranger_Bow.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Rogue_Dagger.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Rogue_Dagger.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Warrior_Sword.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Warrior_Sword.obj",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Wizard_Staff.mtl",
+        "RPG Characters - Nov 2020/OBJ/Only Weapons/Wizard_Staff.obj",
+        "RPG Characters - Nov 2020/OBJ/Ranger.mtl",
+        "RPG Characters - Nov 2020/OBJ/Ranger.obj",
+        "RPG Characters - Nov 2020/OBJ/Rogue.mtl",
+        "RPG Characters - Nov 2020/OBJ/Rogue.obj",
+        "RPG Characters - Nov 2020/OBJ/Warrior.mtl",
+        "RPG Characters - Nov 2020/OBJ/Warrior.obj",
+        "RPG Characters - Nov 2020/OBJ/Wizard.mtl",
+        "RPG Characters - Nov 2020/OBJ/Wizard.obj",
+        "RPG Characters - Nov 2020/Preview.jpg",
+        "RPG Characters - Nov 2020/Textures/Cleric_Staff_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Cleric_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Monk_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Ranger_Bow_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Ranger_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Rogue_Dagger_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Rogue_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Warrior_Sword_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Warrior_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Wizard_Staff_Texture.png",
+        "RPG Characters - Nov 2020/Textures/Wizard_Texture.png"
+      ],
+      "inspections": {
+        "Cleric": {
+          "label": "Cleric",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Cleric.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.224025,
+                1.054014,
+                2.718049
+              ]
+            },
+            {
+              "name": "Cleric",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.467658,
+                0.810121,
+                2.910932
+              ]
+            },
+            {
+              "name": "Cleric_Staff",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.662274,
+                2.440414,
+                0.131468
+              ]
+            },
+            {
+              "name": "Head",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.76292,
+                1.077999,
+                0.900423
+              ]
+            },
+            {
+              "name": "ShoulderPads",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.660885,
+                0.704746,
+                0.436268
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Attack_Idle",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Weapon",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 196
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Run_Weapon",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Spell1",
+              "frameRange": [
+                0,
+                29
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Spell2",
+              "frameRange": [
+                0,
+                35
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Staff_Attack",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Cleric_Staff_DefaultMaterial_BaseColor.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Cleric_Staff_DefaultMaterial_BaseColor.png"
+            },
+            {
+              "name": "Cleric_Staff_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Cleric_Staff_Texture.png"
+            },
+            {
+              "name": "Cleric_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Cleric_Texture.png"
+            }
+          ]
+        },
+        "Cleric_Staff": {
+          "label": "Cleric_Staff",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Only Weapons/Cleric_Staff.blend",
+          "objects": [
+            {
+              "name": "Cleric_Staff",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.79575,
+                0.157965,
+                2.932261
+              ]
+            }
+          ],
+          "armatures": [],
+          "actions": [],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Monk": {
+          "label": "Monk",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Monk.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.183542,
+                1.054014,
+                2.714316
+              ]
+            },
+            {
+              "name": "Monk",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.580626,
+                0.808447,
+                2.903352
+              ]
+            },
+            {
+              "name": "Monk.001",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.724704,
+                0.750117,
+                0.90109
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Attack",
+              "frameRange": [
+                0,
+                20
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Attack2",
+              "frameRange": [
+                0,
+                20
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Attacking",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 104
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Monk_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Monk_Texture.png"
+            },
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Ranger": {
+          "label": "Ranger",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Ranger.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                0.936426,
+                1.054014,
+                2.718166
+              ]
+            },
+            {
+              "name": "ArmGuard.L",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.384899,
+                0.178143,
+                0.149965
+              ]
+            },
+            {
+              "name": "ArmGuard.R",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.384899,
+                0.178143,
+                0.149965
+              ]
+            },
+            {
+              "name": "Cloak",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.781531,
+                0.891285,
+                1.007307
+              ]
+            },
+            {
+              "name": "Pouch",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.205819,
+                0.318188,
+                0.263146
+              ]
+            },
+            {
+              "name": "Ranger",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.102075,
+                0.788602,
+                2.810494
+              ]
+            },
+            {
+              "name": "Ranger_Bow",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.522223,
+                2.157022,
+                0.216525
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Bow_Attack_Draw",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Bow_Attack_Shoot",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Attacking",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Weapon",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 196
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Run_Holding",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Ranger_Bow_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Ranger_Bow_Texture.png"
+            },
+            {
+              "name": "Ranger_DefaultMaterial_BaseColor.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Ranger_DefaultMaterial_BaseColor.png"
+            },
+            {
+              "name": "Ranger_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Ranger_Texture.png"
+            },
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            }
+          ]
+        },
+        "Ranger_Bow": {
+          "label": "Ranger_Bow",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Only Weapons/Ranger_Bow.blend",
+          "objects": [
+            {
+              "name": "Ranger_Arrow",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.147737,
+                0.169978,
+                1.92674
+              ]
+            },
+            {
+              "name": "Ranger_Bow",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.742788,
+                0.307975,
+                3.068058
+              ]
+            }
+          ],
+          "armatures": [],
+          "actions": [],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Rogue": {
+          "label": "Rogue",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Rogue.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                0.919618,
+                1.054014,
+                2.714983
+              ]
+            },
+            {
+              "name": "Belt",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.666642,
+                0.542955,
+                0.303429
+              ]
+            },
+            {
+              "name": "Face",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.858384,
+                1.004124,
+                1.099757
+              ]
+            },
+            {
+              "name": "Guard",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.283807,
+                0.197782,
+                0.099192
+              ]
+            },
+            {
+              "name": "Pouch",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.254815,
+                0.295023,
+                0.265753
+              ]
+            },
+            {
+              "name": "Rogue",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.054292,
+                0.81033,
+                2.905941
+              ]
+            },
+            {
+              "name": "Rogue_Dagger",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.238655,
+                1.462269,
+                0.060078
+              ]
+            },
+            {
+              "name": "Shoelace.L",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.079907,
+                0.120135,
+                0.035498
+              ]
+            },
+            {
+              "name": "Shoelace.R",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.079907,
+                0.120135,
+                0.035498
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Attacking_Idle",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Dagger_Attack",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Dagger_Attack2",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 196
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Rogue_Dagger_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Rogue_Dagger_Texture.png"
+            },
+            {
+              "name": "Rogue_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Rogue_Texture.png"
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Rogue_Dagger": {
+          "label": "Rogue_Dagger",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Only Weapons/Rogue_Dagger.blend",
+          "objects": [
+            {
+              "name": "Rogue_Dagger",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.258511,
+                0.065076,
+                1.583928
+              ]
+            }
+          ],
+          "armatures": [],
+          "actions": [],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Warrior": {
+          "label": "Warrior",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Warrior.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                0.95033,
+                1.054014,
+                2.722974
+              ]
+            },
+            {
+              "name": "Face",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.632522,
+                1.149953,
+                0.789262
+              ]
+            },
+            {
+              "name": "ShoulderPad.L",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.54163,
+                0.458175,
+                0.246108
+              ]
+            },
+            {
+              "name": "ShoulderPad.R",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.54163,
+                0.458175,
+                0.246108
+              ]
+            },
+            {
+              "name": "Warrior_Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.118751,
+                0.990636,
+                2.855076
+              ]
+            },
+            {
+              "name": "Warrior_Sword",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.326986,
+                0.090141,
+                2.011598
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Attacking",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Weapon",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 196
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Run_Weapon",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Sword_Attack",
+              "frameRange": [
+                0,
+                20
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Sword_AttackFast",
+              "frameRange": [
+                0,
+                20
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            },
+            {
+              "name": "Warrior_Sword_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Warrior_Sword_Texture.png"
+            },
+            {
+              "name": "Warrior_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Warrior_Texture.png"
+            }
+          ]
+        },
+        "Warrior_Sword": {
+          "label": "Warrior_Sword",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Only Weapons/Warrior_Sword.blend",
+          "objects": [
+            {
+              "name": "Warrior_Sword",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.516372,
+                0.14235,
+                3.176693
+              ]
+            }
+          ],
+          "armatures": [],
+          "actions": [],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Wizard": {
+          "label": "Wizard",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Wizard.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.165169,
+                1.054014,
+                2.720963
+              ]
+            },
+            {
+              "name": "Face",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.698379,
+                1.062075,
+                1.040266
+              ]
+            },
+            {
+              "name": "Pouch",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.243452,
+                0.273667,
+                0.242305
+              ]
+            },
+            {
+              "name": "ShoulderPad.L",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.357806,
+                0.263004,
+                0.332727
+              ]
+            },
+            {
+              "name": "ShoulderPad.R",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.357806,
+                0.263004,
+                0.332727
+              ]
+            },
+            {
+              "name": "Wizard",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "name": "Wizard.001",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.298656,
+                0.885403,
+                2.960823
+              ]
+            },
+            {
+              "name": "Wizard_Staff",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                0.309125,
+                2.152551,
+                0.309125
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Root",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Fist1.L",
+                "Fist2.L",
+                "Thumb1.L",
+                "Thumb2.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "Fist1.R",
+                "Fist2.R",
+                "Weapon.R",
+                "Thumb1.R",
+                "Thumb2.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                28
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Attacking",
+              "frameRange": [
+                0,
+                40
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Idle_Weapon",
+              "frameRange": [
+                0,
+                75
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 196
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "RecieveHit_Attacking",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                24
+              ],
+              "fcurves": 87
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Run_Weapon",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 88
+            },
+            {
+              "name": "Spell1",
+              "frameRange": [
+                0,
+                29
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Spell2",
+              "frameRange": [
+                0,
+                35
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Staff_Attack",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 203
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 175
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            },
+            {
+              "name": "Wizard_Staff_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Wizard_Staff_Texture.png"
+            },
+            {
+              "name": "Wizard_Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "//Wizard_Texture.png"
+            }
+          ]
+        },
+        "Wizard_Staff": {
+          "label": "Wizard_Staff",
+          "sourceFile": "/tmp/lf-phase2-sources/rpg-humans/RPG Characters - Nov 2020/Blends/Only Weapons/Wizard_Staff.blend",
+          "objects": [
+            {
+              "name": "Wizard_Staff",
+              "type": "MESH",
+              "parent": null,
+              "dimensions": [
+                0.373728,
+                0.373728,
+                2.602406
+              ]
+            }
+          ],
+          "armatures": [],
+          "actions": [],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        }
+      }
     },
     "rabbit": {
       "sourcePage": "https://opengameart.org/content/rabbit-0",
