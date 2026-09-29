@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends assimp-utils p7zip-full
+          sudo apt-get install -y --no-install-recommends assimp-utils p7zip-full blender
           npm install
           npx playwright install chromium
 
@@ -37,17 +37,17 @@ jobs:
           curl -fL --retry 3 --retry-delay 2 -o village.zip 'https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip'
           curl -fL --retry 3 --retry-delay 2 -o props.zip 'https://opengameart.org/sites/default/files/fantasy_props_megakitstandard.zip'
           curl -fL --retry 3 --retry-delay 2 -o human.zip 'https://opengameart.org/sites/default/files/Animated%20Human%20by%20%40Quaternius_0.zip'
-          curl -fL --retry 3 --retry-delay 2 -o deer.7z 'https://opengameart.org/sites/default/files/deer-female-FBX.7z'
+          curl -fL --retry 3 --retry-delay 2 -o deer.blend 'https://opengameart.org/sites/default/files/doe.blend'
           cat > expected.sha256 <<'EOF'
           298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9  nature.zip
           0bc1e5843c9f245c44bda82f97f738b09f88fe51bb34d2a69a7847a969f868e3  props.zip
           dcd72162b5e59495efc629fb624d9e1deb12124b68291ad4fa3ce66b4fc24db3  human.zip
           EOF
           sha256sum -c expected.sha256
-          sha256sum village.zip deer.7z
+          sha256sum village.zip deer.blend
           node - <<'NODE'
           const fs=require('fs'), crypto=require('crypto');
-          const files={nature:'nature.zip',village:'village.zip',props:'props.zip',human:'human.zip',deer:'deer.7z'};
+          const files={nature:'nature.zip',village:'village.zip',props:'props.zip',human:'human.zip',deer:'deer.blend'};
           const out={};
           for(const [k,f] of Object.entries(files)) out[k]=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
           fs.writeFileSync('source-hashes.json', JSON.stringify(out,null,2)+'\n');
@@ -64,7 +64,7 @@ jobs:
           if ! gh release view phase1-source-archives >/dev/null 2>&1; then
             gh release create phase1-source-archives --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "Phase 1 source archives" --notes "Untouched CC0 source downloads used for the Living Frontier Phase 1 asset-pipeline proof. Runtime files are derived GLBs; exact hashes are recorded in the repository."
           fi
-          gh release upload phase1-source-archives nature.zip village.zip props.zip human.zip deer.7z --repo "${GITHUB_REPOSITORY}" --clobber
+          gh release upload phase1-source-archives nature.zip village.zip props.zip human.zip deer.blend --repo "${GITHUB_REPOSITORY}" --clobber
 
       - name: Extract sources and select representative models
         shell: bash
@@ -72,9 +72,6 @@ jobs:
           set -euo pipefail
           cd /tmp/lf-assets
           for p in nature village props human; do mkdir -p "$p"; unzip -q "$p.zip" -d "$p"; done
-          mkdir -p deer
-          7z x -y deer.7z -odeer >/dev/null
-
           PINE="$(find nature -type f | grep -Ei '/glTF/Pine_1\.gltf$' | head -n1)"
           AXE="$(find props -type f | grep -Ei '/glTF/Axe_Bronze\.gltf$' | head -n1)"
           PLAYER="$(find human -type f | grep -Ei '/FBX/Animated Human\.fbx$' | head -n1)"
@@ -82,7 +79,7 @@ jobs:
           HUT="$(find village -type f | grep -Ei '/(house|building|hut|cabin)[^/]*\.(fbx|obj)$' | head -n1 || true)"
           if [ -z "$HUT" ]; then HUT="$(find village -type f | grep -Ei '\.(fbx|obj)$' | head -n1)"; fi
 
-          for pair in "PINE:$PINE" "AXE:$AXE" "HUT:$HUT" "PLAYER:$PLAYER" "DEER:$DEER"; do
+          for pair in "PINE:$PINE" "AXE:$AXE" "HUT:$HUT" "PLAYER:$PLAYER"; do
             name="${pair%%:*}"; file="${pair#*:}"
             test -n "$file" && test -f "$file" || { echo "missing representative $name"; exit 1; }
             echo "$name=$file"
@@ -104,7 +101,7 @@ jobs:
           assimp export "$(cat axe.path)" "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" -f glb2
           assimp export "$(cat hut.path)" "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" -f glb2
           assimp export "$(cat player.path)" "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" -f glb2
-          assimp export "$(cat deer.path)" "$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb" -f glb2
+          blender --background /tmp/lf-assets/deer.blend --python-expr "import bpy; bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb', export_format='GLB')"
 
       - name: Vendor matching Three.js loader support
         shell: bash
