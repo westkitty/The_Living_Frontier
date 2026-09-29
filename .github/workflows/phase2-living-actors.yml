@@ -29,11 +29,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
       - name: Install project dependencies
         run: |
           set -euo pipefail
-          npm ci
+          npm install
           npx playwright install --with-deps chromium
       - name: Validate runtime assets
         run: npm run assets
