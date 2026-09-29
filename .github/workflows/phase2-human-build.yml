@@ -1,5 +1,9 @@
 name: Phase 2 human build
 
+concurrency:
+  group: phase2-asset-build
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -25,6 +29,11 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - name: Sync latest Phase 2 branch state
+        run: |
+          set -euo pipefail
+          git fetch origin phase2/living-actors
+          git reset --hard origin/phase2/living-actors
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -56,11 +65,11 @@ jobs:
           set -euo pipefail
           ROOT="$(cat /tmp/lf-phase2-human/blends.path)"
           mkdir -p assets/runtime/characters
-          blender --background "$ROOT/Viking_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/player-phase2.glb" 512 '[]'
-          blender --background "$ROOT/Worker_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-male-phase2.glb" 512 '[]'
-          blender --background "$ROOT/Worker_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-female-phase2.glb" 512 '[]'
-          blender --background "$ROOT/Soldier_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-male-phase2.glb" 512 '[]'
-          blender --background "$ROOT/Soldier_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-female-phase2.glb" 512 '[]'
+          blender --background "$ROOT/Viking_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/player-phase2.glb" 512 '[]' '{"Skin":"#9b6a4f"}'
+          blender --background "$ROOT/Worker_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-male-phase2.glb" 512 '[]' '{"Skin":"#b98260"}'
+          blender --background "$ROOT/Worker_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-female-phase2.glb" 512 '[]' '{"Skin":"#8f604a"}'
+          blender --background "$ROOT/Soldier_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-male-phase2.glb" 512 '[]' '{"Skin":"#7f5744"}'
+          blender --background "$ROOT/Soldier_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-female-phase2.glb" 512 '[]' '{"Skin":"#a76d50"}'
 
       - name: Build human manifest
         run: node tools/build-phase2-human-manifest.mjs 0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da
