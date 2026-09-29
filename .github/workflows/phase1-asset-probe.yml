@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           cd /tmp/lf-assets
-          if ! gh release view phase1-source-archives >/dev/null 2>&1; then
+          if ! gh release view phase1-source-archives --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             gh release create phase1-source-archives --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "Phase 1 source archives" --notes "Untouched CC0 source downloads used for the Living Frontier Phase 1 asset-pipeline proof. Runtime files are derived GLBs; exact hashes are recorded in the repository."
           fi
           gh release upload phase1-source-archives nature.zip village.zip props.zip human.zip deer.blend --repo "${GITHUB_REPOSITORY}" --clobber
