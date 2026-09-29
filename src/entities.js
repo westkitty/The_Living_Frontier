@@ -144,10 +144,7 @@ export class ActorSystem {
     a.name = villagerName(settlement.id, idx);
     a.job = ['farmer', 'woodcutter', 'hunter', 'builder', 'elder'][idx % 5];
     this.scene.add(a.group);
-    a.visual = attachHumanVisual(a, this.world, {
-      role: 'villager',
-      variant: idx % 2 ? 'female' : 'male',
-    });
+    a.visual = attachHumanVisual(a, this.world, { role: 'villager', variant: idx % 2 ? 'female' : 'male' });
     this.npcs.push(a);
     return a;
   }
@@ -162,11 +159,7 @@ export class ActorSystem {
     a.speed = 3.4;
     this.scene.add(a.group);
     const variant = ((Math.floor(x * 0.1) + Math.floor(z * 0.1) + faction) & 1) ? 'female' : 'male';
-    a.visual = attachHumanVisual(a, this.world, {
-      role: 'soldier',
-      variant,
-      tintColor: FACTIONS[faction].color,
-    });
+    a.visual = attachHumanVisual(a, this.world, { role: 'soldier', variant, tintColor: FACTIONS[faction].color });
     this.soldiers.push(a);
     return a;
   }
@@ -262,8 +255,7 @@ export class ActorSystem {
     const night = dayT < 0.22 || dayT > 0.80;
 
     for (const corpse of [...this.corpses]) {
-      corpse.deadTime += dt;
-      corpse.visual?.update(dt, 'dead', 0);
+      corpse.deadTime += dt; corpse.visual?.update(dt, 'dead', 0);
       if (corpse.deadTime >= DAY_LENGTH) this.remove(corpse, this.corpses);
     }
 
@@ -491,9 +483,8 @@ export class ActorSystem {
     a.body.position.y = moving ? Math.abs(Math.sin(a.phase)) * 0.06 : Math.sin(a.phase * 0.6) * 0.02;
     a.body.rotation.z = fighting ? Math.sin(a.phase * 3) * 0.25 : moving ? Math.sin(a.phase) * 0.03 : 0;
     if (a.kind !== 'human') a.body.rotation.x = moving ? -0.05 : Math.sin(a.phase * 0.4) * 0.03;
-    const visualState = !a.alive ? 'dead'
-      : a.kind === 'human' ? (fighting ? 'attack' : speed > 3 ? 'run' : moving ? 'walk' : 'idle')
-        : (a.state || (moving ? 'wander' : 'idle'));
+    const visualState = !a.alive ? 'dead' : a.kind === 'human'
+      ? (fighting ? 'attack' : speed > 3 ? 'run' : moving ? 'walk' : 'idle') : (a.state || (moving ? 'wander' : 'idle'));
     a.visual?.update(dt, visualState, speed);
   }
 
@@ -529,9 +520,7 @@ export class ActorSystem {
   }
 
   markDead(a) {
-    a.state = 'dead';
-    a.fallbackRoot.rotation.z = 1.25;
-    a.visual?.update(0, 'dead', 0);
+    a.state = 'dead'; a.fallbackRoot.rotation.z = 1.25; a.visual?.update(0, 'dead', 0);
   }
 
   killSoldier(a, byFaction) {

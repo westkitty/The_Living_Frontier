@@ -193,8 +193,7 @@ export class Player {
       this.updateCamera(dt, camera, input);
       return;
     }
-    this.group.rotation.z = 0;
-    this.fallbackRoot.rotation.z = 0;
+    this.group.rotation.z = 0; this.fallbackRoot.rotation.z = 0;
     // --- gather input
     let [mx, my, sprintKey] = input.keyboardMove();
     if (input.move.lengthSq() > 0.001) { mx = input.move.x; my = input.move.y; }
