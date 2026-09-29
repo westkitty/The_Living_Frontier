@@ -85,7 +85,7 @@ try {
 
       const stateChecks = {};
       for (const [state, speed, clipToken] of [
-        ['idle', 0, 'Idle'], ['walk', 4.6, 'Walk'], ['run', 9.2, 'Run'], ['attack', 0, 'SwordSlash']
+        ['idle', 0, 'Idle'], ['walk', 4.6, 'Walk'], ['run', 9.2, 'Run'], ['jump', 0, 'Jump'], ['attack', 0, 'SwordSlash']
       ]) {
         game.player.visual.update(0.02, state, speed);
         const time0 = game.player.visual.clipPlayer?.action?.time || 0;
@@ -182,7 +182,9 @@ try {
         actor.visual.update(0.30, state, 2.2);
         const time1 = actor.visual.clipPlayer?.action?.time || 0;
         results.humans[label] = { id, expectedClip, visual: actor.visual.snapshot(), rootParent: actor.visual.root?.parent === actor.group, time0, time1 };
+        const beforeRelease = game.assets.stats().references;
         game.actors.remove(actor, game.actors.npcs);
+        results.releases.push({ label, before: beforeRelease, after: game.assets.stats().references, detached: actor.group.parent !== game.scene });
       }
 
       const soldiers = [];
@@ -206,7 +208,34 @@ try {
         });
       }
       results.humans.soldiers = soldiers.map(({ actor, ...record }) => record);
-      for (const { actor } of soldiers) game.actors.remove(actor, game.actors.soldiers);
+      for (const { actor, faction } of soldiers) {
+        const beforeRelease = game.assets.stats().references;
+        game.actors.remove(actor, game.actors.soldiers);
+        results.releases.push({ label: `soldier-${faction}`, before: beforeRelease, after: game.assets.stats().references, detached: actor.group.parent !== game.scene });
+      }
+
+      const twinA = game.actors.spawnNPC(settlement, 20);
+      const twinB = game.actors.spawnNPC(settlement, 22);
+      await Promise.all([twinA.visual.ready, twinB.visual.ready]);
+      twinA.visual.update(0.02, 'walk', 2.2);
+      twinB.visual.update(0.02, 'walk', 2.2);
+      const a0 = twinA.visual.clipPlayer?.action?.time || 0;
+      const b0 = twinB.visual.clipPlayer?.action?.time || 0;
+      twinA.visual.update(0.31, 'walk', 2.2);
+      const a1 = twinA.visual.clipPlayer?.action?.time || 0;
+      const b1 = twinB.visual.clipPlayer?.action?.time || 0;
+      results.humans.independence = {
+        sameAssetId: twinA.visual.assetId === twinB.visual.assetId,
+        distinctMixers: twinA.visual.clipPlayer?.mixer !== twinB.visual.clipPlayer?.mixer,
+        distinctActions: twinA.visual.clipPlayer?.action !== twinB.visual.clipPlayer?.action,
+        aAdvance: a1 - a0,
+        bDrift: b1 - b0,
+      };
+      for (const actor of [twinA, twinB]) {
+        const beforeRelease = game.assets.stats().references;
+        game.actors.remove(actor, game.actors.npcs);
+        results.releases.push({ label: 'villager-mixer-isolation', before: beforeRelease, after: game.assets.stats().references, detached: actor.group.parent !== game.scene });
+      }
 
       return results;
     });
@@ -233,6 +262,10 @@ try {
       if (soldier.visual.ownedMaterialCount < 1 || soldier.tintHex !== soldier.expectedTint) throw new Error(`${name}: soldier faction tint is not instance-owned/accurate`);
     }
     if (!soldiers[0].tintUuid || soldiers[0].tintUuid === soldiers[1].tintUuid) throw new Error(`${name}: soldiers share the same mutable faction-tint material`);
+    const independence = living.humans.independence;
+    if (!independence.sameAssetId || !independence.distinctMixers || !independence.distinctActions || independence.aAdvance < 0.01 || Math.abs(independence.bDrift) > 0.0001) {
+      throw new Error(`${name}: independently animated instances do not own isolated playback state: ${JSON.stringify(independence)}`);
+    }
 
     const death = await page.evaluate(async () => {
       const game = window.GAME;

@@ -301,7 +301,7 @@ export class Player {
     this.body.position.y = Math.abs(Math.sin(this.phase * 1.4)) * amp * 0.09 - (this.crouched ? 0.25 : 0);
     if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
 
-    const visualState = this.swing > 0 ? 'attack' : sp > 6 ? 'run' : sp > 0.2 ? 'walk' : 'idle';
+    const visualState = this.swing > 0 ? 'attack' : !this.grounded ? 'jump' : sp > 6 ? 'run' : sp > 0.2 ? 'walk' : 'idle';
     this.visual?.update(dt, visualState, sp);
 
     this.updateCamera(dt, camera, input);
