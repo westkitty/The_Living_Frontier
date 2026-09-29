@@ -1,0 +1,52 @@
+name: Phase 1 asset probe
+
+on:
+  push:
+    branches:
+      - phase1/visual-asset-pipeline
+    paths:
+      - '.github/workflows/phase1-asset-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download approved CC0 source archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/lf-assets
+          cd /tmp/lf-assets
+          curl -fL --retry 3 --retry-delay 2 -o nature.zip 'https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip'
+          curl -fL --retry 3 --retry-delay 2 -o village.zip 'https://opengameart.org/sites/default/files/medieval_village_megakitstandard.zip'
+          curl -fL --retry 3 --retry-delay 2 -o props.zip 'https://opengameart.org/sites/default/files/fantasy_props_megakitstandard.zip'
+          curl -fL --retry 3 --retry-delay 2 -o human.zip 'https://opengameart.org/sites/default/files/Animated%20Human%20by%20%40Quaternius_0.zip'
+          curl -fL --retry 3 --retry-delay 2 -o animations.zip 'https://opengameart.org/sites/default/files/universal_animation_librarystandard.zip'
+          curl -fL --retry 3 --retry-delay 2 -o animals.zip 'https://opengameart.org/sites/default/files/Animals%20Pack%20by%20Quaternius.zip'
+          sha256sum *.zip
+
+      - name: Inventory archive model files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/lf-assets
+          for z in *.zip; do
+            echo "===== $z ====="
+            unzip -Z1 "$z" | grep -Ei '\.(gltf|glb|fbx|obj|blend|png|jpg|jpeg)$' | head -n 250 || true
+          done
+
+      - name: Find phase-one representative candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/lf-assets
+          for z in nature.zip village.zip props.zip human.zip animations.zip animals.zip; do
+            echo "===== candidate matches in $z ====="
+            unzip -Z1 "$z" | grep -Ei '(pine|tree|hut|house|cabin|axe|crate|human|man|male|idle|walk|run|deer|stag|elk|animal).*(gltf|glb|fbx|obj|blend)$' | head -n 150 || true
+          done
