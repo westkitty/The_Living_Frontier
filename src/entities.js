@@ -6,6 +6,7 @@ import { WORLD, FACTIONS, heightAt } from './worldgen.js';
 import { clamp, mulberry32, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { regionIndex, regionCenter, CH, DAY_LENGTH } from './worldstate.js';
+import { ActorVisual } from './assets/actor-visual.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 
@@ -72,6 +73,7 @@ export class Actor {
     this.kind = kind;
     this.def = def;
     this.group = new THREE.Group();
+    this.fallbackRoot = new THREE.Group();
     const mat = mats.get(kind);
     this.body = new THREE.Mesh(Actor.geoCache(kind, 'body'), mat);
     this.body.castShadow = true;
@@ -81,7 +83,8 @@ export class Actor {
     this.legsF.position.set(kind === 'human' ? 0 : 0, 0, zf);
     this.legsB.position.set(0, 0, zb);
     if (kind === 'human') { this.legsB.position.x = -0.32; this.legsF.position.x = 0.0; }
-    this.group.add(this.body, this.legsF, this.legsB);
+    this.fallbackRoot.add(this.body, this.legsF, this.legsB);
+    this.group.add(this.fallbackRoot);
     this.pos = new THREE.Vector3();
     this.vel = new THREE.Vector3();
     this.hp = def.hp;
@@ -130,6 +133,26 @@ export class ActorSystem {
     a.setPos(x, heightAt(x, z) + a.def.y, z);
     a.region = regionIndex(x, z);
     this.scene.add(a.group);
+    if (kind === 'deer') {
+      a.visual = new ActorVisual({
+        gameplayRoot: a.group,
+        fallbackRoot: a.fallbackRoot,
+        assetManager: this.world.assets,
+        assetId: 'creature.deer.phase1',
+        localOffsetY: -a.def.y,
+        clipMap: {
+          idle: ['Idle', 'Stand', 'LookAround'],
+          wander: ['Run'],
+          flee: ['Run'],
+          chase: ['Run'],
+          charge: ['Run'],
+          feed: ['Eat'],
+          default: ['Idle', 'Stand'],
+        },
+        timeScale: (state, speed) => state === 'idle' ? 1 : Math.max(0.45, Math.min(1.25, speed / a.def.speed)),
+        label: 'deer',
+      });
+    }
     this.animals.push(a);
     return a;
   }
@@ -165,6 +188,8 @@ export class ActorSystem {
   }
 
   remove(a, list) {
+    a.visual?.dispose();
+    a.visual = null;
     this.scene.remove(a.group);
     const i = list.indexOf(a);
     if (i >= 0) list.splice(i, 1);
@@ -489,6 +514,7 @@ export class ActorSystem {
     a.body.position.y = moving ? Math.abs(Math.sin(a.phase)) * 0.06 : Math.sin(a.phase * 0.6) * 0.02;
     a.body.rotation.z = fighting ? Math.sin(a.phase * 3) * 0.25 : moving ? Math.sin(a.phase) * 0.03 : 0;
     if (a.kind !== 'human') a.body.rotation.x = moving ? -0.05 : Math.sin(a.phase * 0.4) * 0.03;
+    a.visual?.update(dt, a.state || (moving ? 'wander' : 'idle'), speed);
   }
 
   killAnimal(a, byPlayer) {

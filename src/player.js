@@ -5,6 +5,7 @@ import { WORLD, heightAt, normalAt } from './worldgen.js';
 import { clamp, lerp, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { CH } from './worldstate.js';
+import { ActorVisual } from './assets/actor-visual.js';
 
 export class Input {
   constructor(dom) {
@@ -121,6 +122,7 @@ export class Player {
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     this.mat = mat;
     this.group = new THREE.Group();
+    this.fallbackRoot = new THREE.Group();
     this.body = new THREE.Mesh(playerGeo('body'), mat);
     this.armL = new THREE.Mesh(playerGeo('armL'), mat);
     this.armR = new THREE.Mesh(playerGeo('armR'), mat);
@@ -130,8 +132,17 @@ export class Player {
     this.armR.position.set(-0.4, 0.72, 0);
     this.legL.position.set(0.16, 0.62, 0);
     this.legR.position.set(-0.16, 0.62, 0);
-    for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.group.add(m); }
+    for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.fallbackRoot.add(m); }
+    this.group.add(this.fallbackRoot);
     scene.add(this.group);
+    this.visual = new ActorVisual({
+      gameplayRoot: this.group,
+      fallbackRoot: this.fallbackRoot,
+      assetManager: world.assets,
+      assetId: 'player.phase1',
+      clipMap: { dead: null, default: [] },
+      label: 'player',
+    });
 
     const p = state.player;
     this.pos = new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.1, p.z);
@@ -192,6 +203,7 @@ export class Player {
       this.deathTimer += dt;
       this.group.rotation.z = lerp(this.group.rotation.z, 1.5, dt * 3);
       if (this.deathTimer > 3.2) this.respawn();
+      this.visual?.update(dt, 'dead', 0);
       this.updateCamera(dt, camera, input);
       return;
     }
@@ -305,6 +317,9 @@ export class Player {
     this.body.rotation.x = clamp(sp * 0.012, 0, 0.16);
     this.body.position.y = Math.abs(Math.sin(this.phase * 1.4)) * amp * 0.09 - (this.crouched ? 0.25 : 0);
     if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
+
+    const visualState = this.swing > 0 ? 'attack' : sp > 6 ? 'run' : sp > 0.2 ? 'walk' : 'idle';
+    this.visual?.update(dt, visualState, sp);
 
     this.updateCamera(dt, camera, input);
 

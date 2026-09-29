@@ -16,6 +16,7 @@ import { DialogueMixin } from './dialogue.js';
 import { LoopMixin } from './loop.js';
 import { StreamingMixin } from './streaming.js';
 import { QuestMixin } from './quests.js';
+import { AssetManager } from './assets/asset-manager.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -41,6 +42,12 @@ class Game {
     this.input = new Input(this.canvas);
     this.fx = new FX(this.scene, this.renderer, state);
     this.ui = new UI(state, this);
+    this.assets = new AssetManager();
+    this.assetWarmup = this.assets.preload(['player.phase1', 'creature.deer.phase1'])
+      .catch((error) => {
+        console.warn('[assets] Phase 2 warmup fell back to procedural visuals:', error?.message || error);
+        return false;
+      });
 
     this.initStreaming();
 
