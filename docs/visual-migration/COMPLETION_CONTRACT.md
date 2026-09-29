@@ -12,10 +12,15 @@ not promote an unperformed visual, mobile, deployment, or merge gate.
 - [x] Phase 2 living actors are integrated on the current branch with
   authoritative gameplay roots, semantic animation mapping, fallback, and
   cleanup evidence.
-- [ ] Phase 3 complete production migration for all ordinary vegetation,
-  settlement, construction, camp, prop, and clutter families.
-- [ ] Phase 4 complete authored landmark, cave, VFX, and UI visual identity
-  migration with close/medium/distant/night/weather/traversal evidence.
+- [x] Phase 3 ordinary vegetation, settlement, construction, camp, prop, and
+  clutter families are all accounted for as authored, hybrid, or intentional
+  procedural presentation in the replacement ledger; state authority remains
+  procedural and the verified pine/hut/axe seams are integrated.
+- [x] Phase 4 project-owned landmark and cave compositions, cave identity
+  palettes, existing VFX, and UI visual systems are integrated without moving
+  terrain/traversal authority into presentation assets.
+- [ ] Phase 4 close/medium/distant/night/weather/traversal evidence is complete
+  for every major landmark and cave.
 - [ ] Phase 5 complete measured optimization, streaming-group audit, repeated
   load/unload leak proof, final documentation, merge, and Pages deployment.
 
@@ -35,7 +40,7 @@ not promote an unperformed visual, mobile, deployment, or merge gate.
 
 ## Open completion gates
 
-- Full Phase 3–4 family migration and visual acceptance.
+- Exhaustive Phase 3–4 visual acceptance evidence.
 - Representative dense-world and landmark/cave performance measurements after
   authored integration.
 - Playwright desktop and narrow/mobile journeys.

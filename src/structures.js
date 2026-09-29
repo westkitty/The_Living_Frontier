@@ -310,12 +310,12 @@ function buildCave(L, b) {
   b.rock(9, ex * (L.len + 6), 4, ez * (L.len + 6), 0x4b453e);
   return floorY;
 }
-
 // Glowing crystals + ore veins that need their own (unlit) material.
 export function buildCaveGlow(L) {
   const b = new Builder();
   const ex = Math.cos(L.dir), ez = Math.sin(L.dir);
   const rnd = mulberry32(L.id.length * 7717);
+  const palette = L.id === 'cave_ember' ? [0xff9a52, 0xffd08a] : L.id === 'cave_whisper' ? [0xb68cff, 0x7fe0d8] : [0x55c9e8, 0x9ad8ff];
   for (let i = 0; i < 16; i++) {
     const t = 0.25 + rnd() * 0.75;
     const side = (rnd() - 0.5) * L.w * 0.8;
@@ -323,7 +323,7 @@ export function buildCaveGlow(L) {
     const g = new THREE.OctahedronGeometry(0.4 + rnd() * 0.7, 0);
     g.rotateZ(rnd()); g.rotateY(rnd() * 6.28);
     g.translate(x, 0.5 + rnd() * 4.5, z);
-    b.add(g, rnd() < 0.6 ? 0x7fe0d8 : 0x9ad8ff, 0.1);
+    b.add(g, rnd() < 0.6 ? palette[0] : palette[1], 0.1);
   }
   return b.build();
 }

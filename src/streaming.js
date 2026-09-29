@@ -56,7 +56,7 @@ export const StreamingMixin = {
   rebuildSettlement(i) {
     const s = this.state.settlements[i];
     const old = this.settlementMeshes[i];
-    if (old) { this.scene.remove(old.mesh); old.mesh.geometry.dispose(); if (old.banner) this.scene.remove(old.banner); if (old.authoredHut) releaseStaticWorldAsset(this.assets, this.scene, old.authoredHut); }
+    if (old) { this.scene.remove(old.mesh); old.mesh.geometry.dispose(); if (old.banner) this.scene.remove(old.banner); if (old.authoredHut) releaseStaticWorldAsset(this.assets, this.scene, old.authoredHut); if (old.authoredAxe) releaseStaticWorldAsset(this.assets, this.scene, old.authoredAxe); }
     const { geo, baseY } = buildSettlementGeometry(s, i);
     const mesh = new THREE.Mesh(geo, this.structMat);
     mesh.position.set(s.x, baseY, s.z);
@@ -71,9 +71,9 @@ export const StreamingMixin = {
       this.scene.add(banner);
       this.banners.push(banner);
     }
-    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY, authoredHut: null };
-    const rec = this.settlementMeshes[i], x = s.x - 12 - i * 2, z = s.z - 7;
+    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY, authoredHut: null, authoredAxe: null }; const rec = this.settlementMeshes[i], x = s.x - 12 - i * 2, z = s.z - 7;
     if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'structure.hut.phase1', { name: `world-visual:hut:${s.id}`, position: new THREE.Vector3(x, heightAt(x, z), z), rotationY: i * 0.73, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredHut = record; }).catch((error) => console.warn(`[settlement] authored hut unavailable for ${s.id}; procedural family retained`, error?.message || error));
+    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'prop.axe.phase1', { name: `world-visual:axe:${s.id}`, position: new THREE.Vector3(s.x + 3, heightAt(s.x + 3, s.z + 2), s.z + 2), rotationY: i * 0.41, scale: 0.8, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredAxe = record; }).catch((error) => console.warn(`[settlement] authored axe unavailable for ${s.id}; procedural work area retained`, error?.message || error));
   },
   buildCaves() {
     this.caves = [];

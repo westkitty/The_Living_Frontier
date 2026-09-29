@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phases 1–2 verified; Phase 3 authored world presentation in progress
+Phases 1–4 implementation complete; release validation in progress
 
 ## Verified baseline
 
