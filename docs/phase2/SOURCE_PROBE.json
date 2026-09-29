@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-29T04:15:33.272Z",
+  "generatedAt": "2026-09-29T04:21:30.691Z",
   "candidates": {
     "wolf": {
       "sourcePage": "https://opengameart.org/content/animated-animales-low-poly",
@@ -324,7 +324,2363 @@
         "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Male.mtl",
         "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Male.obj",
         "Ultimate Animated Character Pack - Nov 2019/Preview.png"
-      ]
+      ],
+      "inspections": {
+        "BaseCharacter": {
+          "label": "BaseCharacter",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/BaseCharacter.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.040674,
+                1.008202,
+                2.772386
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.294163,
+                1.008893,
+                3.109516
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Casual_Female": {
+          "label": "Casual_Female",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Casual_Female.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.040207,
+                1.008202,
+                2.771403
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.293299,
+                1.500411,
+                3.172403
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Casual_Male": {
+          "label": "Casual_Male",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Casual_Male.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.031258,
+                1.008202,
+                2.762607
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.279734,
+                1.311684,
+                3.286807
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Soldier_Female": {
+          "label": "Soldier_Female",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Soldier_Female.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.029341,
+                1.008202,
+                2.761562
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.276986,
+                1.41947,
+                3.161544
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Soldier_Male": {
+          "label": "Soldier_Male",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Soldier_Male.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.027505,
+                1.008202,
+                2.760725
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.27434,
+                1.152606,
+                3.234962
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Viking_Female": {
+          "label": "Viking_Female",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Viking_Female.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.038375,
+                1.008202,
+                2.76859
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.290235,
+                1.406846,
+                3.169363
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Viking_Male": {
+          "label": "Viking_Male",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Viking_Male.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.034352,
+                1.021811,
+                2.787961
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.292738,
+                1.363551,
+                3.604822
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Witch": {
+          "label": "Witch",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Witch.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.039055,
+                1.008202,
+                2.769502
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.729916,
+                1.688713,
+                4.240767
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Wizard": {
+          "label": "Wizard",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Wizard.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.039667,
+                1.008202,
+                2.770441
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.729917,
+                1.72828,
+                4.056398
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Worker_Female": {
+          "label": "Worker_Female",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Worker_Female.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.026633,
+                1.008202,
+                2.760388
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.27307,
+                1.489582,
+                3.378657
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        },
+        "Worker_Male": {
+          "label": "Worker_Male",
+          "sourceFile": "/tmp/lf-phase2-sources/humans/Ultimate Animated Character Pack - Nov 2019/Blends/Worker_Male.blend",
+          "objects": [
+            {
+              "name": "CharacterArmature",
+              "type": "ARMATURE",
+              "parent": null,
+              "dimensions": [
+                1.026633,
+                1.008202,
+                2.760388
+              ]
+            },
+            {
+              "name": "Body",
+              "type": "MESH",
+              "parent": "CharacterArmature",
+              "dimensions": [
+                1.27307,
+                1.281102,
+                3.286554
+              ]
+            }
+          ],
+          "armatures": [
+            {
+              "name": "CharacterArmature",
+              "bones": [
+                "Bone",
+                "Foot.L",
+                "Body",
+                "Hips",
+                "Abdomen",
+                "Torso",
+                "Neck",
+                "Head",
+                "Shoulder.L",
+                "UpperArm.L",
+                "LowerArm.L",
+                "Fist.L",
+                "Shoulder.R",
+                "UpperArm.R",
+                "LowerArm.R",
+                "Fist.R",
+                "UpperLeg.L",
+                "LowerLeg.L",
+                "UpperLeg.R",
+                "LowerLeg.R",
+                "PoleTarget.L",
+                "Foot.R",
+                "PoleTarget.R"
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "name": "Death",
+              "frameRange": [
+                0,
+                55
+              ],
+              "fcurves": 216
+            },
+            {
+              "name": "Defeat",
+              "frameRange": [
+                0,
+                60
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Idle",
+              "frameRange": [
+                0,
+                100
+              ],
+              "fcurves": 220
+            },
+            {
+              "name": "Jump",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 264
+            },
+            {
+              "name": "PickUp",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Punch",
+              "frameRange": [
+                0,
+                18
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "RecieveHit",
+              "frameRange": [
+                0,
+                15
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Roll",
+              "frameRange": [
+                0,
+                22
+              ],
+              "fcurves": 178
+            },
+            {
+              "name": "Run",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Run_Carry",
+              "frameRange": [
+                0,
+                21
+              ],
+              "fcurves": 259
+            },
+            {
+              "name": "Shoot_OneHanded",
+              "frameRange": [
+                0,
+                13
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SitDown",
+              "frameRange": [
+                0,
+                23
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "StandUp",
+              "frameRange": [
+                0,
+                31
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "SwordSlash",
+              "frameRange": [
+                0,
+                25
+              ],
+              "fcurves": 243
+            },
+            {
+              "name": "Victory",
+              "frameRange": [
+                0,
+                45
+              ],
+              "fcurves": 140
+            },
+            {
+              "name": "Walk",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            },
+            {
+              "name": "Walk_Carry",
+              "frameRange": [
+                0,
+                30
+              ],
+              "fcurves": 126
+            }
+          ],
+          "images": [
+            {
+              "name": "Render Result",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": ""
+            },
+            {
+              "name": "Texture.png",
+              "size": [
+                0,
+                0
+              ],
+              "packed": false,
+              "filepath": "// /Blender/DavidThorn/Library/Large/Texture.png"
+            }
+          ]
+        }
+      }
     },
     "rpgHumans": {
       "sourcePage": "https://opengameart.org/content/lowpoly-rpg-characters",
