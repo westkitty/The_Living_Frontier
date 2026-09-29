@@ -46,7 +46,7 @@ jobs:
           unzip -q humans.zip -d humans
           ROOT="$(find humans -type d -name Blends | head -n1)"
           test -n "$ROOT"
-          printf '%s\n' "$ROOT" > blends.path
+          realpath "$ROOT" > blends.path
           for name in Viking_Male Worker_Male Worker_Female Soldier_Male Soldier_Female; do
             test -f "$ROOT/$name.blend" || { echo "missing $name.blend"; exit 1; }
           done
