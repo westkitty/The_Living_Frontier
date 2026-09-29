@@ -6,7 +6,7 @@ import { WORLD, FACTIONS, heightAt } from './worldgen.js';
 import { clamp, mulberry32, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { regionIndex, regionCenter, CH, DAY_LENGTH } from './worldstate.js';
-import { attachDeerVisual } from './assets/actor-visual.js';
+import { attachAnimalVisual, attachHumanVisual } from './assets/actor-visual.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 
@@ -113,8 +113,6 @@ export class ActorSystem {
     this.npcs = [];
     this.soldiers = [];
     this.corpses = [];
-    this.carcassGeo = new THREE.IcosahedronGeometry(1, 0);
-    this.carcassMat = new THREE.MeshLambertMaterial({ color: 0x30251f });
     this.mats = new Map();
     for (const k of ['deer', 'wolf', 'boar', 'rabbit', 'human']) {
       this.mats.set(k, new THREE.MeshLambertMaterial({ vertexColors: true }));
@@ -130,7 +128,7 @@ export class ActorSystem {
     a.setPos(x, heightAt(x, z) + a.def.y, z);
     a.region = regionIndex(x, z);
     this.scene.add(a.group);
-    if (kind === 'deer') a.visual = attachDeerVisual(a, this.world);
+    a.visual = attachAnimalVisual(a, this.world);
     this.animals.push(a);
     return a;
   }
@@ -146,6 +144,10 @@ export class ActorSystem {
     a.name = villagerName(settlement.id, idx);
     a.job = ['farmer', 'woodcutter', 'hunter', 'builder', 'elder'][idx % 5];
     this.scene.add(a.group);
+    a.visual = attachHumanVisual(a, this.world, {
+      role: 'villager',
+      variant: idx % 2 ? 'female' : 'male',
+    });
     this.npcs.push(a);
     return a;
   }
@@ -159,6 +161,12 @@ export class ActorSystem {
     a.hp = a.maxHp = 55 + faction * 10;
     a.speed = 3.4;
     this.scene.add(a.group);
+    const variant = ((Math.floor(x * 0.1) + Math.floor(z * 0.1) + faction) & 1) ? 'female' : 'male';
+    a.visual = attachHumanVisual(a, this.world, {
+      role: 'soldier',
+      variant,
+      tintColor: FACTIONS[faction].color,
+    });
     this.soldiers.push(a);
     return a;
   }
@@ -255,6 +263,7 @@ export class ActorSystem {
 
     for (const corpse of [...this.corpses]) {
       corpse.deadTime += dt;
+      corpse.visual?.update(dt, 'dead', 0);
       if (corpse.deadTime >= DAY_LENGTH) this.remove(corpse, this.corpses);
     }
 
@@ -482,22 +491,21 @@ export class ActorSystem {
     a.body.position.y = moving ? Math.abs(Math.sin(a.phase)) * 0.06 : Math.sin(a.phase * 0.6) * 0.02;
     a.body.rotation.z = fighting ? Math.sin(a.phase * 3) * 0.25 : moving ? Math.sin(a.phase) * 0.03 : 0;
     if (a.kind !== 'human') a.body.rotation.x = moving ? -0.05 : Math.sin(a.phase * 0.4) * 0.03;
-    a.visual?.update(dt, a.state || (moving ? 'wander' : 'idle'), speed);
+    const visualState = !a.alive ? 'dead'
+      : a.kind === 'human' ? (fighting ? 'attack' : speed > 3 ? 'run' : moving ? 'walk' : 'idle')
+        : (a.state || (moving ? 'wander' : 'idle'));
+    a.visual?.update(dt, visualState, speed);
   }
 
   killAnimal(a, byPlayer) {
     if (!a.alive) return;
     a.alive = false;
     a.deadTime = 0;
-    this.remove(a, this.animals);
-    a.group = new THREE.Mesh(this.carcassGeo, this.carcassMat);
-    a.group.name = 'carcass';
-    a.group.scale.set(a.kind === 'rabbit' ? 0.4 : 0.8, 0.3, a.kind === 'rabbit' ? 0.6 : 1.4);
-    a.pos.y = heightAt(a.pos.x, a.pos.z) + 0.3;
-    a.group.position.copy(a.pos);
+    const liveIndex = this.animals.indexOf(a);
+    if (liveIndex >= 0) this.animals.splice(liveIndex, 1);
+    this.markDead(a);
     a.scentRadius = 120;
     this.corpses.push(a);
-    this.scene.add(a.group);
     if (this.corpses.length > 48) this.remove(this.corpses[0], this.corpses);
     const st = this.state;
     const r = st.regions[regionIndex(a.pos.x, a.pos.z)];
@@ -520,8 +528,14 @@ export class ActorSystem {
     }
   }
 
+  markDead(a) {
+    a.state = 'dead';
+    a.fallbackRoot.rotation.z = 1.25;
+    a.visual?.update(0, 'dead', 0);
+  }
+
   killSoldier(a, byFaction) {
-    a.alive = false; a.deadTime = 0; a.group.rotation.z = 1.5;
+    a.alive = false; a.deadTime = 0; this.markDead(a);
     const st = this.state;
     const r = st.regions[regionIndex(a.pos.x, a.pos.z)];
     r.pressure[a.faction] = Math.max(0, r.pressure[a.faction] - 12);
@@ -531,7 +545,9 @@ export class ActorSystem {
 
   decayCorpse(a, dt, list) {
     a.deadTime += dt;
-    a.group.position.y = damp(a.group.position.y, heightAt(a.pos.x, a.pos.z) + 0.25, 3, dt);
+    a.visual?.update(dt, 'dead', 0);
+    a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + a.def.y, 3, dt);
+    a.group.position.y = a.pos.y;
     if (a.deadTime > 30) this.remove(a, list);
   }
 

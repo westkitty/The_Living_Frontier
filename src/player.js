@@ -186,7 +186,9 @@ export class Player {
     const st = this.state;
     if (this.dead) {
       this.deathTimer += dt;
-      this.group.rotation.z = lerp(this.group.rotation.z, 1.5, dt * 3);
+      this.group.rotation.z = 0;
+    this.fallbackRoot.rotation.z = 0;
+      this.fallbackRoot.rotation.z = lerp(this.fallbackRoot.rotation.z, 1.5, dt * 3);
       if (this.deathTimer > 3.2) this.respawn();
       this.visual?.update(dt, 'dead', 0);
       this.updateCamera(dt, camera, input);
@@ -330,6 +332,7 @@ export class Player {
     this.hp = this.maxHp * 0.6;
     this.dead = false;
     this.group.rotation.z = 0;
+    this.fallbackRoot.rotation.z = 0;
     // you lose some cargo when you fall
     const inv = st.player.inv;
     for (const k in inv) inv[k] = Math.floor(inv[k] * 0.5);
