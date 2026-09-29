@@ -314,15 +314,70 @@ try {
       for (const actor of actors) {
         if (actor.visual?.status !== 'asset') throw new Error(`showcase actor fallback: ${actor.kind}`);
       }
+      window.__LF_PHASE2_SHOWCASE = actors;
       game.renderer.render(game.scene, game.camera);
       return actors.map((actor) => actor.visual.snapshot());
     });
+
     const canvas = page.locator('#gl');
-    const shot = await canvas.screenshot({ path: `/tmp/lf-phase2-${name}.png` });
-    if (shot.length < 8000) throw new Error(`${name}: live-game screenshot is suspiciously small/blank (${shot.length} bytes)`);
+    const liveShot = await canvas.screenshot({ path: `/tmp/lf-phase2-${name}-live.png` });
+    if (liveShot.length < 8000) throw new Error(`${name}: live-game screenshot is suspiciously small/blank (${liveShot.length} bytes)`);
+
+    const diagnostic = await page.evaluate(async () => {
+      const game = window.GAME;
+      const actors = window.__LF_PHASE2_SHOWCASE || [];
+      const { heightAt } = await import('./src/worldgen.js');
+      const p = game.player.pos;
+      const centerX = p.x, centerZ = p.z;
+
+      // This is a diagnostic presentation frame, not gameplay state. Keep the
+      // terrain and lighting, but hide streamed vegetation so a tree cannot
+      // invalidate manual actor review by occluding the entire camera.
+      for (const chunk of game.veg.chunks.values()) {
+        for (const mesh of Object.values(chunk.meshes || {})) if (mesh) mesh.visible = false;
+        if (chunk.grassMesh) chunk.grassMesh.visible = false;
+      }
+
+      const placements = [
+        [centerX - 4.5, centerZ - 5.5],
+        [centerX - 1.5, centerZ - 5.5],
+        [centerX + 1.5, centerZ - 5.5],
+        [centerX + 4.5, centerZ - 5.5],
+      ];
+      actors.forEach((actor, i) => {
+        const [x, z] = placements[i];
+        actor.setPos(x, heightAt(x, z) + actor.def.y, z);
+        actor.yaw = Math.PI;
+        actor.group.rotation.y = Math.PI;
+        actor.visual?.update(0.05, 'idle', 0);
+      });
+
+      const playerY = heightAt(centerX, centerZ);
+      game.player.pos.set(centerX, playerY, centerZ);
+      game.player.group.position.copy(game.player.pos);
+      game.player.yaw = Math.PI;
+      game.player.group.rotation.y = Math.PI;
+      game.player.visual?.update(0.05, 'idle', 0);
+
+      const focusY = playerY + 1.1;
+      game.camera.position.set(centerX, playerY + 7.2, centerZ + 13.5);
+      game.camera.lookAt(centerX, focusY, centerZ - 4.2);
+      game.renderer.render(game.scene, game.camera);
+      return {
+        player: game.player.visual?.snapshot(),
+        actors: actors.map((actor) => actor.visual?.snapshot()),
+        camera: game.camera.position.toArray(),
+      };
+    });
+
+    const diagnosticShot = await canvas.screenshot({ path: `/tmp/lf-phase2-${name}-diagnostic.png` });
+    if (diagnosticShot.length < 8000) throw new Error(`${name}: diagnostic actor screenshot is suspiciously small/blank (${diagnosticShot.length} bytes)`);
 
     if (errors.length) throw new Error(`${name}: browser errors: ${errors.join(' | ')}`);
-    console.log(`PHASE2 BROWSER PASS ${name}`, JSON.stringify({ player, movement, fallback, living, death, showcase, screenshotBytes: shot.length }));
+    console.log(`PHASE2 BROWSER PASS ${name}`, JSON.stringify({
+      player, movement, fallback, living, death, showcase, diagnostic,
+      screenshotBytes: { live: liveShot.length, diagnostic: diagnosticShot.length },
+    }));
     await page.close();
   }
 
