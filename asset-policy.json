@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "project": "The Living Frontier",
+  "releaseIntent": "public-browser-game",
+  "runtimeRoot": "assets/runtime",
+  "manifest": "docs/resources/VISUAL_ASSET_MANIFEST.json",
+  "networkPolicy": "self-hosted-runtime-assets-only",
+  "acceptedLicenses": ["CC0-1.0"],
+  "requirements": {
+    "commercialUse": true,
+    "modificationAllowed": true,
+    "browserDistributionAllowed": true,
+    "exactItemEvidence": true,
+    "sourceHash": true,
+    "runtimeHash": true,
+    "noRemoteRuntimeUris": true
+  },
+  "phase1RequiredIds": [
+    "prop.axe.phase1",
+    "vegetation.pine.phase1",
+    "structure.hut.phase1",
+    "player.phase1",
+    "creature.deer.phase1"
+  ],
+  "budgets": {
+    "phase1SingleStaticBytes": 2097152,
+    "phase1SingleAnimatedBytes": 8388608,
+    "phase1TotalRuntimeBytes": 20971520
+  }
+}
