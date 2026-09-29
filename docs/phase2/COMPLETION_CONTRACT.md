@@ -4,58 +4,58 @@ Phase 2 is COMPLETE only when every required actor family is integrated and veri
 
 ## Architecture
 
-- [ ] Existing simulation/gameplay state remains authoritative.
-- [ ] Player.group and Actor.group remain gameplay transform roots.
-- [ ] Imported models are presentation children rather than state owners.
-- [ ] AssetManager stable logical IDs own production actor loading.
-- [ ] Every independently animated instance has independent animation playback state.
-- [ ] Failed loads preserve a functioning procedural fallback.
-- [ ] Despawn/death/replacement has explicit animation and asset-reference cleanup.
+- [x] Existing simulation/gameplay state remains authoritative.
+- [x] Player.group and Actor.group remain gameplay transform roots.
+- [x] Imported models are presentation children rather than state owners.
+- [x] AssetManager stable logical IDs own production actor loading.
+- [x] Every independently animated instance has independent animation playback state.
+- [x] Failed loads preserve a functioning procedural fallback.
+- [x] Despawn/death/replacement has explicit animation and asset-reference cleanup.
 
 ## Player
 
-- [ ] Production runtime model is physically present and validated.
-- [ ] Player movement/camera/combat/persistence remain behaviorally unchanged.
-- [ ] Verified animation clips are mapped to actual player semantic states.
-- [ ] Live desktop and narrow/mobile browser proof passes.
+- [x] Production runtime model is physically present and validated.
+- [x] Player movement/camera/combat/persistence remain behaviorally unchanged.
+- [x] Verified animation clips are mapped to actual player semantic states.
+- [ ] Final combined live desktop and narrow/mobile browser proof passes on the latest rebuilt asset bytes.
 
 ## Villagers and patrols
 
-- [ ] Production human runtime assets are physically present and validated.
-- [ ] Villager routines, jobs, dialogue identity, trails, and settlement ownership remain intact.
-- [ ] Faction patrol state and faction identity remain visually distinguishable without mutating shared materials unsafely.
-- [ ] Spawn/despawn and independent animation instances are browser-tested.
+- [x] Production human runtime assets are physically present and validated.
+- [x] Villager routines, jobs, dialogue identity, trails, and settlement ownership remain intact.
+- [x] Faction patrol state and faction identity remain visually distinguishable without mutating shared materials unsafely.
+- [x] Spawn/despawn and independent animation instances are browser-tested.
 
 ## Wildlife
 
-- [ ] Deer is production integrated.
-- [ ] Wolf is production integrated.
-- [ ] Boar is production integrated.
-- [ ] Rabbit is production integrated.
-- [ ] Existing predator/prey/flee/charge/feed behavior remains authoritative.
-- [ ] Each species uses only physically verified animation clips.
-- [ ] Representative spawn/despawn cycles release ownership.
+- [x] Deer is production integrated.
+- [x] Wolf is production integrated.
+- [x] Boar is production integrated.
+- [x] Rabbit is production integrated.
+- [x] Existing predator/prey/flee/charge/feed behavior remains authoritative.
+- [x] Each species uses only physically verified animation clips.
+- [x] Representative spawn/despawn cycles release ownership.
 
 ## Death / carcasses
 
-- [ ] Death/carcass presentation is upgraded without changing gameplay semantics.
-- [ ] Harvest interaction remains functional.
-- [ ] Predator carcass attraction/consumption remains functional.
-- [ ] Corpse lifetime and population effects remain functional.
+- [x] Death/carcass presentation is upgraded without changing gameplay semantics.
+- [x] Harvest interaction remains functional.
+- [x] Predator carcass attraction/consumption remains functional.
+- [x] Corpse lifetime and population effects remain functional.
 
 ## Evidence
 
-- [ ] Source/provenance/license records are complete for every new source.
-- [ ] Runtime hashes and semantic manifest facts match actual generated files.
-- [ ] Khronos glTF validation reports zero errors.
-- [ ] Remaining warnings, if any, are explicitly reviewed.
-- [ ] Existing npm run assets/check/perf gates pass.
-- [ ] Live-game Playwright desktop and narrow/mobile journeys pass.
-- [ ] Visual screenshots are inspected.
-- [ ] Phase 2 report records what was actually verified.
+- [x] Source/provenance/license records are complete for every new source.
+- [x] Runtime hashes and semantic manifest facts match actual generated files.
+- [x] Khronos glTF validation reports zero errors.
+- [x] Remaining warnings are explicitly reviewed.
+- [x] Existing npm run assets/check/perf gates pass.
+- [ ] Final combined live-game Playwright desktop and narrow/mobile journeys pass on the latest rebuilt asset bytes.
+- [ ] Final integrated live/diagnostic screenshots are manually inspected.
+- [x] Phase 2 report records the current verified evidence and remaining release gates.
 - [ ] Verified branch merges to main.
 - [ ] GitHub Pages deployment from merged main succeeds.
 
 ## Status rule
 
-The current player + deer integration slice may be marked PASS while Phase 2 remains PARTIAL. Do not call the phase complete until all boxes above are evidence-backed.
+Phase 2 remains **RELEASE CANDIDATE / NOT COMPLETE** until every unchecked release gate above is evidence-backed.

@@ -2,32 +2,60 @@
 
 ## Current phase
 
-Phase 2 — Living Actors
+Phase 2 — Living Actors — RELEASE CANDIDATE
 
 ## Verified baseline
 
 Main revision at Phase 2 branch creation: `1a31b39106117680b3d4144385d81c3b71c4d1f4`.
 
-Phase 1 asset lifecycle is complete and published. Five verified runtime fixtures exist behind stable logical IDs. Existing game architecture, state ownership, browser journeys, and performance probes are protected.
+Phase 1 asset lifecycle is complete and published. Phase 2 preserves the existing engine, renderer, authoritative gameplay roots, world-state ownership, persistence, interaction systems, browser journeys, and representative performance probes.
 
 ## Phase 2 invariant
 
 Actor presentation may change. Gameplay authority may not migrate into imported model nodes or animation.
 
-Player and actor gameplay roots remain authoritative. Runtime models attach below them through AssetManager and keep procedural geometry as a failure fallback.
+`Player.group` and `Actor.group` remain authoritative. Production models attach below them through `AssetManager`; procedural presentation remains the load-failure fallback.
 
-## Current bounded slice
+## Current release candidate
 
-The player + deer integration architecture has passed live browser/behavior gates, but the Phase 1 fixture models failed manual production visual review. The adapter architecture is retained; the fixture art is rejected for promotion.
+All fixed Phase 2 actor families now have physically generated production runtime assets:
 
-Next: acquire and inspect the exact Phase 2 production candidates for humans, wolf, rabbit and boar, then generate corrected/new stable Phase 2 runtime IDs.
+- player;
+- male/female villagers;
+- male/female patrol presentation;
+- deer;
+- wolf;
+- boar;
+- rabbit.
+
+The current package contains 9 Phase 2 GLBs totaling 6,075,796 bytes.
+
+Production integration includes per-instance animation mixers, safe per-instance faction tinting, verified semantic clip mappings, load fallback, deterministic reference release, and species-preserving carcasses.
+
+Manual isolated visual review caught and corrected an sRGB/linear palette conversion defect. The rebuilt human and wildlife review probes now show the intended darker/natural skin, deer, and boar palettes without observed geometry loss.
+
+## Verified behavior
+
+Existing gameplay remains authoritative and regression gates have demonstrated:
+
+- player movement/camera/controller ownership remains outside imported animation;
+- actor AI, ecology, villages, factions, dialogue, combat, persistence, and interaction semantics remain gameplay-owned;
+- independent animated instances do not share mixer/action state;
+- wildlife harvest, predator consumption, corpse cleanup, and population consequences remain functional;
+- faction material mutations are instance-owned;
+- asset failures retain functional procedural presentation;
+- representative spawn/despawn paths release asset references.
+
+## Current gate
+
+The report/contract update at this stage exists to trigger one final combined living-actor workflow against the latest rebuilt human and wildlife bytes.
+
+Do not merge until that run passes and its final integrated live/diagnostic screenshots are manually inspected.
 
 ## Remaining Phase 2 work
 
-- source/convert/integrate a multi-animation human set for final player/villager/patrol presentation
-- source/convert/integrate wolf
-- source/convert/integrate boar
-- source/convert/integrate rabbit
-- upgrade death/carcass presentation
-- run full actor visual/deformation and gameplay regression proof
-- final Phase 2 report, merge, Pages deployment
+- pass final combined living-actor CI on the latest production assets
+- manually inspect final integrated desktop and narrow/mobile screenshots
+- merge verified branch to `main`
+- confirm GitHub Pages deployment from merged `main`
+- record Phase 2 COMPLETE only after those release gates pass
