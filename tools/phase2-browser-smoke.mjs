@@ -360,63 +360,86 @@ try {
       const THREE = await import('three');
       const game = window.GAME;
       const actors = window.__LF_PHASE2_SHOWCASE || [];
+      const snapshots = {
+        player: game.player.visual?.snapshot(),
+        actors: actors.map((actor) => actor.visual?.snapshot()),
+      };
 
-      // Reuse the exact live actor instances, but render them in a temporary
-      // diagnostic scene after gameplay proof. This keeps the inspected meshes,
-      // skeletons, materials and animation state exact while eliminating random
-      // world occluders such as trees or settlement roofs.
+      // Reuse the exact loaded presentation roots after gameplay proof, but
+      // detach only those presentation roots into a temporary review scene.
+      // This avoids random world occluders and avoids depending on actor-group
+      // transforms while still inspecting the exact live meshes/skeletons.
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x71879a);
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x39434a, 2.1));
-      const key = new THREE.DirectionalLight(0xffffff, 2.4);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x39434a, 2.2));
+      const key = new THREE.DirectionalLight(0xffffff, 2.6);
       key.position.set(5, 10, 8);
       scene.add(key);
 
       const floor = new THREE.Mesh(
-        new THREE.PlaneGeometry(18, 18),
+        new THREE.PlaneGeometry(8, 12),
         new THREE.MeshLambertMaterial({ color: 0x566455 }),
       );
       floor.rotation.x = -Math.PI / 2;
-      floor.position.y = 0;
       scene.add(floor);
-      scene.add(new THREE.GridHelper(18, 18, 0x4a565f, 0x66737b));
+      scene.add(new THREE.GridHelper(8, 8, 0x45515a, 0x66737b));
 
-      const placements = [
-        [-2.2, 0.8],
-        [ 2.2, 0.8],
-        [-2.2, -2.4],
-        [ 2.2, -2.4],
+      const subjects = [
+        { label: 'player', root: game.player.visual?.root, x: 0, z: 3.1 },
+        { label: 'deer', root: actors[0]?.visual?.root, x: -1.55, z: 0.5 },
+        { label: 'wolf', root: actors[1]?.visual?.root, x: 1.55, z: 0.5 },
+        { label: 'villager', root: actors[2]?.visual?.root, x: -1.55, z: -2.4 },
+        { label: 'soldier', root: actors[3]?.visual?.root, x: 1.55, z: -2.4 },
       ];
-      actors.forEach((actor, i) => {
-        const [x, z] = placements[i];
-        actor.setPos(x, actor.def.y, z);
-        actor.yaw = Math.PI;
-        actor.group.rotation.y = Math.PI;
-        actor.visual?.update(0.05, 'idle', 0);
-        scene.add(actor.group);
-      });
+      const bounds = [];
+      for (const subject of subjects) {
+        if (!subject.root) throw new Error(`diagnostic missing root: ${subject.label}`);
+        subject.root.removeFromParent();
+        subject.root.position.set(subject.x, 0, subject.z);
+        subject.root.rotation.z = 0;
+        subject.root.traverse((object) => {
+          object.visible = true;
+          if (object.isMesh) object.frustumCulled = false;
+        });
+        scene.add(subject.root);
+        subject.root.updateMatrixWorld(true);
+        let box = new THREE.Box3().setFromObject(subject.root);
+        if (box.isEmpty()) throw new Error(`diagnostic empty bounds: ${subject.label}`);
+        subject.root.position.y -= box.min.y;
+        subject.root.updateMatrixWorld(true);
+        box = new THREE.Box3().setFromObject(subject.root);
+        bounds.push({
+          label: subject.label,
+          size: box.getSize(new THREE.Vector3()).toArray(),
+          center: box.getCenter(new THREE.Vector3()).toArray(),
+        });
+      }
 
-      game.player.pos.set(0, 0, 3.8);
-      game.player.group.position.copy(game.player.pos);
-      game.player.yaw = Math.PI;
-      game.player.group.rotation.y = Math.PI;
-      game.player.visual?.update(0.05, 'idle', 0);
-      scene.add(game.player.group);
-
-      const camera = new THREE.PerspectiveCamera(38, game.camera.aspect, 0.1, 100);
-      camera.position.set(0, 5.8, 14.5);
-      camera.lookAt(0, 1.1, 0.2);
+      const camera = new THREE.PerspectiveCamera(40, game.camera.aspect, 0.1, 100);
+      camera.position.set(0, 4.8, 13);
+      camera.lookAt(0, 1.0, 0.3);
+      camera.updateMatrixWorld(true);
+      for (const record of bounds) {
+        const ndc = new THREE.Vector3(...record.center).project(camera);
+        record.ndc = ndc.toArray();
+      }
 
       const hud = document.querySelector('#hud');
       if (hud) hud.style.visibility = 'hidden';
       game.renderer.render(scene, camera);
       return {
-        player: game.player.visual?.snapshot(),
-        actors: actors.map((actor) => actor.visual?.snapshot()),
+        ...snapshots,
+        subjects: bounds,
         camera: camera.position.toArray(),
-        exactLiveInstances: actors.every((actor) => actor.visual?.root?.parent === actor.group),
       };
     });
+
+    for (const subject of diagnostic.subjects) {
+      const [sx, sy, sz] = subject.size;
+      const [nx, ny, nz] = subject.ndc;
+      if (sx <= 0.05 || sy <= 0.25 || sz <= 0.05) throw new Error(`${name}: diagnostic bounds collapsed for ${subject.label}`);
+      if (Math.abs(nx) > 1 || Math.abs(ny) > 1 || nz < -1 || nz > 1) throw new Error(`${name}: diagnostic subject outside camera frustum: ${subject.label} ${JSON.stringify(subject.ndc)}`);
+    }
 
     const diagnosticShot = await canvas.screenshot({ path: `/tmp/lf-phase2-${name}-diagnostic.png` });
     if (diagnosticShot.length < 8000) throw new Error(`${name}: diagnostic actor screenshot is suspiciously small/blank (${diagnosticShot.length} bytes)`);
