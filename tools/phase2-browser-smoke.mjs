@@ -357,49 +357,64 @@ try {
     if (liveShot.length < 8000) throw new Error(`${name}: live-game screenshot is suspiciously small/blank (${liveShot.length} bytes)`);
 
     const diagnostic = await page.evaluate(async () => {
+      const THREE = await import('three');
       const game = window.GAME;
       const actors = window.__LF_PHASE2_SHOWCASE || [];
-      const { heightAt } = await import('./src/worldgen.js');
-      const p = game.player.pos;
-      const centerX = p.x, centerZ = p.z;
 
-      // This is a diagnostic presentation frame, not gameplay state. Keep the
-      // terrain and lighting, but hide streamed vegetation so a tree cannot
-      // invalidate manual actor review by occluding the entire camera.
-      for (const chunk of game.veg.chunks.values()) {
-        for (const mesh of Object.values(chunk.meshes || {})) if (mesh) mesh.visible = false;
-        if (chunk.grassMesh) chunk.grassMesh.visible = false;
-      }
+      // Reuse the exact live actor instances, but render them in a temporary
+      // diagnostic scene after gameplay proof. This keeps the inspected meshes,
+      // skeletons, materials and animation state exact while eliminating random
+      // world occluders such as trees or settlement roofs.
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x71879a);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x39434a, 2.1));
+      const key = new THREE.DirectionalLight(0xffffff, 2.4);
+      key.position.set(5, 10, 8);
+      scene.add(key);
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(18, 18),
+        new THREE.MeshLambertMaterial({ color: 0x566455 }),
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      scene.add(floor);
+      scene.add(new THREE.GridHelper(18, 18, 0x4a565f, 0x66737b));
 
       const placements = [
-        [centerX - 4.5, centerZ - 5.5],
-        [centerX - 1.5, centerZ - 5.5],
-        [centerX + 1.5, centerZ - 5.5],
-        [centerX + 4.5, centerZ - 5.5],
+        [-2.2, 0.8],
+        [ 2.2, 0.8],
+        [-2.2, -2.4],
+        [ 2.2, -2.4],
       ];
       actors.forEach((actor, i) => {
         const [x, z] = placements[i];
-        actor.setPos(x, heightAt(x, z) + actor.def.y, z);
+        actor.setPos(x, actor.def.y, z);
         actor.yaw = Math.PI;
         actor.group.rotation.y = Math.PI;
         actor.visual?.update(0.05, 'idle', 0);
+        scene.add(actor.group);
       });
 
-      const playerY = heightAt(centerX, centerZ);
-      game.player.pos.set(centerX, playerY, centerZ);
+      game.player.pos.set(0, 0, 3.8);
       game.player.group.position.copy(game.player.pos);
       game.player.yaw = Math.PI;
       game.player.group.rotation.y = Math.PI;
       game.player.visual?.update(0.05, 'idle', 0);
+      scene.add(game.player.group);
 
-      const focusY = playerY + 1.1;
-      game.camera.position.set(centerX, playerY + 7.2, centerZ + 13.5);
-      game.camera.lookAt(centerX, focusY, centerZ - 4.2);
-      game.renderer.render(game.scene, game.camera);
+      const camera = new THREE.PerspectiveCamera(38, game.camera.aspect, 0.1, 100);
+      camera.position.set(0, 5.8, 14.5);
+      camera.lookAt(0, 1.1, 0.2);
+
+      const hud = document.querySelector('#hud');
+      if (hud) hud.style.visibility = 'hidden';
+      game.renderer.render(scene, camera);
       return {
         player: game.player.visual?.snapshot(),
         actors: actors.map((actor) => actor.visual?.snapshot()),
-        camera: game.camera.position.toArray(),
+        camera: camera.position.toArray(),
+        exactLiveInstances: actors.every((actor) => actor.visual?.root?.parent === actor.group),
       };
     });
 
