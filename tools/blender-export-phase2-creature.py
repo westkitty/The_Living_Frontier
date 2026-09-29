@@ -5,11 +5,13 @@ import sys
 
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 if len(args) < 3:
-    raise SystemExit("usage: blender --background <source.blend> --python tools/blender-export-phase2-creature.py -- <output.glb> <max-texture> <exclude-json>")
+    raise SystemExit("usage: blender --background <source.blend> --python tools/blender-export-phase2-creature.py -- <output.glb> <max-texture> <exclude-json> [palette-json]")
 
 output, max_texture_s, exclude_json = args[:3]
+palette_json = args[3] if len(args) > 3 else "{}"
 max_texture = int(max_texture_s)
 exclude_names = set(json.loads(exclude_json))
+palette = json.loads(palette_json)
 removed = []
 
 for obj in list(bpy.data.objects):
@@ -23,6 +25,30 @@ for image in bpy.data.images:
         continue
     scale = max_texture / max(width, height)
     image.scale(max(1, round(width * scale)), max(1, round(height * scale)))
+
+def hex_rgba(value):
+    raw = value.lstrip("#")
+    if len(raw) not in {6, 8}:
+        raise ValueError(f"invalid color {value}")
+    vals = [int(raw[i:i+2], 16) / 255.0 for i in range(0, len(raw), 2)]
+    if len(vals) == 3:
+        vals.append(1.0)
+    return tuple(vals)
+
+applied_palette = {}
+for name, value in palette.items():
+    mat = bpy.data.materials.get(name)
+    if not mat:
+        raise RuntimeError(f"palette material not found: {name}")
+    rgba = hex_rgba(value)
+    mat.diffuse_color = rgba
+    mat.use_nodes = True
+    bsdf = next((node for node in mat.node_tree.nodes if node.type == "BSDF_PRINCIPLED"), None)
+    if bsdf:
+        bsdf.inputs["Base Color"].default_value = rgba
+        if "Roughness" in bsdf.inputs:
+            bsdf.inputs["Roughness"].default_value = 0.82
+    applied_palette[name] = value
 
 mesh_names = sorted(obj.name for obj in bpy.data.objects if obj.type == "MESH")
 armatures = sorted(obj.name for obj in bpy.data.objects if obj.type == "ARMATURE")
@@ -53,4 +79,5 @@ print(json.dumps({
     "armatures": armatures,
     "actions": sorted(action.name for action in bpy.data.actions),
     "maxTexture": max_texture,
+    "palette": applied_palette,
 }, indent=2))

@@ -62,9 +62,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p assets/runtime/creatures
-          blender --background --python-exit-code 1 /tmp/lf-phase2-build/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/deer-phase2.glb" 512 '["Plane"]'
+          blender --background --python-exit-code 1 /tmp/lf-phase2-build/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/deer-phase2.glb" 512 '["Plane"]' '{"body":"#8b6b45","head":"#9c7851","Eye":"#17130f"}'
           blender --background --python-exit-code 1 "$(cat /tmp/lf-phase2-build/wolf.path)" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/wolf-phase2.glb" 512 '[]'
-          blender --background --python-exit-code 1 /tmp/lf-phase2-build/boar.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/boar-phase2.glb" 512 '[]'
+          blender --background --python-exit-code 1 /tmp/lf-phase2-build/boar.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/boar-phase2.glb" 512 '[]' '{"Material":"#5a4030"}'
           blender --background --python-exit-code 1 /tmp/lf-phase2-build/rabbit.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/rabbit-phase2.glb" 512 '["Plane","Camera","Hemi","Hemi.001","Lamp"]'
       - name: Build Phase 2 wildlife manifest
         run: node tools/build-phase2-wildlife-manifest.mjs /tmp/lf-phase2-build/source-hashes.json
