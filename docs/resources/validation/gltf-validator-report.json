@@ -3,9 +3,9 @@
   "validatorVersion": "2.0.0-dev.3.10",
   "generatedFromManifest": "docs/resources/VISUAL_ASSET_MANIFEST.json",
   "totals": {
-    "assets": 5,
+    "assets": 14,
     "errors": 0,
-    "warnings": 4
+    "warnings": 16
   },
   "reports": [
     {
@@ -341,6 +341,531 @@
         "maxUVs": 2,
         "maxInfluences": 4,
         "maxAttributes": 7
+      }
+    },
+    {
+      "id": "creature.deer.phase2",
+      "uri": "../../assets/runtime/creatures/deer-phase2.glb",
+      "bytes": 836972,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 3,
+        "infos": 9,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/31"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/32"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/33"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 599968
+          }
+        ],
+        "animationCount": 11,
+        "materialCount": 3,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 3,
+        "totalVertexCount": 3226,
+        "totalTriangleCount": 4784,
+        "maxUVs": 2,
+        "maxInfluences": 4,
+        "maxAttributes": 7
+      }
+    },
+    {
+      "id": "creature.wolf.phase2",
+      "uri": "../../assets/runtime/creatures/wolf-phase2.glb",
+      "bytes": 128968,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/24"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 90668
+          }
+        ],
+        "animationCount": 2,
+        "materialCount": 1,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 1,
+        "totalVertexCount": 1286,
+        "totalTriangleCount": 622,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "creature.boar.phase2",
+      "uri": "../../assets/runtime/creatures/boar-phase2.glb",
+      "bytes": 134080,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 2,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/32"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 62040
+          }
+        ],
+        "animationCount": 3,
+        "materialCount": 1,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 1,
+        "totalVertexCount": 445,
+        "totalTriangleCount": 572,
+        "maxUVs": 2,
+        "maxInfluences": 4,
+        "maxAttributes": 6
+      }
+    },
+    {
+      "id": "creature.rabbit.phase2",
+      "uri": "../../assets/runtime/creatures/rabbit-phase2.glb",
+      "bytes": 1044324,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 2,
+        "infos": 9,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_2"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_3"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_2"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/37"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/38"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 812080
+          }
+        ],
+        "animationCount": 9,
+        "materialCount": 2,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 2,
+        "totalVertexCount": 2916,
+        "totalTriangleCount": 2640,
+        "maxUVs": 4,
+        "maxInfluences": 4,
+        "maxAttributes": 10
+      }
+    },
+    {
+      "id": "player.phase2",
+      "uri": "../../assets/runtime/characters/player-phase2.glb",
+      "bytes": 872540,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 600228
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 9287,
+        "totalTriangleCount": 6264,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.villager-male.phase2",
+      "uri": "../../assets/runtime/characters/villager-male-phase2.glb",
+      "bytes": 644740,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 372440
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 4620,
+        "totalTriangleCount": 2524,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.villager-female.phase2",
+      "uri": "../../assets/runtime/characters/villager-female-phase2.glb",
+      "bytes": 831008,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 557608
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 7,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 7,
+        "totalVertexCount": 8374,
+        "totalTriangleCount": 5856,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.soldier-male.phase2",
+      "uri": "../../assets/runtime/characters/soldier-male-phase2.glb",
+      "bytes": 686920,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 414596
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 5514,
+        "totalTriangleCount": 2994,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.soldier-female.phase2",
+      "uri": "../../assets/runtime/characters/soldier-female-phase2.glb",
+      "bytes": 896244,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 623916
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 9716,
+        "totalTriangleCount": 7066,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
       }
     }
   ]

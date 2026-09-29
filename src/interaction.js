@@ -175,7 +175,7 @@ export const InteractionMixin = {
       this.hitStop = 0.05;
       for (const n of this.actors.npcs) if (n.home === s && n.pos.distanceTo(a.pos) < 60) n.fleeing = 25;
       if (a.hp <= 0) {
-        a.alive = false; a.deadTime = 0; a.group.rotation.z = 1.5;
+        a.alive = false; a.deadTime = 0; this.actors.markDead(a);
         s.rep = clamp(s.rep - 45, -100, 100);
         s.prosperity = clamp(s.prosperity - 0.06, 0, 1);
         s.population = Math.max(0, s.population - 1);

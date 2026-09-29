@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Living Frontier — Phase 2 Wildlife Review</title>
+<style>
+:root{color-scheme:dark;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0d1210;color:#e5e1d2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;grid-template-rows:auto 1fr;background:#0d1210}
+header{padding:10px 14px;background:#141c17;border-bottom:1px solid #334238}h1{font-size:15px;margin:0;color:#e0b661}#status{font-size:11px;color:#aab8ad}
+main{display:grid;grid-template-columns:1fr 230px;min-height:0}canvas{width:100%;height:100%;min-height:520px;display:block;touch-action:none}
+aside{padding:10px;border-left:1px solid #334238;background:#111713}button{width:100%;min-height:44px;margin:0 0 7px;background:#1a251e;color:#eee;border:1px solid #53675a;border-radius:5px}
+#details{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere}@media(max-width:700px){main{grid-template-columns:1fr;grid-template-rows:1fr auto}aside{border-left:0;border-top:1px solid #334238;display:grid;grid-template-columns:1fr 1fr;gap:6px}aside button{margin:0}#details{grid-column:1/-1}canvas{min-height:58vh}}
+</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<header><h1>THE LIVING FRONTIER · PHASE 2 WILDLIFE REVIEW</h1><div id="status">Loading…</div></header>
+<main><canvas id="c"></canvas><aside><div id="buttons"></div><button id="reset">Reset camera</button><div id="details"></div></aside></main>
+<script type="module">
+import * as THREE from 'three';
+import { AssetManager } from './src/assets/asset-manager.js';
+import { ClipPlayer } from './src/assets/animation-runtime.js';
+const ids=['creature.deer.phase2','creature.wolf.phase2','creature.boar.phase2','creature.rabbit.phase2'];
+const canvas=document.querySelector('#c'),status=document.querySelector('#status'),details=document.querySelector('#details'),buttons=document.querySelector('#buttons');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true}); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x151b17); scene.add(new THREE.HemisphereLight(0xe8eadb,0x263026,2.2)); const key=new THREE.DirectionalLight(0xfff0d0,2.8); key.position.set(5,9,7); scene.add(key);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(6,64),new THREE.MeshStandardMaterial({color:0x263329,roughness:1})); ground.rotation.x=-Math.PI/2; scene.add(ground);
+const camera=new THREE.PerspectiveCamera(42,1,.03,80); let yaw=.7,pitch=.18,distance=5,targetY=.8,fitDistance=5,fitTargetY=.8,drag=null,current=null,clip=null; const clock=new THREE.Clock(),assets=new AssetManager(); const results={};
+function resize(){const r=canvas.getBoundingClientRect();renderer.setSize(Math.max(1,Math.round(r.width)),Math.max(1,Math.round(r.height)),false);camera.aspect=r.width/Math.max(1,r.height);camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+function cameraUpdate(){const cp=Math.cos(pitch);camera.position.set(Math.sin(yaw)*cp*distance,targetY+Math.sin(pitch)*distance,Math.cos(yaw)*cp*distance);camera.lookAt(0,targetY,0)}
+canvas.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw-=(e.clientX-drag[0])*.008;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-drag[1])*.006,-.15,1);drag=[e.clientX,e.clientY]});canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('wheel',e=>{e.preventDefault();distance=THREE.MathUtils.clamp(distance+e.deltaY*.005,1.4,12)},{passive:false});document.querySelector('#reset').onclick=()=>{yaw=.7;pitch=.18;distance=fitDistance;targetY=fitTargetY};
+async function show(id){clip?.stop();clip=null;if(current){scene.remove(current.root);assets.release(current);current=null}const h=await assets.acquire(id);current=h;scene.add(h.root);clip=new ClipPlayer(h.root,h.animations);const chosen=clip.play(['idle','stand','default','basic','walk','walking','run','running']);let meshes=0,skinned=0,tris=0;h.root.traverse(o=>{if(!o.isMesh)return;meshes++;if(o.isSkinnedMesh)skinned++;tris+=o.geometry?.index?o.geometry.index.count/3:(o.geometry?.attributes?.position?.count||0)/3});const box=new THREE.Box3().setFromObject(h.root),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());fitDistance=THREE.MathUtils.clamp(Math.max(size.x,size.y,size.z)*2.2,2,5.5);fitTargetY=center.y;distance=fitDistance;targetY=fitTargetY;yaw=.7;pitch=.18;cameraUpdate();const r={id,meshes,skinned,triangles:Math.round(tris),animations:h.animations.map(a=>a.name),clip:chosen?.name||null,size:size.toArray(),nodeNames:h.record.stats.nodeNames};results[id]=r;status.textContent=id;details.textContent=JSON.stringify(r,null,2);return r}
+for(const id of ids){const b=document.createElement('button');b.textContent=id.replace('creature.','').replace('.phase2','');b.onclick=()=>show(id).catch(fail);buttons.appendChild(b)}
+function fail(e){console.error(e);status.textContent='FAILED: '+(e?.message||e);window.__LF_WILDLIFE.error=e?.message||String(e)}
+window.__LF_WILDLIFE={ready:false,error:null,results,show,cameraState:()=>({yaw,pitch,distance,targetY,fitDistance,fitTargetY}),rendererInfo:()=>({memory:{...renderer.info.memory},render:{...renderer.info.render}})};
+(async()=>{await assets.loadManifest();for(const id of ids)await show(id);window.__LF_WILDLIFE.ready=true;status.textContent='Wildlife review ready'})().catch(fail);
+function frame(){clip?.update(Math.min(clock.getDelta(),.05));cameraUpdate();renderer.render(scene,camera);requestAnimationFrame(frame)}frame();
+</script></body></html>

@@ -1,0 +1,107 @@
+name: Phase 2 human build
+
+concurrency:
+  group: phase2-asset-build
+  cancel-in-progress: false
+
+on:
+  push:
+    branches:
+      - phase2/living-actors
+    paths:
+      - '.github/workflows/phase2-human-build.yml'
+      - 'tools/blender-export-phase2-human.py'
+      - 'tools/build-phase2-human-manifest.mjs'
+      - 'tools/phase2-human-browser-smoke.mjs'
+      - 'phase2-human-probe.html'
+      - 'asset-policy.json'
+      - 'tools/asset-manifest-check.mjs'
+      - 'docs/resources/visual-licenses.json'
+      - 'docs/resources/visual-provenance.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-humans:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync latest Phase 2 branch state
+        run: |
+          set -euo pipefail
+          git fetch origin phase2/living-actors
+          git reset --hard origin/phase2/living-actors
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install build and browser tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends blender python3-numpy
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Acquire exact inspected human source
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/lf-phase2-human
+          cd /tmp/lf-phase2-human
+          curl -fL --retry 3 --retry-delay 2 -o humans.zip 'https://opengameart.org/sites/default/files/ultimate_animated_character_pack_by_quaternius.zip'
+          echo '0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da  humans.zip' | sha256sum -c -
+          unzip -q humans.zip -d humans
+          ROOT="$(find humans -type d -name Blends | head -n1)"
+          test -n "$ROOT"
+          realpath "$ROOT" > blends.path
+          for name in Viking_Male Worker_Male Worker_Female Soldier_Male Soldier_Female; do
+            test -f "$ROOT/$name.blend" || { echo "missing $name.blend"; exit 1; }
+          done
+
+      - name: Export production human GLBs
+        run: |
+          set -euo pipefail
+          ROOT="$(cat /tmp/lf-phase2-human/blends.path)"
+          mkdir -p assets/runtime/characters
+          blender --background "$ROOT/Viking_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/player-phase2.glb" 512 '[]' '{"Skin":"#9b6a4f"}'
+          blender --background "$ROOT/Worker_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-male-phase2.glb" 512 '[]' '{"Skin":"#b98260"}'
+          blender --background "$ROOT/Worker_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/villager-female-phase2.glb" 512 '[]' '{"Skin":"#8f604a"}'
+          blender --background "$ROOT/Soldier_Male.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-male-phase2.glb" 512 '[]' '{"Skin":"#7f5744"}'
+          blender --background "$ROOT/Soldier_Female.blend" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-human.py" -- "$GITHUB_WORKSPACE/assets/runtime/characters/soldier-female-phase2.glb" 512 '[]' '{"Skin":"#a76d50"}'
+
+      - name: Build human manifest
+        run: node tools/build-phase2-human-manifest.mjs 0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da
+
+      - name: Validate structural and existing game gates
+        run: |
+          set -euo pipefail
+          npm run assets
+          npm run check
+          npm run perf
+
+      - name: Real-browser human review probe
+        run: node tools/phase2-human-browser-smoke.mjs
+
+      - name: Upload human visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-human-review-screenshots
+          path: /tmp/lf-phase2-human-*.png
+          if-no-files-found: error
+
+      - name: Commit verified human build outputs
+        run: |
+          set -euo pipefail
+          git config user.name "living-frontier-human-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/runtime/characters/*-phase2.glb docs/resources/VISUAL_ASSET_MANIFEST.json docs/resources/validation/gltf-validator-report.json
+          if git diff --cached --quiet; then
+            echo "No human outputs changed."
+          else
+            git commit -m "Build verified Phase 2 human runtime assets"
+            git fetch origin phase2/living-actors
+            git rebase origin/phase2/living-actors
+            git push origin HEAD:phase2/living-actors
+          fi

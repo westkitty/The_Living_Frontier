@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#102b4e"/>
+      <stop offset="0.58" stop-color="#2e6d79"/>
+      <stop offset="1" stop-color="#d28c4f"/>
+    </linearGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#234c3f"/>
+      <stop offset="1" stop-color="#111f28"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#sky)"/>
+  <circle cx="735" cy="284" r="112" fill="#f5c56f" opacity="0.95"/>
+  <path d="M0 640 170 508 300 610 470 438 640 602 798 450 1024 620V1024H0Z" fill="#172f3c"/>
+  <path d="M0 730 206 590 364 724 570 546 758 708 910 580 1024 660V1024H0Z" fill="url(#land)"/>
+  <path d="M512 1024C500 848 532 704 610 584 650 522 691 478 748 432 688 554 684 678 730 806 758 884 780 960 784 1024Z" fill="#c18249" opacity="0.92"/>
+  <path d="M145 744 204 572 263 744ZM207 742 278 530 349 742Z" fill="#102a2c"/>
+  <path d="M780 762 839 590 898 762ZM842 760 913 548 984 760Z" fill="#102a2c"/>
+  <path d="M420 860 512 740 604 860 604 924 420 924Z" fill="#7a4b32"/>
+  <path d="M390 860 512 710 634 860Z" fill="#d49a56"/>
+  <rect x="478" y="858" width="68" height="66" rx="10" fill="#18313a"/>
+  <path d="M512 772 512 846M478 808 546 808" stroke="#f4d08c" stroke-width="16" stroke-linecap="round"/>
+</svg>

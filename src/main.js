@@ -16,7 +16,7 @@ import { DialogueMixin } from './dialogue.js';
 import { LoopMixin } from './loop.js';
 import { StreamingMixin } from './streaming.js';
 import { QuestMixin } from './quests.js';
-
+import { createActorAssetManager } from './assets/actor-visual.js';
 const $ = (s) => document.querySelector(s);
 
 class Game {
@@ -41,9 +41,8 @@ class Game {
     this.input = new Input(this.canvas);
     this.fx = new FX(this.scene, this.renderer, state);
     this.ui = new UI(state, this);
-
+    this.assets = createActorAssetManager();
     this.initStreaming();
-
     this.player = new Player(this.scene, state, this);
     this.actors = new ActorSystem(this.scene, state, this);
 

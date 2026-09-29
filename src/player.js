@@ -1,10 +1,10 @@
-// Third-person player: movement over the heightfield, smooth spring camera,
-// unified keyboard/mouse + touch input, stamina, damage and animation.
+// Third-person player: heightfield movement, spring camera, unified input, stamina, damage and animation.
 import * as THREE from 'three';
 import { WORLD, heightAt, normalAt } from './worldgen.js';
 import { clamp, lerp, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { CH } from './worldstate.js';
+import { attachPlayerVisual } from './assets/actor-visual.js';
 
 export class Input {
   constructor(dom) {
@@ -32,7 +32,6 @@ export class Input {
     });
     addEventListener('keyup', (e) => { this.keys[e.code] = false; });
     addEventListener('blur', () => { this.keys = {}; });
-
     // Mouse look (drag or pointer lock)
     const canvas = this.dom;
     canvas.addEventListener('mousedown', (e) => {
@@ -52,7 +51,6 @@ export class Input {
     });
     canvas.addEventListener('contextmenu', e => e.preventDefault());
     canvas.addEventListener('wheel', (e) => { this.zoom = (this.zoom || 0) + Math.sign(e.deltaY) * 0.6; e.preventDefault(); }, { passive: false });
-
     // Touch look on the right half of the screen
     this.touches = new Map();
     const startLook = (t) => { this.lookId = t.identifier; this.lastTX = t.clientX; this.lastTY = t.clientY; };
@@ -120,7 +118,7 @@ export class Player {
     this.scene = scene; this.state = state; this.world = world;
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     this.mat = mat;
-    this.group = new THREE.Group();
+    this.group = new THREE.Group(); this.fallbackRoot = new THREE.Group(); this.group.add(this.fallbackRoot);
     this.body = new THREE.Mesh(playerGeo('body'), mat);
     this.armL = new THREE.Mesh(playerGeo('armL'), mat);
     this.armR = new THREE.Mesh(playerGeo('armR'), mat);
@@ -130,9 +128,9 @@ export class Player {
     this.armR.position.set(-0.4, 0.72, 0);
     this.legL.position.set(0.16, 0.62, 0);
     this.legR.position.set(-0.16, 0.62, 0);
-    for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.group.add(m); }
+    for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.fallbackRoot.add(m); }
     scene.add(this.group);
-
+    this.visual = attachPlayerVisual(this, world);
     const p = state.player;
     this.pos = new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.1, p.z);
     this.vel = new THREE.Vector3();
@@ -160,7 +158,6 @@ export class Player {
     this.footTimer = 0;
     this.inWater = false;
   }
-
   damage(amount, source) {
     this.addShake(0.2 + Math.min(0.6, amount / 40));
     if (this.dead) return;
@@ -174,7 +171,6 @@ export class Player {
     }
   }
   heal(a) { this.hp = clamp(this.hp + a, 0, this.maxHp); }
-
   // the ground answers back differently depending on what you burned, built
   // or wore down: ash crunches, village paths are hard-packed, grass is soft
   footstepSound(st) {
@@ -185,24 +181,23 @@ export class Player {
     if (st.getGround(x, z, CH.LUSH) > 0.25) return 'step-grass';
     return 'step';
   }
-
   update(dt, input, camera) {
     const st = this.state;
     if (this.dead) {
       this.deathTimer += dt;
-      this.group.rotation.z = lerp(this.group.rotation.z, 1.5, dt * 3);
+      this.group.rotation.z = 0;
+      this.fallbackRoot.rotation.z = lerp(this.fallbackRoot.rotation.z, 1.5, dt * 3);
       if (this.deathTimer > 3.2) this.respawn();
+      this.visual?.update(dt, 'dead', 0);
       this.updateCamera(dt, camera, input);
       return;
     }
-    this.group.rotation.z = 0;
-
+    this.group.rotation.z = 0; this.fallbackRoot.rotation.z = 0;
     // --- gather input
     let [mx, my, sprintKey] = input.keyboardMove();
     if (input.move.lengthSq() > 0.001) { mx = input.move.x; my = input.move.y; }
     const moveLen = Math.min(1, Math.hypot(mx, my));
     const sprinting = (sprintKey || input.sprint) && moveLen > 0.4 && this.stamina > 2 && !this.crouched;
-
     // --- camera orientation from look input
     const sens = input.sensitivity || 1;
     this.camYaw -= input.look.x * sens;
@@ -306,6 +301,9 @@ export class Player {
     this.body.position.y = Math.abs(Math.sin(this.phase * 1.4)) * amp * 0.09 - (this.crouched ? 0.25 : 0);
     if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
 
+    const visualState = this.swing > 0 ? 'attack' : !this.grounded ? 'jump' : sp > 6 ? 'run' : sp > 0.2 ? 'walk' : 'idle';
+    this.visual?.update(dt, visualState, sp);
+
     this.updateCamera(dt, camera, input);
 
     // sync save-state
@@ -332,6 +330,7 @@ export class Player {
     this.hp = this.maxHp * 0.6;
     this.dead = false;
     this.group.rotation.z = 0;
+    this.fallbackRoot.rotation.z = 0;
     // you lose some cargo when you fall
     const inv = st.player.inv;
     for (const k in inv) inv[k] = Math.floor(inv[k] * 0.5);

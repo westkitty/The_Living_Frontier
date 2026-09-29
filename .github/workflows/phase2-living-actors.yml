@@ -1,0 +1,51 @@
+name: Phase 2 living actors
+
+on:
+  push:
+    branches:
+      - phase2/living-actors
+    paths:
+      - '.github/workflows/phase2-living-actors.yml'
+      - 'src/**'
+      - 'tools/phase2-browser-smoke.mjs'
+      - 'docs/phase2/**'
+      - 'OPERATIONAL_STATE.md'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'assets/runtime/**'
+      - 'docs/resources/**'
+      - 'asset-policy.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-living-actors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install project dependencies
+        run: |
+          set -euo pipefail
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Validate runtime assets
+        run: npm run assets
+      - name: Run existing game gates
+        run: |
+          set -euo pipefail
+          npm run check
+          npm run perf
+      - name: Prove live actor integration in Chromium
+        run: npm run phase2:browser
+      - name: Upload Phase 2A live-game screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-living-actors-screenshots
+          path: /tmp/lf-phase2-*.png
+          if-no-files-found: error
