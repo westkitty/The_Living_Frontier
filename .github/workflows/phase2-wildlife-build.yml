@@ -1,5 +1,9 @@
 name: Phase 2 wildlife build
-# Re-run marker: deterministic visit isolation + race-safe generated push.
+# Serialized with human builds; each job syncs the newest branch before generating shared manifests.
+
+concurrency:
+  group: phase2-asset-build
+  cancel-in-progress: false
 
 on:
   push:
@@ -26,6 +30,11 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - name: Sync latest Phase 2 branch state
+        run: |
+          set -euo pipefail
+          git fetch origin phase2/living-actors
+          git reset --hard origin/phase2/living-actors
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
