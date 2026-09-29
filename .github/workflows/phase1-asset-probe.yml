@@ -75,7 +75,6 @@ jobs:
           PINE="$(find nature -type f | grep -Ei '/glTF/Pine_1\.gltf$' | head -n1)"
           AXE="$(find props -type f | grep -Ei '/glTF/Axe_Bronze\.gltf$' | head -n1)"
           PLAYER="$(find human -type f | grep -Ei '/FBX/Animated Human\.fbx$' | head -n1)"
-          DEER="$(find deer -type f | grep -Ei '\.fbx$' | head -n1)"
           HUT="$(find village -type f | grep -Ei '/(house|building|hut|cabin)[^/]*\.(fbx|obj)$' | head -n1 || true)"
           if [ -z "$HUT" ]; then HUT="$(find village -type f | grep -Ei '\.(fbx|obj)$' | head -n1)"; fi
 
@@ -89,7 +88,6 @@ jobs:
           printf '%s\n' "$AXE" > axe.path
           printf '%s\n' "$HUT" > hut.path
           printf '%s\n' "$PLAYER" > player.path
-          printf '%s\n' "$DEER" > deer.path
 
       - name: Convert to browser runtime GLB
         shell: bash
