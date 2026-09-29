@@ -3,9 +3,9 @@
   "validatorVersion": "2.0.0-dev.3.10",
   "generatedFromManifest": "docs/resources/VISUAL_ASSET_MANIFEST.json",
   "totals": {
-    "assets": 9,
+    "assets": 14,
     "errors": 0,
-    "warnings": 11
+    "warnings": 16
   },
   "reports": [
     {
@@ -651,6 +651,221 @@
         "maxUVs": 4,
         "maxInfluences": 4,
         "maxAttributes": 10
+      }
+    },
+    {
+      "id": "player.phase2",
+      "uri": "../../assets/runtime/characters/player-phase2.glb",
+      "bytes": 872528,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 600228
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 9287,
+        "totalTriangleCount": 6264,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.villager-male.phase2",
+      "uri": "../../assets/runtime/characters/villager-male-phase2.glb",
+      "bytes": 644728,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 372440
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 4620,
+        "totalTriangleCount": 2524,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.villager-female.phase2",
+      "uri": "../../assets/runtime/characters/villager-female-phase2.glb",
+      "bytes": 830996,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 557608
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 7,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 7,
+        "totalVertexCount": 8374,
+        "totalTriangleCount": 5856,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.soldier-male.phase2",
+      "uri": "../../assets/runtime/characters/soldier-male-phase2.glb",
+      "bytes": 686908,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 414596
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 5514,
+        "totalTriangleCount": 2994,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
+      }
+    },
+    {
+      "id": "human.soldier-female.phase2",
+      "uri": "../../assets/runtime/characters/soldier-female-phase2.glb",
+      "bytes": 896232,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/23"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 623916
+          }
+        ],
+        "animationCount": 17,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 9716,
+        "totalTriangleCount": 7066,
+        "maxUVs": 0,
+        "maxInfluences": 4,
+        "maxAttributes": 4
       }
     }
   ]
