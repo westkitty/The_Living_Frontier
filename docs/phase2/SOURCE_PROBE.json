@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T04:11:39.798Z",
+  "candidates": {
+    "wolf": {
+      "sourcePage": "https://opengameart.org/content/animated-animales-low-poly",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/Animal%20Pack%20Vol.2%20by%20%40Quaternius.zip",
+      "creator": "quaternius",
+      "license": "CC0-1.0",
+      "sha256": "6d8f6789d65dbdb352ebad98a4209f26b41b384e87d81bc05e9ca76139db1248",
+      "inventory": [
+        "Animal Pack Vol.2 by @Quaternius/Blends/Cat.blend",
+        "Animal Pack Vol.2 by @Quaternius/Blends/Dog.blend",
+        "Animal Pack Vol.2 by @Quaternius/Blends/Eagle.blend",
+        "Animal Pack Vol.2 by @Quaternius/Blends/Piranha.blend",
+        "Animal Pack Vol.2 by @Quaternius/Blends/Wolf.blend",
+        "Animal Pack Vol.2 by @Quaternius/FBX/Cat.fbx",
+        "Animal Pack Vol.2 by @Quaternius/FBX/Dog.fbx",
+        "Animal Pack Vol.2 by @Quaternius/FBX/Eagle.fbx",
+        "Animal Pack Vol.2 by @Quaternius/FBX/Piranha.fbx",
+        "Animal Pack Vol.2 by @Quaternius/FBX/Wolf.fbx",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Cat.mtl",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Cat.obj",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Dog.mtl",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Dog.obj",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Eagle.mtl",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Eagle.obj",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Piranha.mtl",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Piranha.obj",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Wolf.mtl",
+        "Animal Pack Vol.2 by @Quaternius/OBJ/Wolf.obj",
+        "Animal Pack Vol.2 by @Quaternius/Preview.png"
+      ],
+      "inspection": {
+        "label": "wolf",
+        "sourceFile": "/tmp/lf-phase2-sources/wolf/Animal Pack Vol.2 by @Quaternius/Blends/Wolf.blend",
+        "objects": [
+          {
+            "name": "WolfArmature",
+            "type": "ARMATURE",
+            "parent": null,
+            "dimensions": [
+              9.664596,
+              1.73192,
+              3.929225
+            ]
+          },
+          {
+            "name": "Wolf",
+            "type": "MESH",
+            "parent": "WolfArmature",
+            "dimensions": [
+              2.214839,
+              5.247888,
+              10.000752
+            ]
+          }
+        ],
+        "armatures": [
+          {
+            "name": "WolfArmature",
+            "bones": [
+              "Bone",
+              "Bone.001",
+              "Bone.002",
+              "Bone.003",
+              "Bone.014",
+              "Bone.015",
+              "Bone.016",
+              "Bone.017",
+              "Bone.018",
+              "Bone.019",
+              "Bone.004",
+              "Bone.005",
+              "Bone.006",
+              "Bone.007",
+              "Bone.008",
+              "Bone.009",
+              "Bone.010",
+              "Bone.011",
+              "Bone.012",
+              "Bone.013",
+              "IKFrontRight",
+              "IKFrontLeft",
+              "IKBackRight",
+              "IKBackLeft"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "name": "Idle",
+            "frameRange": [
+              0,
+              40
+            ],
+            "fcurves": 240
+          },
+          {
+            "name": "Walking",
+            "frameRange": [
+              0,
+              40
+            ],
+            "fcurves": 240
+          }
+        ],
+        "images": []
+      }
+    },
+    "humans": {
+      "sourcePage": "https://opengameart.org/content/animated-characters-pack",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/ultimate_animated_character_pack_by_quaternius.zip",
+      "creator": "quaternius",
+      "license": "CC0-1.0",
+      "sha256": "0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da",
+      "inventory": [
+        "Ultimate Animated Character Pack - Nov 2019/Blends/BaseCharacter.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/BlueSoldier_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/BlueSoldier_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual2_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual2_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual3_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual3_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual_Bald.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Casual_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Chef_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Chef_Hat.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Chef_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Cow.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Cowboy_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Cowboy_Hair.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Cowboy_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Doctor_Female_Old.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Doctor_Female_Young.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Doctor_Male_Old.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Doctor_Male_Young.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Elf.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Goblin_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Goblin_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Kimono_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Kimono_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Knight_Golden_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Knight_Golden_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Knight_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Ninja_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Ninja_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Ninja_Male_Hair.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Ninja_Sand.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Ninja_Sand_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/OldClassy_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/OldClassy_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Pirate_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Pirate_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Pug.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Soldier_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Soldier_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Suit_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Suit_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/VikingHelmet.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Viking_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Viking_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Witch.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Wizard.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Worker_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Worker_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Zombie_Female.blend",
+        "Ultimate Animated Character Pack - Nov 2019/Blends/Zombie_Male.blend",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/BaseCharacter.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/BlueSoldier_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/BlueSoldier_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual2_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual2_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual3_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual3_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual_Bald.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Casual_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Chef_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Chef_Hat.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Chef_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Cow.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Cowboy_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Cowboy_Hair.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Cowboy_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Doctor_Female_Old.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Doctor_Female_Young.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Doctor_Male_Old.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Doctor_Male_Young.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Elf.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Goblin_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Goblin_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Kimono_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Kimono_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Knight_Golden_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Knight_Golden_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Knight_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Ninja_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Ninja_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Ninja_Male_Hair.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Ninja_Sand.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Ninja_Sand_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/OldClassy_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/OldClassy_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Pirate_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Pirate_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Pug.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Soldier_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Soldier_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Suit_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Suit_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/VikingHelmet.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Viking_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Viking_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Witch.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Wizard.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Worker_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Worker_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Zombie_Female.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/FBX/Zombie_Male.fbx",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BaseCharacter.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BaseCharacter.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BlueSoldier_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BlueSoldier_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BlueSoldier_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/BlueSoldier_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual2_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual2_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual2_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual2_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual3_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual3_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual3_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual3_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Bald.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Bald.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Casual_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Hat.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Hat.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Chef_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cow.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cow.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Hair.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Hair.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Cowboy_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Female_Old.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Female_Old.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Female_Young.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Female_Young.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Male_Old.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Male_Old.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Male_Young.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Doctor_Male_Young.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Elf.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Elf.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Goblin_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Goblin_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Goblin_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Goblin_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Kimono_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Kimono_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Kimono_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Kimono_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Golden_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Golden_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Golden_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Golden_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Knight_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Male_Hair.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Male_Hair.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Sand.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Sand.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Sand_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Ninja_Sand_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/OldClassy_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/OldClassy_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/OldClassy_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/OldClassy_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pirate_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pirate_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pirate_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pirate_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pug.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Pug.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Soldier_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Soldier_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Soldier_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Soldier_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Suit_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Suit_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Suit_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Suit_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/VikingHelmet.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/VikingHelmet.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Viking_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Viking_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Viking_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Viking_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Witch.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Witch.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Wizard.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Wizard.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Worker_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Worker_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Worker_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Worker_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Female.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Female.obj",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Male.mtl",
+        "Ultimate Animated Character Pack - Nov 2019/OBJ/Zombie_Male.obj",
+        "Ultimate Animated Character Pack - Nov 2019/Preview.png"
+      ]
+    },
+    "rabbit": {
+      "sourcePage": "https://opengameart.org/content/rabbit-0",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/rabbit.blend",
+      "creator": "CDmir / TinyWorlds",
+      "license": "CC0-1.0",
+      "sha256": "bb6deef1ee91b21380355138374cae87946451ce864502b1af68eb60f4750843",
+      "inspection": {
+        "label": "rabbit",
+        "sourceFile": "/tmp/lf-phase2-sources/rabbit.blend",
+        "objects": [
+          {
+            "name": "Armature",
+            "type": "ARMATURE",
+            "parent": null,
+            "dimensions": [
+              7.251127,
+              14.021702,
+              15.404456
+            ]
+          },
+          {
+            "name": "Camera",
+            "type": "CAMERA",
+            "parent": null,
+            "dimensions": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Hemi",
+            "type": "LIGHT",
+            "parent": null,
+            "dimensions": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Hemi.001",
+            "type": "LIGHT",
+            "parent": null,
+            "dimensions": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Lamp",
+            "type": "LIGHT",
+            "parent": null,
+            "dimensions": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Fur",
+            "type": "MESH",
+            "parent": "Armature",
+            "dimensions": [
+              8.387063,
+              13.62952,
+              10.725765
+            ]
+          },
+          {
+            "name": "Plane",
+            "type": "MESH",
+            "parent": null,
+            "dimensions": [
+              36.301956,
+              36.301956,
+              0
+            ]
+          },
+          {
+            "name": "Rabbit",
+            "type": "MESH",
+            "parent": "Armature",
+            "dimensions": [
+              9.944171,
+              15.485514,
+              15.059041
+            ]
+          }
+        ],
+        "armatures": [
+          {
+            "name": "Armature",
+            "bones": [
+              "Main",
+              "IK_FrontPaw_L",
+              "IK_FrontPaw_R",
+              "IK_BackPaw_L",
+              "IK_BackPaw_R",
+              "IK_Spine.001",
+              "IK_Head",
+              "IK_FrontUpLeg_L",
+              "IK_FrontUpLeg_R",
+              "IK_BackUpLeg_L",
+              "IK_BackUpLeg_R",
+              "Hips",
+              "Spine",
+              "Spine.001",
+              "Neck",
+              "Head",
+              "IK_Ear_L",
+              "Ear_L",
+              "Ear_L.001",
+              "Ear_R",
+              "Ear_R.001",
+              "IK_Ear_R",
+              "FrontUpLeg_L",
+              "FrontLeg_L",
+              "FrontPaw_L",
+              "FrontUpLeg_R",
+              "FrontLeg_R",
+              "FrontPaw_R",
+              "BackUpLeg_L",
+              "BackLeg_L",
+              "BackLeg_L.001",
+              "BackPaw_L",
+              "BackUpLeg_R",
+              "BackLeg_R",
+              "BackLeg_R.001",
+              "BackPaw_R",
+              "Tail"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "name": "Basic",
+            "frameRange": [
+              0,
+              0
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Dead",
+            "frameRange": [
+              0,
+              0
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Dying.000",
+            "frameRange": [
+              0,
+              20
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Dying.001",
+            "frameRange": [
+              0,
+              20
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Guard",
+            "frameRange": [
+              0,
+              0
+            ],
+            "fcurves": 0
+          },
+          {
+            "name": "Guarding",
+            "frameRange": [
+              0,
+              400
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Jump",
+            "frameRange": [
+              0,
+              24
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Running",
+            "frameRange": [
+              0,
+              16
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Sitting.000",
+            "frameRange": [
+              0,
+              550
+            ],
+            "fcurves": 112
+          },
+          {
+            "name": "Sitting.001",
+            "frameRange": [
+              0,
+              550
+            ],
+            "fcurves": 112
+          }
+        ],
+        "images": [
+          {
+            "name": "Fur-skin",
+            "size": [
+              1024,
+              1024
+            ],
+            "packed": true,
+            "filepath": "//texture/Fur-skin.png"
+          },
+          {
+            "name": "Render Result",
+            "size": [
+              0,
+              0
+            ],
+            "packed": false,
+            "filepath": ""
+          },
+          {
+            "name": "rabbit-NORM",
+            "size": [
+              1024,
+              1024
+            ],
+            "packed": true,
+            "filepath": "//texture/rabbit-NORM.png"
+          },
+          {
+            "name": "rabbot-skinn",
+            "size": [
+              1024,
+              1024
+            ],
+            "packed": true,
+            "filepath": "//texture/rabbit-skinn.png"
+          }
+        ]
+      }
+    },
+    "boar": {
+      "sourcePage": "https://opengameart.org/content/boar",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/boar_0.blend",
+      "creator": "Teh_Bucket",
+      "license": "CC0-1.0",
+      "sha256": "c16625680d056f0402d1be209c41d16a63394aec94b082a63ad32f562e9f2d2d",
+      "inspection": {
+        "label": "boar",
+        "sourceFile": "/tmp/lf-phase2-sources/boar.blend",
+        "objects": [
+          {
+            "name": "boar_armature",
+            "type": "ARMATURE",
+            "parent": null,
+            "dimensions": [
+              1.216349,
+              3.343736,
+              2.41516
+            ]
+          },
+          {
+            "name": "boar_mesh.000",
+            "type": "MESH",
+            "parent": "boar_armature",
+            "dimensions": [
+              1.29071,
+              3.416988,
+              2.119863
+            ]
+          }
+        ],
+        "armatures": [
+          {
+            "name": "boar_armature",
+            "bones": [
+              "ROOT",
+              "body.001_L.004",
+              "body.001_R.004",
+              "body_L.004",
+              "body_R.004",
+              "tail.004",
+              "Hips",
+              "body",
+              "body.001",
+              "body.002",
+              "head",
+              "nose",
+              "body.001_L",
+              "body.001_L.001",
+              "body.001_L.003",
+              "body.001_L.002",
+              "body.001_R",
+              "body.001_R.001",
+              "body.001_R.003",
+              "body.001_R.002",
+              "tail",
+              "tail.001",
+              "tail.002",
+              "tail.003",
+              "body_L",
+              "body_L.001",
+              "body_L.003",
+              "body_L.002",
+              "body_R",
+              "body_R.001",
+              "body_R.003",
+              "body_R.002"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "name": "attack",
+            "frameRange": [
+              0,
+              19
+            ],
+            "fcurves": 77
+          },
+          {
+            "name": "default",
+            "frameRange": [
+              0,
+              0
+            ],
+            "fcurves": 247
+          },
+          {
+            "name": "walk",
+            "frameRange": [
+              0,
+              40
+            ],
+            "fcurves": 110
+          }
+        ],
+        "images": [
+          {
+            "name": "boar",
+            "size": [
+              1024,
+              1024
+            ],
+            "packed": true,
+            "filepath": "//boar.png"
+          }
+        ]
+      }
+    }
+  }
+}
