@@ -76,8 +76,8 @@ try {
       return {
         visual: actor.visual.snapshot(),
         rootParent: actor.visual.root?.parent === actor.group,
-        localY: actor.visual.root?.position.y ?? null,
-        expectedLocalY: -actor.def.y,
+        appliedLocalOffsetY: actor.visual.snapshot().appliedLocalOffsetY,
+        expectedLocalOffsetY: -actor.def.y,
         beforeRefs,
         afterAcquire,
         time0,
@@ -89,7 +89,7 @@ try {
     if (deer.visual.fallbackVisible || !deer.rootParent) throw new Error(`${name}: deer did not replace its procedural presentation`);
     if (!/run/i.test(deer.visual.activeClipName || '')) throw new Error(`${name}: deer flee state did not map to verified Run clip: ${deer.visual.activeClipName}`);
     if (deer.time1 - deer.time0 < 0.01) throw new Error(`${name}: deer animation mixer did not advance`);
-    if (Math.abs(deer.localY - deer.expectedLocalY) > 0.001) throw new Error(`${name}: deer visual ground offset is not isolated below gameplay root`);
+    if (Math.abs(deer.appliedLocalOffsetY - deer.expectedLocalOffsetY) > 0.001) throw new Error(`${name}: deer visual ground offset is not isolated below gameplay root`);
     if (deer.afterAcquire < deer.beforeRefs + 1) throw new Error(`${name}: deer asset reference was not acquired`);
 
     const canvas = page.locator('#gl');

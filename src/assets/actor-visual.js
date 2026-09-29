@@ -1,4 +1,5 @@
 import { ClipPlayer } from './animation-runtime.js';
+import { AssetManager } from './asset-manager.js';
 
 function clampTimeScale(value) {
   return Math.max(0.05, Math.min(4, Number.isFinite(value) ? value : 1));
@@ -50,6 +51,7 @@ export class ActorVisual {
       }
       const root = handle.root;
       root.name = `runtime-visual:${this.assetId}`;
+      this.presentationBaseY = root.position.y;
       root.position.y += this.localOffsetY;
       root.rotation.y += this.rotateY;
       root.traverse((object) => {
@@ -117,6 +119,7 @@ export class ActorVisual {
       activeClipName: this.activeClipName,
       fallbackVisible: this.fallbackRoot.visible,
       assetAttached: !!this.root && this.root.parent === this.gameplayRoot,
+      appliedLocalOffsetY: this.root ? this.root.position.y - this.presentationBaseY : null,
       error: this.error?.message || null,
     };
   }
@@ -133,4 +136,45 @@ export class ActorVisual {
     this.fallbackRoot.visible = true;
     this.status = 'disposed';
   }
+}
+
+
+export function createActorAssetManager() {
+  const assets = new AssetManager();
+  assets.preload(['player.phase1', 'creature.deer.phase1']).catch((error) => {
+    console.warn('[assets] Phase 2 warmup fell back to procedural visuals:', error?.message || error);
+  });
+  return assets;
+}
+
+export function attachPlayerVisual(player, world) {
+  return new ActorVisual({
+    gameplayRoot: player.group,
+    fallbackRoot: player.fallbackRoot,
+    assetManager: world.assets,
+    assetId: 'player.phase1',
+    clipMap: { dead: null, default: [] },
+    label: 'player',
+  });
+}
+
+export function attachDeerVisual(actor, world) {
+  return new ActorVisual({
+    gameplayRoot: actor.group,
+    fallbackRoot: actor.fallbackRoot,
+    assetManager: world.assets,
+    assetId: 'creature.deer.phase1',
+    localOffsetY: -actor.def.y,
+    clipMap: {
+      idle: ['Idle', 'Stand', 'LookAround'],
+      wander: ['Run'],
+      flee: ['Run'],
+      chase: ['Run'],
+      charge: ['Run'],
+      feed: ['Eat'],
+      default: ['Idle', 'Stand'],
+    },
+    timeScale: (state, speed) => state === 'idle' ? 1 : Math.max(0.45, Math.min(1.25, speed / actor.def.speed)),
+    label: 'deer',
+  });
 }

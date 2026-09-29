@@ -6,7 +6,7 @@ import { WORLD, FACTIONS, heightAt } from './worldgen.js';
 import { clamp, mulberry32, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { regionIndex, regionCenter, CH, DAY_LENGTH } from './worldstate.js';
-import { ActorVisual } from './assets/actor-visual.js';
+import { attachDeerVisual } from './assets/actor-visual.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 
@@ -72,8 +72,7 @@ export class Actor {
     const def = CREATURE_DEF[kind];
     this.kind = kind;
     this.def = def;
-    this.group = new THREE.Group();
-    this.fallbackRoot = new THREE.Group();
+    this.group = new THREE.Group(); this.fallbackRoot = new THREE.Group(); this.group.add(this.fallbackRoot);
     const mat = mats.get(kind);
     this.body = new THREE.Mesh(Actor.geoCache(kind, 'body'), mat);
     this.body.castShadow = true;
@@ -84,7 +83,6 @@ export class Actor {
     this.legsB.position.set(0, 0, zb);
     if (kind === 'human') { this.legsB.position.x = -0.32; this.legsF.position.x = 0.0; }
     this.fallbackRoot.add(this.body, this.legsF, this.legsB);
-    this.group.add(this.fallbackRoot);
     this.pos = new THREE.Vector3();
     this.vel = new THREE.Vector3();
     this.hp = def.hp;
@@ -127,36 +125,15 @@ export class ActorSystem {
     this.spawnTimer = 0;
     this.skirmish = 0;
   }
-
   spawnAnimal(kind, x, z) {
     const a = new Actor(kind, this.mats);
     a.setPos(x, heightAt(x, z) + a.def.y, z);
     a.region = regionIndex(x, z);
     this.scene.add(a.group);
-    if (kind === 'deer') {
-      a.visual = new ActorVisual({
-        gameplayRoot: a.group,
-        fallbackRoot: a.fallbackRoot,
-        assetManager: this.world.assets,
-        assetId: 'creature.deer.phase1',
-        localOffsetY: -a.def.y,
-        clipMap: {
-          idle: ['Idle', 'Stand', 'LookAround'],
-          wander: ['Run'],
-          flee: ['Run'],
-          chase: ['Run'],
-          charge: ['Run'],
-          feed: ['Eat'],
-          default: ['Idle', 'Stand'],
-        },
-        timeScale: (state, speed) => state === 'idle' ? 1 : Math.max(0.45, Math.min(1.25, speed / a.def.speed)),
-        label: 'deer',
-      });
-    }
+    if (kind === 'deer') a.visual = attachDeerVisual(a, this.world);
     this.animals.push(a);
     return a;
   }
-
   spawnNPC(settlement, idx) {
     const a = new Actor('human', this.mats);
     const mat = this.villagerMat;
@@ -172,7 +149,6 @@ export class ActorSystem {
     this.npcs.push(a);
     return a;
   }
-
   spawnSoldier(faction, x, z, squad) {
     const a = new Actor('human', this.mats);
     const m = this.humanMats[faction];
@@ -186,15 +162,12 @@ export class ActorSystem {
     this.soldiers.push(a);
     return a;
   }
-
   remove(a, list) {
-    a.visual?.dispose();
-    a.visual = null;
+    if (a.visual) { a.visual.dispose(); a.visual = null; }
     this.scene.remove(a.group);
     const i = list.indexOf(a);
     if (i >= 0) list.splice(i, 1);
   }
-
   // ------------------------------------------------------------ population
   manageSpawns(px, pz, dt) {
     this.spawnTimer -= dt;
@@ -211,7 +184,6 @@ export class ActorSystem {
     for (const a of [...this.soldiers]) {
       if (a.pos.distanceTo(this.world.player.pos) > 220) this.remove(a, this.soldiers);
     }
-
     // wildlife: sample nearby regions and spawn in proportion to population
     if (this.animals.length < this.maxAnimals) {
       for (let tries = 0; tries < 6 && this.animals.length < this.maxAnimals; tries++) {
@@ -235,7 +207,6 @@ export class ActorSystem {
         }
       }
     }
-
     // villagers
     for (let i = 0; i < st.settlements.length; i++) {
       const s = st.settlements[i];
@@ -246,7 +217,6 @@ export class ActorSystem {
       const have = this.npcs.filter(n => n.home === s).length;
       if (have < want) this.spawnNPC(s, have + i * 5);
     }
-
     // patrols: spawn a squad when the player is inside claimed territory
     const ri = regionIndex(px, pz);
     const region = st.regions[ri];
@@ -261,7 +231,6 @@ export class ActorSystem {
       }
     }
   }
-
   pickPatrolTarget(faction, x, z) {
     const st = this.state;
     let best = null, bv = -1;
@@ -276,7 +245,6 @@ export class ActorSystem {
     }
     return best || [x, z];
   }
-
   // ----------------------------------------------------------------- update
   update(dt, player) {
     const st = this.state;
