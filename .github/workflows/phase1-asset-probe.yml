@@ -1,4 +1,4 @@
-name: Phase 1 asset probe
+name: Phase 1 asset pipeline
 
 on:
   push:
@@ -6,47 +6,182 @@ on:
       - phase1/visual-asset-pipeline
     paths:
       - '.github/workflows/phase1-asset-probe.yml'
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  probe:
+  build-assets:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download approved CC0 source archives
+      - name: Install deterministic conversion tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends assimp-utils p7zip-full
+          npm install
+          npx playwright install chromium
+
+      - name: Acquire exact CC0 source archives
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/lf-assets
           cd /tmp/lf-assets
           curl -fL --retry 3 --retry-delay 2 -o nature.zip 'https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip'
-          curl -fL --retry 3 --retry-delay 2 -o village.zip 'https://opengameart.org/sites/default/files/medieval_village_megakitstandard.zip'
+          curl -fL --retry 3 --retry-delay 2 -o village.zip 'https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip'
           curl -fL --retry 3 --retry-delay 2 -o props.zip 'https://opengameart.org/sites/default/files/fantasy_props_megakitstandard.zip'
           curl -fL --retry 3 --retry-delay 2 -o human.zip 'https://opengameart.org/sites/default/files/Animated%20Human%20by%20%40Quaternius_0.zip'
-          curl -fL --retry 3 --retry-delay 2 -o animations.zip 'https://opengameart.org/sites/default/files/universal_animation_librarystandard.zip'
-          curl -fL --retry 3 --retry-delay 2 -o animals.zip 'https://opengameart.org/sites/default/files/Animals%20Pack%20by%20Quaternius.zip'
-          sha256sum *.zip
+          curl -fL --retry 3 --retry-delay 2 -o deer.7z 'https://opengameart.org/sites/default/files/deer-female-FBX.7z'
+          cat > expected.sha256 <<'EOF'
+          298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9  nature.zip
+          0bc1e5843c9f245c44bda82f97f738b09f88fe51bb34d2a69a7847a969f868e3  props.zip
+          dcd72162b5e59495efc629fb624d9e1deb12124b68291ad4fa3ce66b4fc24db3  human.zip
+          EOF
+          sha256sum -c expected.sha256
+          sha256sum village.zip deer.7z
+          node - <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const files={nature:'nature.zip',village:'village.zip',props:'props.zip',human:'human.zip',deer:'deer.7z'};
+          const out={};
+          for(const [k,f] of Object.entries(files)) out[k]=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+          fs.writeFileSync('source-hashes.json', JSON.stringify(out,null,2)+'\n');
+          NODE
+          cat source-hashes.json
 
-      - name: Inventory archive model files
+      - name: Preserve untouched source archives as release evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           cd /tmp/lf-assets
-          for z in *.zip; do
-            echo "===== $z ====="
-            unzip -Z1 "$z" | grep -Ei '\.(gltf|glb|fbx|obj|blend|png|jpg|jpeg)$' | head -n 250 || true
-          done
+          if ! gh release view phase1-source-archives >/dev/null 2>&1; then
+            gh release create phase1-source-archives --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "Phase 1 source archives" --notes "Untouched CC0 source downloads used for the Living Frontier Phase 1 asset-pipeline proof. Runtime files are derived GLBs; exact hashes are recorded in the repository."
+          fi
+          gh release upload phase1-source-archives nature.zip village.zip props.zip human.zip deer.7z --repo "${GITHUB_REPOSITORY}" --clobber
 
-      - name: Find phase-one representative candidates
+      - name: Extract sources and select representative models
         shell: bash
         run: |
           set -euo pipefail
           cd /tmp/lf-assets
-          for z in nature.zip village.zip props.zip human.zip animations.zip animals.zip; do
-            echo "===== candidate matches in $z ====="
-            unzip -Z1 "$z" | grep -Ei '(pine|tree|hut|house|cabin|axe|crate|human|man|male|idle|walk|run|deer|stag|elk|animal).*(gltf|glb|fbx|obj|blend)$' | head -n 150 || true
+          for p in nature village props human; do mkdir -p "$p"; unzip -q "$p.zip" -d "$p"; done
+          mkdir -p deer
+          7z x -y deer.7z -odeer >/dev/null
+
+          PINE="$(find nature -type f | grep -Ei '/glTF/Pine_1\.gltf$' | head -n1)"
+          AXE="$(find props -type f | grep -Ei '/glTF/Axe_Bronze\.gltf$' | head -n1)"
+          PLAYER="$(find human -type f | grep -Ei '/FBX/Animated Human\.fbx$' | head -n1)"
+          DEER="$(find deer -type f | grep -Ei '\.fbx$' | head -n1)"
+          HUT="$(find village -type f | grep -Ei '/(house|building|hut|cabin)[^/]*\.(fbx|obj)$' | head -n1 || true)"
+          if [ -z "$HUT" ]; then HUT="$(find village -type f | grep -Ei '\.(fbx|obj)$' | head -n1)"; fi
+
+          for pair in "PINE:$PINE" "AXE:$AXE" "HUT:$HUT" "PLAYER:$PLAYER" "DEER:$DEER"; do
+            name="${pair%%:*}"; file="${pair#*:}"
+            test -n "$file" && test -f "$file" || { echo "missing representative $name"; exit 1; }
+            echo "$name=$file"
           done
+
+          printf '%s\n' "$PINE" > pine.path
+          printf '%s\n' "$AXE" > axe.path
+          printf '%s\n' "$HUT" > hut.path
+          printf '%s\n' "$PLAYER" > player.path
+          printf '%s\n' "$DEER" > deer.path
+
+      - name: Convert to browser runtime GLB
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/runtime/{props,vegetation,structures,characters,creatures}
+          cd /tmp/lf-assets
+          assimp export "$(cat pine.path)" "$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb" -f glb2
+          assimp export "$(cat axe.path)" "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" -f glb2
+          assimp export "$(cat hut.path)" "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" -f glb2
+          assimp export "$(cat player.path)" "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" -f glb2
+          assimp export "$(cat deer.path)" "$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb" -f glb2
+
+      - name: Vendor matching Three.js loader support
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p vendor/examples/jsm/loaders vendor/examples/jsm/utils
+          cp node_modules/three/examples/jsm/loaders/GLTFLoader.js vendor/examples/jsm/loaders/GLTFLoader.js
+          cp node_modules/three/examples/jsm/utils/BufferGeometryUtils.js vendor/examples/jsm/utils/BufferGeometryUtils.js
+          cp node_modules/three/examples/jsm/utils/SkeletonUtils.js vendor/examples/jsm/utils/SkeletonUtils.js
+
+      - name: Capture source-page evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/resources/evidence
+          curl -fsSL 'https://opengameart.org/content/stylized-nature-megakit' -o docs/resources/evidence/quaternius-stylized-nature-megakit.html
+          curl -fsSL 'https://opengameart.org/content/lowpoly-medieval-village-pack' -o docs/resources/evidence/quaternius-medieval-village-pack.html
+          curl -fsSL 'https://opengameart.org/content/fantasy-props-megakit' -o docs/resources/evidence/quaternius-fantasy-props-megakit.html
+          curl -fsSL 'https://opengameart.org/content/animated-human-low-poly' -o docs/resources/evidence/quaternius-animated-human.html
+          curl -fsSL 'https://opengameart.org/content/deer-female' -o docs/resources/evidence/cdmir-deer-female.html
+
+      - name: Build and validate manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/build-phase1-manifest.mjs /tmp/lf-assets/source-hashes.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const hashes=JSON.parse(fs.readFileSync('/tmp/lf-assets/source-hashes.json','utf8'));
+          const p='docs/resources/visual-provenance.json';
+          const data=JSON.parse(fs.readFileSync(p,'utf8'));
+          const map={
+            'quaternius-stylized-nature-megakit':'nature',
+            'quaternius-medieval-village-pack':'village',
+            'quaternius-fantasy-props-megakit':'props',
+            'quaternius-animated-human':'human',
+            'cdmir-deer-female':'deer'
+          };
+          for(const r of data.records){
+            const k=map[r.id]; if(!k) continue;
+            r.archiveSha256=hashes[k];
+            r.state='inspected';
+          }
+          fs.writeFileSync(p,JSON.stringify(data,null,2)+'\n');
+          NODE
+          npm run assets
+
+      - name: Run existing project gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          npm run perf
+
+      - name: Real-browser asset probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run assets:browser
+
+      - name: Upload visual probe evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase1-asset-probe-screenshots
+          path: /tmp/lf-phase1-*.png
+          if-no-files-found: error
+
+      - name: Commit verified Phase 1 runtime package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "living-frontier-asset-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/runtime vendor/examples docs/resources/VISUAL_ASSET_MANIFEST.json docs/resources/visual-provenance.json docs/resources/evidence package-lock.json
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+          else
+            git commit -m "Build verified Phase 1 runtime asset package"
+            git push origin HEAD:phase1/visual-asset-pipeline
+          fi
