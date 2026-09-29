@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends assimp-utils p7zip-full blender
+          sudo apt-get install -y --no-install-recommends assimp-utils p7zip-full blender python3-numpy
           npm install
           npx playwright install chromium
 
@@ -95,11 +95,19 @@ jobs:
           set -euo pipefail
           mkdir -p assets/runtime/{props,vegetation,structures,characters,creatures}
           cd /tmp/lf-assets
-          assimp export "$(cat pine.path)" "$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb" -f glb2
-          assimp export "$(cat axe.path)" "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" -f glb2
-          assimp export "$(cat hut.path)" "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" -f glb2
-          assimp export "$(cat player.path)" "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" -f glb2
+          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.gltf(filepath=r'$(cat pine.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb', export_format='GLB')"
+          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.gltf(filepath=r'$(cat axe.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/props/axe.glb', export_format='GLB')"
+          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.fbx(filepath=r'$(cat hut.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb', export_format='GLB')"
+          blender --background --factory-startup --python-expr "import bpy; bpy.ops.import_scene.fbx(filepath=r'$(cat player.path)'); bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/characters/player.glb', export_format='GLB')"
           blender --background /tmp/lf-assets/deer.blend --python-expr "import bpy; bpy.ops.export_scene.gltf(filepath=r'$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb', export_format='GLB')"
+          for f in \
+            "$GITHUB_WORKSPACE/assets/runtime/vegetation/pine.glb" \
+            "$GITHUB_WORKSPACE/assets/runtime/props/axe.glb" \
+            "$GITHUB_WORKSPACE/assets/runtime/structures/hut.glb" \
+            "$GITHUB_WORKSPACE/assets/runtime/characters/player.glb" \
+            "$GITHUB_WORKSPACE/assets/runtime/creatures/deer.glb"; do
+            test -s "$f" || { echo "missing converted GLB: $f"; exit 1; }
+          done
 
       - name: Vendor matching Three.js loader support
         shell: bash
