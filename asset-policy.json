@@ -29,12 +29,20 @@
     "phase1SingleAnimatedBytes": 8388608,
     "phase1TotalRuntimeBytes": 20971520,
     "phase2SingleAnimatedBytes": 8388608,
-    "phase2WildlifeTotalRuntimeBytes": 33554432
+    "phase2WildlifeTotalRuntimeBytes": 33554432,
+    "phase2HumanTotalRuntimeBytes": 33554432
   },
   "phase2WildlifeRequiredIds": [
     "creature.deer.phase2",
     "creature.wolf.phase2",
     "creature.boar.phase2",
     "creature.rabbit.phase2"
+  ],
+  "phase2HumanRequiredIds": [
+    "player.phase2",
+    "human.villager-male.phase2",
+    "human.villager-female.phase2",
+    "human.soldier-male.phase2",
+    "human.soldier-female.phase2"
   ]
 }

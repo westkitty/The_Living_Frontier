@@ -72,6 +72,15 @@
       "archiveSha256": "c16625680d056f0402d1be209c41d16a63394aec94b082a63ad32f562e9f2d2d",
       "confidence": "A",
       "state": "inspected"
+    },
+    {
+      "id": "quaternius-animated-characters-pack",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/animated-characters-pack",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/ultimate_animated_character_pack_by_quaternius.zip",
+      "archiveSha256": "0295062cbc72da52ee804f39ac38694901a40458011f9b2638fc7ef13ed509da",
+      "confidence": "A",
+      "state": "inspected"
     }
   ]
 }

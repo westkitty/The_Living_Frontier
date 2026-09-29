@@ -20,3 +20,5 @@ The following CC0 sources are used as Phase 2 production candidates and remain s
 - Teh_Bucket — Boar
 - CDmir — Deer Female (corrected runtime export)
 - Quaternius — LowPoly RPG Characters (human candidate pack under evaluation)
+
+- Quaternius — Animated Characters Pack (Phase 2 humans: player, villagers, patrols)

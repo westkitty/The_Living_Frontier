@@ -153,6 +153,23 @@
       "accountRequired": false,
       "paymentRequired": false,
       "verifiedDate": "2026-09-29"
+    },
+    {
+      "id": "quaternius-animated-characters-pack-cc0",
+      "provider": "OpenGameArt",
+      "creator": "quaternius",
+      "itemTitle": "Animated Characters Pack",
+      "itemUrl": "https://opengameart.org/content/animated-characters-pack",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercialUse": true,
+      "modificationAllowed": true,
+      "rawRedistributionAllowed": true,
+      "browserDistributionAllowed": true,
+      "attributionRequired": false,
+      "accountRequired": false,
+      "paymentRequired": false,
+      "verifiedDate": "2026-09-29"
     }
   ]
 }
