@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends blender p7zip-full
+          sudo apt-get install -y --no-install-recommends blender p7zip-full python3-numpy
           npm install
           npx playwright install --with-deps chromium
       - name: Acquire exact inspected sources
@@ -53,7 +53,7 @@ jobs:
           unzip -q wolf.zip -d wolf
           WOLF_BLEND="$(find wolf -type f -path '*/Blends/Wolf.blend' | head -n1)"
           test -f "$WOLF_BLEND"
-          printf '%s\n' "$WOLF_BLEND" > wolf.path
+          realpath "$WOLF_BLEND" > wolf.path
           node - <<'NODE'
           const fs=require('fs'),crypto=require('crypto');const files={deer:'deer.blend',wolf:'wolf.zip',rabbit:'rabbit.blend',boar:'boar.blend'},out={};for(const[k,f]of Object.entries(files))out[k]=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');fs.writeFileSync('source-hashes.json',JSON.stringify(out,null,2)+'\n');
           NODE
@@ -61,10 +61,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p assets/runtime/creatures
-          blender --background /tmp/lf-phase2-build/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/deer-phase2.glb" 512 '["Plane"]'
-          blender --background "$(cat /tmp/lf-phase2-build/wolf.path)" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/wolf-phase2.glb" 512 '[]'
-          blender --background /tmp/lf-phase2-build/boar.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/boar-phase2.glb" 512 '[]'
-          blender --background /tmp/lf-phase2-build/rabbit.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/rabbit-phase2.glb" 512 '["Plane","Camera","Hemi","Hemi.001","Lamp"]'
+          blender --background --python-exit-code 1 /tmp/lf-phase2-build/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/deer-phase2.glb" 512 '["Plane"]'
+          blender --background --python-exit-code 1 "$(cat /tmp/lf-phase2-build/wolf.path)" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/wolf-phase2.glb" 512 '[]'
+          blender --background --python-exit-code 1 /tmp/lf-phase2-build/boar.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/boar-phase2.glb" 512 '[]'
+          blender --background --python-exit-code 1 /tmp/lf-phase2-build/rabbit.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/rabbit-phase2.glb" 512 '["Plane","Camera","Hemi","Hemi.001","Lamp"]'
       - name: Build Phase 2 wildlife manifest
         run: node tools/build-phase2-wildlife-manifest.mjs /tmp/lf-phase2-build/source-hashes.json
       - name: Validate structural and existing game gates
