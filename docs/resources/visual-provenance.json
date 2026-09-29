@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "records": [
+    {
+      "id": "quaternius-stylized-nature-megakit",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/stylized-nature-megakit",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip",
+      "archiveSha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+      "confidence": "A",
+      "state": "provenance-verified"
+    },
+    {
+      "id": "quaternius-fantasy-props-megakit",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/fantasy-props-megakit",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/fantasy_props_megakitstandard.zip",
+      "archiveSha256": "0bc1e5843c9f245c44bda82f97f738b09f88fe51bb34d2a69a7847a969f868e3",
+      "confidence": "A",
+      "state": "provenance-verified"
+    },
+    {
+      "id": "quaternius-animated-human",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/animated-human-low-poly",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/Animated%20Human%20by%20%40Quaternius_0.zip",
+      "archiveSha256": "dcd72162b5e59495efc629fb624d9e1deb12124b68291ad4fa3ce66b4fc24db3",
+      "confidence": "A",
+      "state": "provenance-verified"
+    },
+    {
+      "id": "quaternius-medieval-village-pack",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/lowpoly-medieval-village-pack",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/medieval_village_pack_-_dec_2020.zip",
+      "archiveSha256": null,
+      "confidence": "A",
+      "state": "rights-verified"
+    },
+    {
+      "id": "cdmir-deer-female",
+      "creator": "CDmir",
+      "sourcePage": "https://opengameart.org/content/deer-female",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/deer-female-FBX.7z",
+      "archiveSha256": null,
+      "confidence": "A",
+      "state": "rights-verified"
+    }
+  ]
+}
