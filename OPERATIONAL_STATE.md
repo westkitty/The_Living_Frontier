@@ -18,7 +18,9 @@ Player and actor gameplay roots remain authoritative. Runtime models attach belo
 
 ## Current bounded slice
 
-Integrate the existing verified `player.phase1` and `creature.deer.phase1` assets into the real game path before sourcing the remaining Phase 2 actor families.
+The player + deer integration architecture has passed live browser/behavior gates, but the Phase 1 fixture models failed manual production visual review. The adapter architecture is retained; the fixture art is rejected for promotion.
+
+Next: acquire and inspect the exact Phase 2 production candidates for humans, wolf, rabbit and boar, then generate corrected/new stable Phase 2 runtime IDs.
 
 ## Remaining Phase 2 work
 
