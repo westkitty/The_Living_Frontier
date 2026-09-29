@@ -108,7 +108,7 @@ async function show(id) {
   return result;
 }
 
-window.__LF_ASSET_PROBE = { ready: false, results: {}, show };
+window.__LF_ASSET_PROBE = { ready: false, results: {}, show, rendererInfo: () => ({ memory: { ...renderer.info.memory }, render: { ...renderer.info.render } }) };
 for (const [id, label] of ids) {
   const b = document.createElement('button');
   b.textContent = label; b.addEventListener('click', () => show(id).catch(fail)); buttons.appendChild(b);
