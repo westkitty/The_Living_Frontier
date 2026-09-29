@@ -48,16 +48,20 @@ try {
     }
     if (player.visual.fallbackVisible || !player.rootParent) throw new Error(`${name}: player presentation ownership is wrong`);
 
-    const movement = await page.evaluate(async () => {
+    await page.waitForFunction(() => window.GAME && !window.GAME.ui.blocking);
+    const movementStart = await page.evaluate(() => ({
+      position: window.GAME.player.pos.toArray(),
+      local: window.GAME.player.visual.root.position.toArray(),
+    }));
+    await page.keyboard.down('w');
+    await page.waitForTimeout(420);
+    await page.keyboard.up('w');
+    await page.waitForTimeout(80);
+    const movement = await page.evaluate((start) => {
       const game = window.GAME;
-      const before = game.player.pos.clone();
-      const localBefore = game.player.visual.root.position.clone();
-      game.input.keys.KeyW = true;
-      await new Promise((resolve) => setTimeout(resolve, 420));
-      game.input.keys.KeyW = false;
-      await new Promise((resolve) => setTimeout(resolve, 80));
-      const after = game.player.pos.clone();
-      const localAfter = game.player.visual.root.position.clone();
+      const after = game.player.pos.toArray();
+      const localAfter = game.player.visual.root.position.toArray();
+      const dist3 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
       const stateChecks = {};
       for (const [state, speed, clipToken] of [
         ['idle', 0, 'Idle'], ['walk', 4.6, 'Walk'], ['run', 9.2, 'Run'], ['attack', 0, 'SwordSlash']
@@ -69,12 +73,12 @@ try {
         stateChecks[state] = { clip: game.player.visual.activeClipName, time0, time1, clipToken };
       }
       return {
-        moved: before.distanceTo(after),
+        moved: dist3(start.position, after),
         rootMatchesState: game.player.group.position.distanceTo(game.player.pos),
-        presentationLocalDrift: localBefore.distanceTo(localAfter),
+        presentationLocalDrift: dist3(start.local, localAfter),
         stateChecks,
       };
-    });
+    }, movementStart);
     if (movement.moved < 0.1) throw new Error(`${name}: authoritative player movement did not advance`);
     if (movement.rootMatchesState > 0.001) throw new Error(`${name}: player render root diverged from gameplay state`);
     if (movement.presentationLocalDrift > 0.001) throw new Error(`${name}: animation presentation mutated gameplay-local placement`);
