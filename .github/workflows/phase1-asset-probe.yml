@@ -6,6 +6,13 @@ on:
       - phase1/visual-asset-pipeline
     paths:
       - '.github/workflows/phase1-asset-probe.yml'
+      - 'asset-policy.json'
+      - 'asset-probe.html'
+      - 'src/assets/**'
+      - 'tools/asset-*.mjs'
+      - 'tools/build-phase1-manifest.mjs'
+      - 'tools/blender-export-runtime.py'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:
