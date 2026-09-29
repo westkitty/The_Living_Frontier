@@ -16,7 +16,6 @@ import { DialogueMixin } from './dialogue.js';
 import { LoopMixin } from './loop.js';
 import { StreamingMixin } from './streaming.js';
 import { QuestMixin } from './quests.js';
-import { AssetManager } from './assets/asset-manager.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -38,7 +37,6 @@ class Game {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.4, 3000);
 
-    this.assets = new AssetManager();
     this.audio = new AudioEngine();
     this.input = new Input(this.canvas);
     this.fx = new FX(this.scene, this.renderer, state);
