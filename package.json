@@ -13,12 +13,16 @@
     "perf": "node tools/perf-probe.mjs && node tools/fx-perf-probe.mjs --assert && node tools/fire-perf-probe.mjs --assert && node tools/recovery-perf-probe.mjs --assert && node tools/performance-test.mjs",
     "check": "npm run arch && npm run ui && npm run shaders && npm run visit && npm run smoke",
     "arch": "node tools/arch-check.mjs",
-    "visit": "node tools/visit-test.mjs"
+    "visit": "node tools/visit-test.mjs",
+    "assets": "node tools/asset-manifest-check.mjs && node tools/asset-gltf-validate.mjs",
+    "assets:browser": "node tools/asset-browser-smoke.mjs"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^1.0.9",
     "@shaderfrog/glsl-parser": "^7.0.1",
     "jsdom": "^24.1.0",
-    "three": "0.160.1"
+    "three": "0.160.1",
+    "playwright": "1.55.0",
+    "gltf-validator": "2.0.0-dev.3.10"
   }
 }

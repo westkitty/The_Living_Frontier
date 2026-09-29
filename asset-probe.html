@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Living Frontier — Phase 1 Asset Probe</title>
+<style>
+:root{color-scheme:dark;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0d1210;color:#e5e1d2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;background:#0d1210}
+header,footer{padding:12px 16px;border-bottom:1px solid #334238;background:#141c17}footer{border-top:1px solid #334238;border-bottom:0}
+h1{font-size:16px;margin:0 0 7px;color:#e0b661}#probe-status{font-size:12px;color:#9fbe9e}main{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 220px}
+#probe-canvas{width:100%;height:100%;min-height:420px;touch-action:none;display:block}
+aside{padding:12px;border-left:1px solid #334238;background:#111713;overflow:auto}
+button{width:100%;min-height:42px;margin:0 0 8px;padding:8px;border:1px solid #53675a;border-radius:5px;background:#1a251e;color:#e5e1d2;text-align:left}
+button:hover,button:focus{border-color:#e0b661;outline:none}#probe-reset{text-align:center;margin-top:12px}
+#probe-details{font-size:11px;line-height:1.55;color:#b8c2b9;overflow-wrap:anywhere}
+@media(max-width:720px){main{grid-template-columns:1fr;grid-template-rows:1fr auto}aside{border-left:0;border-top:1px solid #334238;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}aside button{margin:0}#probe-details{grid-column:1/-1}#probe-canvas{min-height:58vh}}
+</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<header><h1>THE LIVING FRONTIER · PHASE 1 ASSET PROBE</h1><div id="probe-status" role="status">Loading manifest…</div></header>
+<main><canvas id="probe-canvas" aria-label="Interactive 3D model inspection viewer"></canvas><aside><div id="probe-buttons"></div><button id="probe-reset">Reset camera</button><div id="probe-details">Drag to orbit · wheel to zoom.</div></aside></main>
+<footer>Five representative runtime roles · local GLB only · no CDN/runtime marketplace fetches.</footer>
+<script type="module" src="./src/assets/probe.js"></script>
+</body>
+</html>

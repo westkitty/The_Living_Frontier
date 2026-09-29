@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "validatorVersion": "2.0.0-dev.3.10",
+  "generatedFromManifest": "docs/resources/VISUAL_ASSET_MANIFEST.json",
+  "totals": {
+    "assets": 5,
+    "errors": 0,
+    "warnings": 4
+  },
+  "reports": [
+    {
+      "id": "prop.axe.phase1",
+      "uri": "../../assets/runtime/props/axe.glb",
+      "bytes": 48512,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 46956
+          }
+        ],
+        "animationCount": 0,
+        "materialCount": 1,
+        "hasMorphTargets": false,
+        "hasSkins": false,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 1,
+        "totalVertexCount": 750,
+        "totalTriangleCount": 826,
+        "maxUVs": 1,
+        "maxInfluences": 0,
+        "maxAttributes": 5
+      }
+    },
+    {
+      "id": "vegetation.pine.phase1",
+      "uri": "../../assets/runtime/vegetation/pine.glb",
+      "bytes": 1102148,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 0,
+        "infos": 1,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/1/attributes/TANGENT"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 1098856
+          },
+          {
+            "pointer": "/images/0",
+            "mimeType": "image/png",
+            "storage": "buffer-view",
+            "image": {
+              "width": 512,
+              "height": 512,
+              "format": "rgba",
+              "primaries": "srgb",
+              "transfer": "srgb",
+              "bits": 8
+            }
+          },
+          {
+            "pointer": "/images/1",
+            "mimeType": "image/png",
+            "storage": "buffer-view",
+            "image": {
+              "width": 512,
+              "height": 512,
+              "format": "rgba",
+              "primaries": "srgb",
+              "transfer": "srgb",
+              "bits": 8
+            }
+          },
+          {
+            "pointer": "/images/2",
+            "mimeType": "image/png",
+            "storage": "buffer-view",
+            "image": {
+              "width": 512,
+              "height": 512,
+              "format": "rgba",
+              "primaries": "srgb",
+              "transfer": "srgb",
+              "bits": 8
+            }
+          }
+        ],
+        "animationCount": 0,
+        "materialCount": 2,
+        "hasMorphTargets": false,
+        "hasSkins": false,
+        "hasTextures": true,
+        "hasDefaultScene": true,
+        "drawCallCount": 2,
+        "totalVertexCount": 6921,
+        "totalTriangleCount": 3947,
+        "maxUVs": 1,
+        "maxInfluences": 0,
+        "maxAttributes": 5
+      }
+    },
+    {
+      "id": "structure.hut.phase1",
+      "uri": "../../assets/runtime/structures/hut.glb",
+      "bytes": 253616,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 0,
+        "infos": 0,
+        "hints": 0
+      },
+      "issues": [],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 248520
+          }
+        ],
+        "animationCount": 0,
+        "materialCount": 6,
+        "hasMorphTargets": false,
+        "hasSkins": false,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 6,
+        "totalVertexCount": 9188,
+        "totalTriangleCount": 4668,
+        "maxUVs": 0,
+        "maxInfluences": 0,
+        "maxAttributes": 2
+      }
+    },
+    {
+      "id": "player.phase1",
+      "uri": "../../assets/runtime/characters/player.glb",
+      "bytes": 384696,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 1,
+        "infos": 2,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/48"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "extensionsUsed": [
+          "KHR_materials_specular",
+          "KHR_materials_ior"
+        ],
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 338380
+          }
+        ],
+        "animationCount": 1,
+        "materialCount": 1,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 1,
+        "totalVertexCount": 4734,
+        "totalTriangleCount": 1578,
+        "maxUVs": 1,
+        "maxInfluences": 4,
+        "maxAttributes": 6
+      }
+    },
+    {
+      "id": "creature.deer.phase1",
+      "uri": "../../assets/runtime/creatures/deer.glb",
+      "bytes": 837840,
+      "issueCounts": {
+        "errors": 0,
+        "warnings": 3,
+        "infos": 9,
+        "hints": 0
+      },
+      "issues": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/1/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/2/primitives/0/attributes/TEXCOORD_1"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/31"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/32"
+        },
+        {
+          "code": "NODE_SKINNED_MESH_NON_ROOT",
+          "message": "Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+          "severity": 1,
+          "pointer": "/nodes/33"
+        }
+      ],
+      "info": {
+        "version": "2.0",
+        "generator": "Khronos glTF Blender I/O v4.0.44",
+        "resources": [
+          {
+            "pointer": "/buffers/0",
+            "mimeType": "application/gltf-buffer",
+            "storage": "glb",
+            "byteLength": 600076
+          }
+        ],
+        "animationCount": 11,
+        "materialCount": 4,
+        "hasMorphTargets": false,
+        "hasSkins": true,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 4,
+        "totalVertexCount": 3230,
+        "totalTriangleCount": 4786,
+        "maxUVs": 2,
+        "maxInfluences": 4,
+        "maxAttributes": 7
+      }
+    }
+  ]
+}
