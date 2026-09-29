@@ -32,9 +32,10 @@ jobs:
           cd /tmp/lf-phase2-sources
           curl -fL --retry 3 --retry-delay 2 -o wolf.zip 'https://opengameart.org/sites/default/files/Animal%20Pack%20Vol.2%20by%20%40Quaternius.zip'
           curl -fL --retry 3 --retry-delay 2 -o humans.zip 'https://opengameart.org/sites/default/files/ultimate_animated_character_pack_by_quaternius.zip'
+          curl -fL --retry 3 --retry-delay 2 -o rpg-humans.zip 'https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip'
           curl -fL --retry 3 --retry-delay 2 -o rabbit.blend 'https://opengameart.org/sites/default/files/rabbit.blend'
           curl -fL --retry 3 --retry-delay 2 -o boar.blend 'https://opengameart.org/sites/default/files/boar_0.blend'
-          sha256sum wolf.zip humans.zip rabbit.blend boar.blend | tee source.sha256
+          sha256sum wolf.zip humans.zip rpg-humans.zip rabbit.blend boar.blend | tee source.sha256
 
       - name: Preserve untouched source candidates
         env:
@@ -45,21 +46,25 @@ jobs:
           if ! gh release view phase2-source-archives --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             gh release create phase2-source-archives --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" --title "Phase 2 source archives" --notes "Untouched candidate source downloads for the Living Frontier Phase 2 living-actor pipeline. Promotion still requires inspection, conversion, validation and live-game visual acceptance."
           fi
-          gh release upload phase2-source-archives wolf.zip humans.zip rabbit.blend boar.blend --repo "${GITHUB_REPOSITORY}" --clobber
+          gh release upload phase2-source-archives wolf.zip humans.zip rpg-humans.zip rabbit.blend boar.blend --repo "${GITHUB_REPOSITORY}" --clobber
 
       - name: Extract and inventory archives
         run: |
           set -euo pipefail
           cd /tmp/lf-phase2-sources
-          mkdir wolf humans
+          mkdir wolf humans rpg-humans
           unzip -q wolf.zip -d wolf
           unzip -q humans.zip -d humans
+          unzip -q rpg-humans.zip -d rpg-humans
           find wolf -type f -printf '%P\n' | sort > wolf-files.txt
           find humans -type f -printf '%P\n' | sort > human-files.txt
+          find rpg-humans -type f -printf '%P\n' | sort > rpg-human-files.txt
           echo '=== WOLF FILES ==='
           cat wolf-files.txt
           echo '=== HUMAN FILES ==='
           cat human-files.txt
+          echo '=== RPG HUMAN FILES ==='
+          cat rpg-human-files.txt
 
       - name: Inspect Blender source semantics
         run: |
@@ -73,6 +78,11 @@ jobs:
           else
             printf '{"label":"wolf","sourceFile":null,"objects":[],"armatures":[],"actions":[],"images":[],"note":"No Wolf-named Blend file found; inspect archive inventory before conversion."}\n' > /tmp/lf-phase2-sources/inspection/wolf.json
           fi
+          mkdir -p /tmp/lf-phase2-sources/inspection/rpg-humans
+          while IFS= read -r blend; do
+            label="$(basename "$blend" .blend | tr ' ' '_' | tr -cd '[:alnum:]_-')"
+            blender --background "$blend" --python "$GITHUB_WORKSPACE/tools/blender-source-inspect.py" -- "$label" "/tmp/lf-phase2-sources/inspection/rpg-humans/$label.json"
+          done < <(find /tmp/lf-phase2-sources/rpg-humans -type f -iname '*.blend' | sort)
 
       - name: Capture source-page evidence
         run: |
@@ -80,6 +90,7 @@ jobs:
           mkdir -p docs/resources/evidence/phase2
           curl -fsSL 'https://opengameart.org/content/animated-animales-low-poly' -o docs/resources/evidence/phase2/quaternius-animated-animals.html
           curl -fsSL 'https://opengameart.org/content/animated-characters-pack' -o docs/resources/evidence/phase2/quaternius-animated-characters.html
+          curl -fsSL 'https://opengameart.org/content/lowpoly-rpg-characters' -o docs/resources/evidence/phase2/quaternius-rpg-characters.html
           curl -fsSL 'https://opengameart.org/content/rabbit-0' -o docs/resources/evidence/phase2/cdmir-rabbit.html
           curl -fsSL 'https://opengameart.org/content/boar' -o docs/resources/evidence/phase2/teh-bucket-boar.html
 
@@ -93,6 +104,9 @@ jobs:
           const hash = (name) => crypto.createHash('sha256').update(fs.readFileSync(base + '/' + name)).digest('hex');
           const lines = (name) => fs.readFileSync(base + '/' + name, 'utf8').split(/\r?\n/).filter(Boolean);
           const readJson = (name) => JSON.parse(fs.readFileSync(base + '/inspection/' + name + '.json', 'utf8'));
+          const readDirJson = (dir) => Object.fromEntries(fs.readdirSync(base + '/inspection/' + dir)
+            .filter((name) => name.endsWith('.json')).sort()
+            .map((name) => [name.replace(/\.json$/, ''), JSON.parse(fs.readFileSync(base + '/inspection/' + dir + '/' + name, 'utf8'))]));
           const record = {
             schemaVersion: 1,
             generatedAt: new Date().toISOString(),
@@ -113,6 +127,15 @@ jobs:
                 license: 'CC0-1.0',
                 sha256: hash('humans.zip'),
                 inventory: lines('human-files.txt'),
+              },
+              rpgHumans: {
+                sourcePage: 'https://opengameart.org/content/lowpoly-rpg-characters',
+                acquisitionUrl: 'https://opengameart.org/sites/default/files/rpg_characters_-_nov_2020.zip',
+                creator: 'quaternius',
+                license: 'CC0-1.0',
+                sha256: hash('rpg-humans.zip'),
+                inventory: lines('rpg-human-files.txt'),
+                inspections: readDirJson('rpg-humans'),
               },
               rabbit: {
                 sourcePage: 'https://opengameart.org/content/rabbit-0',
@@ -157,5 +180,7 @@ jobs:
             /tmp/lf-phase2-sources/source.sha256
             /tmp/lf-phase2-sources/wolf-files.txt
             /tmp/lf-phase2-sources/human-files.txt
+            /tmp/lf-phase2-sources/rpg-human-files.txt
             /tmp/lf-phase2-sources/inspection/*.json
+            /tmp/lf-phase2-sources/inspection/rpg-humans/*.json
           if-no-files-found: error
