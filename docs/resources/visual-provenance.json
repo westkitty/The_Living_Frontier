@@ -45,6 +45,33 @@
       "archiveSha256": "577b9e48ce7cee955c6dac1b0a70333eccdfcad3f11eaa1f96a15900b64ca25e",
       "confidence": "A",
       "state": "inspected"
+    },
+    {
+      "id": "quaternius-animal-pack-vol2",
+      "creator": "quaternius",
+      "sourcePage": "https://opengameart.org/content/animated-animales-low-poly",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/Animal%20Pack%20Vol.2%20by%20%40Quaternius.zip",
+      "archiveSha256": "6d8f6789d65dbdb352ebad98a4209f26b41b384e87d81bc05e9ca76139db1248",
+      "confidence": "A",
+      "state": "inspected"
+    },
+    {
+      "id": "cdmir-rabbit",
+      "creator": "CDmir / TinyWorlds",
+      "sourcePage": "https://opengameart.org/content/rabbit-0",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/rabbit.blend",
+      "archiveSha256": "bb6deef1ee91b21380355138374cae87946451ce864502b1af68eb60f4750843",
+      "confidence": "A",
+      "state": "inspected"
+    },
+    {
+      "id": "teh-bucket-boar",
+      "creator": "Teh_Bucket",
+      "sourcePage": "https://opengameart.org/content/boar",
+      "acquisitionUrl": "https://opengameart.org/sites/default/files/boar_0.blend",
+      "archiveSha256": "c16625680d056f0402d1be209c41d16a63394aec94b082a63ad32f562e9f2d2d",
+      "confidence": "A",
+      "state": "inspected"
     }
   ]
 }

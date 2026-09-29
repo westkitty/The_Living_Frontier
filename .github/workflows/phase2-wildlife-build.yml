@@ -1,0 +1,95 @@
+name: Phase 2 wildlife build
+
+on:
+  push:
+    branches:
+      - phase2/living-actors
+    paths:
+      - '.github/workflows/phase2-wildlife-build.yml'
+      - 'tools/blender-export-phase2-creature.py'
+      - 'tools/build-phase2-wildlife-manifest.mjs'
+      - 'tools/phase2-wildlife-browser-smoke.mjs'
+      - 'phase2-wildlife-probe.html'
+      - 'asset-policy.json'
+      - 'tools/asset-manifest-check.mjs'
+      - 'docs/resources/visual-licenses.json'
+      - 'docs/resources/visual-provenance.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-wildlife:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install build and browser tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends blender p7zip-full
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Acquire exact inspected sources
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/lf-phase2-build/wolf
+          cd /tmp/lf-phase2-build
+          curl -fL --retry 3 --retry-delay 2 -o deer.blend 'https://opengameart.org/sites/default/files/doe.blend'
+          curl -fL --retry 3 --retry-delay 2 -o wolf.zip 'https://opengameart.org/sites/default/files/Animal%20Pack%20Vol.2%20by%20%40Quaternius.zip'
+          curl -fL --retry 3 --retry-delay 2 -o rabbit.blend 'https://opengameart.org/sites/default/files/rabbit.blend'
+          curl -fL --retry 3 --retry-delay 2 -o boar.blend 'https://opengameart.org/sites/default/files/boar_0.blend'
+          printf '%s  %s\n' \
+            '577b9e48ce7cee955c6dac1b0a70333eccdfcad3f11eaa1f96a15900b64ca25e' deer.blend \
+            '6d8f6789d65dbdb352ebad98a4209f26b41b384e87d81bc05e9ca76139db1248' wolf.zip \
+            'bb6deef1ee91b21380355138374cae87946451ce864502b1af68eb60f4750843' rabbit.blend \
+            'c16625680d056f0402d1be209c41d16a63394aec94b082a63ad32f562e9f2d2d' boar.blend > expected.sha256
+          sha256sum -c expected.sha256
+          unzip -q wolf.zip -d wolf
+          WOLF_BLEND="$(find wolf -type f -path '*/Blends/Wolf.blend' | head -n1)"
+          test -f "$WOLF_BLEND"
+          printf '%s\n' "$WOLF_BLEND" > wolf.path
+          node - <<'NODE'
+          const fs=require('fs'),crypto=require('crypto');const files={deer:'deer.blend',wolf:'wolf.zip',rabbit:'rabbit.blend',boar:'boar.blend'},out={};for(const[k,f]of Object.entries(files))out[k]=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');fs.writeFileSync('source-hashes.json',JSON.stringify(out,null,2)+'\n');
+          NODE
+      - name: Export cleaned production wildlife GLBs
+        run: |
+          set -euo pipefail
+          mkdir -p assets/runtime/creatures
+          blender --background /tmp/lf-phase2-build/deer.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/deer-phase2.glb" 512 '["Plane"]'
+          blender --background "$(cat /tmp/lf-phase2-build/wolf.path)" --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/wolf-phase2.glb" 512 '[]'
+          blender --background /tmp/lf-phase2-build/boar.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/boar-phase2.glb" 512 '[]'
+          blender --background /tmp/lf-phase2-build/rabbit.blend --python "$GITHUB_WORKSPACE/tools/blender-export-phase2-creature.py" -- "$GITHUB_WORKSPACE/assets/runtime/creatures/rabbit-phase2.glb" 512 '["Plane","Camera","Hemi","Hemi.001","Lamp"]'
+      - name: Build Phase 2 wildlife manifest
+        run: node tools/build-phase2-wildlife-manifest.mjs /tmp/lf-phase2-build/source-hashes.json
+      - name: Validate structural and existing game gates
+        run: |
+          set -euo pipefail
+          npm run assets
+          npm run check
+          npm run perf
+      - name: Real-browser wildlife review probe
+        run: node tools/phase2-wildlife-browser-smoke.mjs
+      - name: Upload wildlife visual evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-wildlife-review-screenshots
+          path: /tmp/lf-phase2-wildlife-*.png
+          if-no-files-found: error
+      - name: Commit verified wildlife build outputs
+        run: |
+          set -euo pipefail
+          git config user.name "living-frontier-wildlife-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/runtime/creatures/*-phase2.glb docs/resources/VISUAL_ASSET_MANIFEST.json docs/resources/validation/gltf-validator-report.json
+          if git diff --cached --quiet; then
+            echo "No wildlife outputs changed."
+          else
+            git commit -m "Build verified Phase 2 wildlife runtime assets"
+            git push origin HEAD:phase2/living-actors
+          fi
