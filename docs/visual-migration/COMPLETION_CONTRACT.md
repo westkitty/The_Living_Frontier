@@ -21,8 +21,9 @@ not promote an unperformed visual, mobile, deployment, or merge gate.
   terrain/traversal authority into presentation assets.
 - [ ] Phase 4 close/medium/distant/night/weather/traversal evidence is complete
   for every major landmark and cave.
-- [ ] Phase 5 complete measured optimization, streaming-group audit, repeated
-  load/unload leak proof, final documentation, merge, and Pages deployment.
+- [~] Phase 5 release preparation has a passing streaming-group audit and
+  deterministic AssetManager acquire/release/disposal proof; browser,
+  deployment, and merge gates remain open.
 
 ## Current verified checks
 
@@ -32,6 +33,10 @@ not promote an unperformed visual, mobile, deployment, or merge gate.
 - `npm run visual` — PASS
 - `npm run perf` — PASS; current diagnostic scene 92 meshes / 80,112 triangles
 - `npm run visit` — PASS after repairing the fake-renderer callback seam
+- `npm run asset:audit` — PASS: five explicit runtime groups with byte and
+  memory-budget totals
+- `npm run asset:lifecycle` — PASS: shared references, release, unused-cache
+  disposal, and `disposeAll()` behavior
 - Live Codex browser — PASS for boot, saved-world load, HUD, and HTTP 200 asset
   requests for `pine.glb` and `hut.glb`
 - Playwright desktop/mobile browser gates — **UNVERIFIED** because the declared

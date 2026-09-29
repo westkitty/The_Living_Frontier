@@ -63,7 +63,7 @@ for (const a of manifest.assets) {
     throw new Error(`animated representative lacks verified clip-name metadata: ${a.id}`);
   }
   if (policy.phase1RequiredIds.includes(a.id)) {
-    if (a.collisionStrategy !== 'none-phase1-probe') throw new Error(`Phase 1 collision policy is not explicit: ${a.id}`);
+    if (!['none-phase1-probe', 'none-world-presentation'].includes(a.collisionStrategy)) throw new Error(`Phase 1 collision policy is not explicit: ${a.id}`);
     if (a.lodGroup !== null) throw new Error(`Phase 1 fixture unexpectedly declares LOD authority: ${a.id}`);
   }
   if ((policy.phase2WildlifeRequiredIds || []).includes(a.id)) {

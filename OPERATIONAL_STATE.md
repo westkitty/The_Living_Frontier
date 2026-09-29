@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phases 1–4 implementation complete; release validation in progress
+Phases 1–4 implementation complete; Phase 5 release preparation in progress
 
 ## Verified baseline
 
@@ -64,8 +64,10 @@ visual acceptance.
 
 ## Remaining release work
 
-- pass final combined living-actor CI on the latest production assets
-- manually inspect final integrated desktop and narrow/mobile screenshots
+- complete exhaustive landmark/cave visual acceptance across distance, night,
+  weather, and traversal states
+- pass Playwright desktop and narrow/mobile journeys once Chromium is available
+- capture final integrated screenshots and post-integration performance evidence
 - merge verified branch to `main`
 - confirm GitHub Pages deployment from merged `main`
-- record Phase 2 COMPLETE only after those release gates pass
+- record the migration COMPLETE only after those release gates pass
