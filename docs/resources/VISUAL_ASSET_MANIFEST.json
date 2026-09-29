@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "project": "The Living Frontier",
+  "generatedAt": "2026-09-29T02:51:07.689Z",
+  "assets": [
+    {
+      "id": "prop.axe.phase1",
+      "type": "model",
+      "uri": "../../assets/runtime/props/axe.glb",
+      "sourceHash": "sha256:0bc1e5843c9f245c44bda82f97f738b09f88fe51bb34d2a69a7847a969f868e3",
+      "runtimeHash": "sha256:0055b059790f12607059de02550dbfc88a16fc9805731d5c3b1417c23299270e",
+      "bytes": 32728,
+      "dependencies": [],
+      "preload": false,
+      "streamGroup": "phase1-probe",
+      "memoryBudgetBytes": 8388608,
+      "licenseRecordId": "quaternius-fantasy-props-megakit-cc0",
+      "provenanceRecordId": "quaternius-fantasy-props-megakit",
+      "disposalPolicy": "asset-manager-refcount-cache",
+      "presentation": {
+        "targetMaxDimension": 1.2,
+        "ground": true,
+        "centerXZ": true
+      },
+      "stats": {
+        "nodes": 1,
+        "meshes": 1,
+        "primitives": 1,
+        "materials": 1,
+        "textures": 0,
+        "images": 0,
+        "skins": 0,
+        "animations": 0,
+        "externalUris": []
+      }
+    },
+    {
+      "id": "vegetation.pine.phase1",
+      "type": "model",
+      "uri": "../../assets/runtime/vegetation/pine.glb",
+      "sourceHash": "sha256:298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+      "runtimeHash": "sha256:fe927655337e35f3c06b3f8285020327c933e8a9afe7fba33a7904c0273fef98",
+      "bytes": 929912,
+      "dependencies": [],
+      "preload": false,
+      "streamGroup": "phase1-probe",
+      "memoryBudgetBytes": 8388608,
+      "licenseRecordId": "quaternius-stylized-nature-megakit-cc0",
+      "provenanceRecordId": "quaternius-stylized-nature-megakit",
+      "disposalPolicy": "asset-manager-refcount-cache",
+      "presentation": {
+        "targetHeight": 10,
+        "ground": true,
+        "centerXZ": true
+      },
+      "stats": {
+        "nodes": 1,
+        "meshes": 1,
+        "primitives": 2,
+        "materials": 2,
+        "textures": 3,
+        "images": 3,
+        "skins": 0,
+        "animations": 0,
+        "externalUris": []
+      }
+    },
+    {
+      "id": "structure.hut.phase1",
+      "type": "model",
+      "uri": "../../assets/runtime/structures/hut.glb",
+      "sourceHash": "sha256:c38d8632c3c883043809a5db9b2f47b7033e298ab4bd073bb5c29ad323df60fc",
+      "runtimeHash": "sha256:96eced66390a61181c31b4ae153e3a481c5decabcf3187fd147eb451535d37ed",
+      "bytes": 253616,
+      "dependencies": [],
+      "preload": false,
+      "streamGroup": "phase1-probe",
+      "memoryBudgetBytes": 8388608,
+      "licenseRecordId": "quaternius-medieval-village-pack-cc0",
+      "provenanceRecordId": "quaternius-medieval-village-pack",
+      "disposalPolicy": "asset-manager-refcount-cache",
+      "presentation": {
+        "targetHeight": 6,
+        "ground": true,
+        "centerXZ": true
+      },
+      "stats": {
+        "nodes": 1,
+        "meshes": 1,
+        "primitives": 6,
+        "materials": 6,
+        "textures": 0,
+        "images": 0,
+        "skins": 0,
+        "animations": 0,
+        "externalUris": []
+      }
+    },
+    {
+      "id": "player.phase1",
+      "type": "model",
+      "uri": "../../assets/runtime/characters/player.glb",
+      "sourceHash": "sha256:dcd72162b5e59495efc629fb624d9e1deb12124b68291ad4fa3ce66b4fc24db3",
+      "runtimeHash": "sha256:fe5924008ebae169c17f5f69b9f1e01616e251eefb71b71c061653191474511f",
+      "bytes": 296220,
+      "dependencies": [],
+      "preload": false,
+      "streamGroup": "phase1-probe",
+      "memoryBudgetBytes": 33554432,
+      "licenseRecordId": "quaternius-animated-human-cc0",
+      "provenanceRecordId": "quaternius-animated-human",
+      "disposalPolicy": "asset-manager-refcount-cache",
+      "presentation": {
+        "targetHeight": 1.8,
+        "ground": true,
+        "centerXZ": true
+      },
+      "stats": {
+        "nodes": 50,
+        "meshes": 1,
+        "primitives": 1,
+        "materials": 1,
+        "textures": 0,
+        "images": 0,
+        "skins": 1,
+        "animations": 1,
+        "externalUris": []
+      }
+    },
+    {
+      "id": "creature.deer.phase1",
+      "type": "model",
+      "uri": "../../assets/runtime/creatures/deer.glb",
+      "sourceHash": "sha256:577b9e48ce7cee955c6dac1b0a70333eccdfcad3f11eaa1f96a15900b64ca25e",
+      "runtimeHash": "sha256:1d563c039d8493c00b6d173237c7fe031268211a5e27375b1ade40c0ddaa4005",
+      "bytes": 785292,
+      "dependencies": [],
+      "preload": false,
+      "streamGroup": "phase1-probe",
+      "memoryBudgetBytes": 33554432,
+      "licenseRecordId": "cdmir-deer-female-cc0",
+      "provenanceRecordId": "cdmir-deer-female",
+      "disposalPolicy": "asset-manager-refcount-cache",
+      "presentation": {
+        "targetHeight": 1.5,
+        "ground": true,
+        "centerXZ": true
+      },
+      "stats": {
+        "nodes": 36,
+        "meshes": 4,
+        "primitives": 4,
+        "materials": 4,
+        "textures": 0,
+        "images": 0,
+        "skins": 1,
+        "animations": 11,
+        "externalUris": []
+      }
+    }
+  ]
+}
