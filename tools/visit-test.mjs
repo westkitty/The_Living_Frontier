@@ -115,6 +115,8 @@ state.time = 0.5; tick(); state.time = 0.81; tick();
 const tree = [...game.veg.chunks].flatMap(([key, c]) => c.items.map(item => ({ key, item })))
   .find(v => v.item.type === 'pine' || v.item.type === 'broad');
 assert(tree, 'need a real harvestable tree');
+// This assertion targets the vegetation interaction path. Random actor spawns must not mask it.
+for (const list of [game.actors.animals, game.actors.npcs, game.actors.soldiers, game.actors.corpses]) list.length = 0;
 game.player.pos.set(tree.item.x, tree.item.y + 1, tree.item.z);
 const target = game.findTarget();
 assert(target.canIgnite && target.alt.includes('tinder'), 'tinder risk must be in the real ignition prompt');

@@ -1,4 +1,5 @@
 name: Phase 2 wildlife build
+# Re-run marker: deterministic visit isolation + race-safe generated push.
 
 on:
   push:
@@ -91,5 +92,7 @@ jobs:
             echo "No wildlife outputs changed."
           else
             git commit -m "Build verified Phase 2 wildlife runtime assets"
+            git fetch origin phase2/living-actors
+            git rebase origin/phase2/living-actors
             git push origin HEAD:phase2/living-actors
           fi

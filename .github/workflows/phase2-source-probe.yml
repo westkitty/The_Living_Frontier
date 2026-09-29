@@ -176,6 +176,8 @@ jobs:
             echo "No source-probe evidence changed."
           else
             git commit -m "Record inspected Phase 2 source candidates"
+            git fetch origin phase2/living-actors
+            git rebase origin/phase2/living-actors
             git push origin HEAD:phase2/living-actors
           fi
 
