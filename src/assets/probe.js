@@ -14,7 +14,7 @@ const canvas = document.querySelector('#probe-canvas');
 const status = document.querySelector('#probe-status');
 const details = document.querySelector('#probe-details');
 const buttons = document.querySelector('#probe-buttons');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
@@ -108,7 +108,27 @@ async function show(id) {
   return result;
 }
 
-window.__LF_ASSET_PROBE = { ready: false, results: {}, show, rendererInfo: () => ({ memory: { ...renderer.info.memory }, render: { ...renderer.info.render } }) };
+async function disposeProbe() {
+  clipPlayer?.stop(); clipPlayer = null;
+  if (current) {
+    scene.remove(current.display);
+    assets.release(current.handle);
+    current = null;
+  }
+  await assets.disposeAll();
+  renderer.render(scene, camera);
+  return { assetManager: assets.stats(), renderer: { memory: { ...renderer.info.memory }, render: { ...renderer.info.render } } };
+}
+
+window.__LF_ASSET_PROBE = {
+  ready: false,
+  results: {},
+  show,
+  cameraState: () => ({ yaw, pitch, distance, position: camera.position.toArray() }),
+  assetManagerStats: () => assets.stats(),
+  rendererInfo: () => ({ memory: { ...renderer.info.memory }, render: { ...renderer.info.render } }),
+  disposeProbe,
+};
 for (const [id, label] of ids) {
   const b = document.createElement('button');
   b.textContent = label; b.addEventListener('click', () => show(id).catch(fail)); buttons.appendChild(b);

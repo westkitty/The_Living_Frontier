@@ -3,12 +3,13 @@ import { GLTFLoader } from '../../vendor/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from '../../vendor/examples/jsm/utils/SkeletonUtils.js';
 
 const MANIFEST_URL = new URL('../../docs/resources/VISUAL_ASSET_MANIFEST.json', import.meta.url);
+const RUNTIME_ROOT_URL = new URL('../../assets/runtime/', MANIFEST_URL);
 
 function localRuntimeUri(uri) {
   if (typeof uri !== 'string' || !uri) return false;
   if (/^(?:[a-z]+:)?\/\//i.test(uri) || uri.startsWith('data:')) return false;
   const resolved = new URL(uri, MANIFEST_URL);
-  return resolved.origin === MANIFEST_URL.origin;
+  return resolved.origin === MANIFEST_URL.origin && resolved.href.startsWith(RUNTIME_ROOT_URL.href);
 }
 
 function disposeMaterial(material) {
@@ -112,10 +113,17 @@ export class AssetManager {
 
   async preload(ids) { await Promise.all(ids.map((id) => this._load(id))); }
 
-  disposeUnused() {
+  stats() {
+    let references = 0;
+    for (const n of this.refs.values()) references += n;
+    return { cached: this.cache.size, referencedIds: this.refs.size, references, records: this.records.size };
+  }
+
+  async disposeUnused() {
+    const pendingDisposals = [];
     for (const [id, pending] of this.cache) {
       if ((this.refs.get(id) || 0) > 0) continue;
-      pending.then(({ gltf }) => {
+      pendingDisposals.push(pending.then(({ gltf }) => {
         const geometries = new Set(), materials = new Set();
         gltf.scene.traverse((o) => {
           if (o.geometry && !geometries.has(o.geometry)) {
@@ -126,14 +134,15 @@ export class AssetManager {
             for (const m of list) if (!materials.has(m)) { materials.add(m); disposeMaterial(m); }
           }
         });
-      });
+      }));
       this.cache.delete(id);
     }
+    await Promise.allSettled(pendingDisposals);
   }
 
-  disposeAll() {
+  async disposeAll() {
     this.refs.clear();
-    this.disposeUnused();
+    await this.disposeUnused();
     this.manifest = null;
     this.records.clear();
   }
