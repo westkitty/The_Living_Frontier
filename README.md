@@ -310,7 +310,7 @@ npm run ui         # wiring & accessibility gate: dangling selectors, missing
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
 npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
-                   # six hints firing only once across independent processes
+                   # seven hints firing only once across independent processes
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection

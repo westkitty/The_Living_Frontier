@@ -11,14 +11,14 @@ export const LoopMixin = {
       intro.done = true; intro.progress = 1;
       st.player.stats.quests++;
       this.audio.play('quest');
-      this.ui.toast('✓ Found Greenhollow — speak to its people', 'good');
+      this.ui.toast('✓ Found Greenhollow — speak to its people', 'good'); this.hitStop = Math.max(this.hitStop || 0, 0.9);
     }
     for (const L of LANDMARKS) {
       if (st.discovered[L.id]) continue;
       if (Math.hypot(L.x - p.x, L.z - p.z) < L.r * 0.62) {
         st.discovered[L.id] = st.day;
         this.ui.discovery(L.name);
-        this.audio.play('discover');
+        this.audio.play('discover'); this.hitStop = Math.max(this.hitStop || 0, 0.9);
         st.note(`Discovered ${L.name}.`, 'discovery');
         st.player.inv.relic += 0;
         for (let i = 0; i < 3; i++) st.player.rep[i] = clamp(st.player.rep[i] + 2, -100, 100);

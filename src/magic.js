@@ -478,7 +478,7 @@ export class Magic {
     if (!best) { w.ui.toast('The Record holds no more secrets near you.'); return false; }
     st.discovered[best.id] = st.day;
     w.ui.discovery(best.name);
-    w.audio.play('discover');
+    w.audio.play('discover'); w.hitStop = Math.max(w.hitStop || 0, 0.9);
     st.note(`Revealed ${best.name} by magic.`, 'discovery');
     for (let i = 0; i < 3; i++) st.player.rep[i] = clamp(st.player.rep[i] + 2, -100, 100);
     for (const q of st.quests) if (!q.done && q.kind === 'explore' && q.target === best.id) w.completeQuest(q);

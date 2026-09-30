@@ -31,7 +31,7 @@ export const Settings = {
     } catch (e) { /* corrupt or unavailable storage: fall back to defaults */ }
     // clamp anything a hand-edited/corrupt store could have broken
     const v = this.values;
-    v.seenHints = Object.fromEntries(['night', 'tree', 'fire', 'village', 'banner', 'landmark']
+    v.seenHints = Object.fromEntries(['night', 'tree', 'fire', 'village', 'banner', 'landmark', 'tome']
       .filter(key => v.seenHints && v.seenHints[key] === true).map(key => [key, true]));
     if (!['high', 'medium', 'low'].includes(v.quality)) v.quality = 'high';
     v.sensitivity = Math.min(2, Math.max(0.4, Number(v.sensitivity) || 1));

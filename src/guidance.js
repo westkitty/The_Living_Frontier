@@ -7,7 +7,7 @@ export const HINTS = {
   fire: 'Fire follows the wind. Rain slows it; blackened ground remembers it.',
   village: 'Speak at the village hall. Gifts of timber can become real homes.',
   banner: 'A banner has changed. The compass and survey map now show the new owner.',
-  landmark: 'This stone unseals part of the Long Record. Press R to read what stood here.',
+  landmark: 'This stone unseals part of the Long Record. Press R to read what stood here.', tome: 'Well cast. T opens the tome (T); Z cycles the readied spell.',
 };
 
 export class Guidance {
@@ -17,7 +17,7 @@ export class Guidance {
     this.night = state.time < 0.22 || state.time > 0.8;
     this.felled = state.player.stats.felled;
     this.fires = state.player.stats.fires;
-    this.found = Object.keys(state.discovered).length;
+    this.found = Object.keys(state.discovered).length; this.casts = state.player.stats.spellsCast || 0;
   }
 
   once(key) {
@@ -39,8 +39,8 @@ export class Guidance {
     if (stats.felled > this.felled) this.once('tree');
     if (stats.fires > this.fires) this.once('fire');
     const found = Object.keys(st.discovered).length;
-    if (found > this.found) this.once('landmark');
+    if (found > this.found) this.once('landmark'); if (stats.spellsCast > this.casts) this.once('tome');
     if (st.settlements.some(s => !s.abandoned && Math.hypot(s.x - pos.x, s.z - pos.z) < 45)) this.once('village');
-    this.night = night; this.felled = stats.felled; this.fires = stats.fires; this.found = found;
+    this.night = night; this.felled = stats.felled; this.fires = stats.fires; this.found = found; this.casts = stats.spellsCast || 0;
   }
 }

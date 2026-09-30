@@ -8,8 +8,8 @@ import { CH, regionIndex } from './worldstate.js';
 export const InteractionMixin = {
   findTarget() {
     const p = this.player.pos;
-    const aimY = this.player.firstPerson ? this.player.camYaw + Math.PI : this.player.yaw, forward = new THREE.Vector3(Math.sin(aimY), 0, Math.cos(aimY));
-    const probe = p.clone().addScaledVector(forward, 1.4);
+    const aimY = this.player.firstPerson ? this.player.camYaw + Math.PI : this.player.yaw, forward = (this._findFwd || (this._findFwd = new THREE.Vector3())).set(Math.sin(aimY), 0, Math.cos(aimY));
+    const probe = (this._findProbe || (this._findProbe = new THREE.Vector3())).copy(p).addScaledVector(forward, 1.4);
 
     // settlement centre
     for (let i = 0; i < this.state.settlements.length; i++) {
