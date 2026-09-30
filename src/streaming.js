@@ -66,14 +66,14 @@ export const StreamingMixin = {
     let banner = null;
     if (!s.abandoned) {
       banner = makeBanner(FACTIONS[s.banner].color);
-      banner.position.set(s.x + 4, baseY + heightAt(s.x + 4, s.z + 4) - baseY, s.z + 4);
-      banner.position.y = heightAt(s.x + 4, s.z + 4);
+      banner.position.set(s.x + 6, baseY + heightAt(s.x + 6, s.z + 6) - baseY, s.z + 6);
+      banner.position.y = heightAt(s.x + 6, s.z + 6); banner.scale.setScalar(1.5);
       this.scene.add(banner);
       this.banners.push(banner);
     }
-    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY, authoredHut: null, authoredAxe: null }; const rec = this.settlementMeshes[i], x = s.x - 12 - i * 2, z = s.z - 7;
-    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'structure.hut.phase1', { name: `world-visual:hut:${s.id}`, position: new THREE.Vector3(x, heightAt(x, z), z), rotationY: i * 0.73, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredHut = record; }).catch((error) => console.warn(`[settlement] authored hut unavailable for ${s.id}; procedural family retained`, error?.message || error));
-    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'prop.axe.phase1', { name: `world-visual:axe:${s.id}`, position: new THREE.Vector3(s.x + 3, heightAt(s.x + 3, s.z + 2), s.z + 2), rotationY: i * 0.41, scale: 0.8, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredAxe = record; }).catch((error) => console.warn(`[settlement] authored axe unavailable for ${s.id}; procedural work area retained`, error?.message || error));
+    this.settlementMeshes[i] = { mesh, banner, hash: this.settlementHash(s), bannerFaction: s.banner, baseY, authoredHut: null, authoredAxe: null }; const rec = this.settlementMeshes[i], x = s.x - 18 - i * 3, z = s.z - 10.5;
+    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'structure.hut.phase1', { name: `world-visual:hut:${s.id}`, position: new THREE.Vector3(x, heightAt(x, z), z), rotationY: i * 0.73, scale: 1.5, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredHut = record; }).catch((error) => console.warn(`[settlement] authored hut unavailable for ${s.id}; procedural family retained`, error?.message || error));
+    if (this.assets && !globalThis.__LF_RENDERER && !s.abandoned) void acquireStaticWorldAsset(this.assets, this.scene, 'prop.axe.phase1', { name: `world-visual:axe:${s.id}`, position: new THREE.Vector3(s.x + 4.5, heightAt(s.x + 4.5, s.z + 3), s.z + 3), rotationY: i * 0.41, scale: 1.2, isCurrent: () => this.settlementMeshes[i] === rec && !s.abandoned }).then((record) => { if (record) rec.authoredAxe = record; }).catch((error) => console.warn(`[settlement] authored axe unavailable for ${s.id}; procedural work area retained`, error?.message || error));
   },
   buildCaves() {
     this.caves = [];
@@ -100,14 +100,14 @@ export const StreamingMixin = {
       const c = { id: raw.id, x: cx, z: cz };
       CAMPS[i].x = cx; CAMPS[i].z = cz;
       const owner = this.state.regions[regionIndex(c.x, c.z)].owner;
-      const mesh = new THREE.Mesh(buildCampGeometry(i * 131 + 7, Math.max(0, owner)), this.structMat);
-      mesh.position.set(c.x, heightAt(c.x, c.z), c.z);
+      const mesh = new THREE.Mesh(buildCampGeometry(i * 131 + 7, Math.max(0, owner)), this.structMat); mesh.scale.setScalar(1.5);
+      mesh.position.set(c.x, heightAt(c.x, c.z) - 0.5, c.z);
       mesh.castShadow = true; mesh.receiveShadow = true;
       mesh.matrixAutoUpdate = false; mesh.updateMatrix();
       mesh.visible = owner >= 0;
       this.scene.add(mesh);
       const banner = makeBanner(owner >= 0 ? FACTIONS[owner].color : 0x777777);
-      banner.position.set(c.x + 5, heightAt(c.x + 5, c.z + 2), c.z + 2);
+      banner.position.set(c.x + 7.5, heightAt(c.x + 7.5, c.z + 3), c.z + 3); banner.scale.setScalar(1.5);
       banner.visible = owner >= 0;
       this.scene.add(banner);
       this.banners.push(banner);
@@ -120,7 +120,7 @@ export const StreamingMixin = {
     for (const lm of this.landmarks) {
       if (lm.L.kind !== 'fortress' && lm.L.kind !== 'cliff') continue;
       const b = makeBanner(0x888888);
-      b.position.set(lm.L.x + 10, heightAt(lm.L.x + 10, lm.L.z + 10) + (lm.L.kind === 'fortress' ? 0 : 0), lm.L.z + 10);
+      b.position.set(lm.L.x + 10, heightAt(lm.L.x + 10, lm.L.z + 10) + (lm.L.kind === 'fortress' ? 0 : 0), lm.L.z + 10); b.scale.setScalar(1.5);
       this.scene.add(b);
       this.banners.push(b);
       this.landmarkBanners.push({ L: lm.L, banner: b, faction: -1 });
@@ -153,8 +153,8 @@ export const StreamingMixin = {
         camp.owner = owner;
         this.scene.remove(camp.mesh);
         camp.mesh.geometry.dispose();
-        camp.mesh = new THREE.Mesh(buildCampGeometry(camp.seed, Math.max(0, owner)), this.structMat);
-        camp.mesh.position.set(camp.c.x, heightAt(camp.c.x, camp.c.z), camp.c.z);
+        camp.mesh = new THREE.Mesh(buildCampGeometry(camp.seed, Math.max(0, owner)), this.structMat); camp.mesh.scale.setScalar(1.5);
+        camp.mesh.position.set(camp.c.x, heightAt(camp.c.x, camp.c.z) - 0.5, camp.c.z);
         camp.mesh.castShadow = true; camp.mesh.receiveShadow = true;
         camp.mesh.matrixAutoUpdate = false; camp.mesh.updateMatrix();
         camp.mesh.visible = owner >= 0;

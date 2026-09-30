@@ -127,7 +127,7 @@ export function heightAt(x, z) {
     const L = LANDMARKS[i];
     const dx = x - L.x, dz = z - L.z;
     const d = Math.sqrt(dx * dx + dz * dz);
-    if (d > (L.kind === 'cave' ? L.len + L.w + 20 : L.r * 1.4)) continue;
+    if (d > (L.kind === 'cave' ? L.len + L.w + 20 : L.kind === 'fortress' ? 220 : L.r * 1.4)) continue;
     if (L.kind === 'crater') {
       const rr = d / L.r;
       const bowl = -46 * (1 - smoothstep(0.0, 0.74, rr));
@@ -137,9 +137,9 @@ export function heightAt(x, z) {
       const f = siteFalloff(dx, dz, L.r * 1.3);
       h = lerp(h, -7.5, f * 0.94);
     } else if (L.kind === 'fortress') {
-      const f = siteFalloff(dx, dz, L.r * 0.9);
+      const f = 1 - smoothstep(100, 220, d);
       const plateau = 58;
-      h = lerp(h, plateau, f * 0.95);
+      h = lerp(h, plateau, f);
     } else if (L.kind === 'cliff') {
       const f = siteFalloff(dx, dz, L.r * 1.2);
       const terrace = 92 + Math.floor(clamp((d / L.r) * 3, 0, 3)) * -13;

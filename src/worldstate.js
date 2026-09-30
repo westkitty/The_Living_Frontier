@@ -503,7 +503,7 @@ export class WorldState {
         }
       }
       // Prospering settlements wear the ground around them
-      this.paintGround(s.x, s.z, CH.DEV, daily * 0.5 * (s.prosperity - 0.2), 70);
+      this.paintGround(s.x, s.z, CH.DEV, daily * 0.5 * (s.prosperity - 0.2), 105);
     }
   }
 

@@ -9,17 +9,17 @@ export const InteractionMixin = {
   findTarget() {
     const p = this.player.pos;
     const aimY = this.player.firstPerson ? this.player.camYaw + Math.PI : this.player.yaw, forward = new THREE.Vector3(Math.sin(aimY), 0, Math.cos(aimY));
-    const probe = p.clone().addScaledVector(forward, 1.1);
+    const probe = p.clone().addScaledVector(forward, 1.4);
 
     // settlement centre
     for (let i = 0; i < this.state.settlements.length; i++) {
       const s = this.state.settlements[i];
-      if (Math.hypot(s.x - p.x, s.z - p.z) < 7.5) {
+      if (Math.hypot(s.x - p.x, s.z - p.z) < 11) {
         return { type: 'settlement', s, i, label: s.abandoned ? `Search the ruins of ${s.name}` : `Speak with ${s.name}`, alt: null };
       }
     }
     // actors
-    const act = this.actors.nearestInteractable(probe, 3.6);
+    const act = this.actors.nearestInteractable(probe, 4.6);
     if (act) {
       const a = act.actor;
       if (act.type === 'npc') return { type: 'npc', actor: a, label: a.fleeing > 0 ? `${a.name} flees from you` : `Talk to ${a.name}`, alt: 'Attack' };
@@ -33,7 +33,7 @@ export const InteractionMixin = {
       if (d < 12 && !this.state.player['relic_' + L.id]) return { type: 'relic', L, label: `Take relic of ${L.name}`, alt: null };
     }
     // vegetation
-    const v = this.veg.nearest(probe.x, probe.z, 3.2);
+    const v = this.veg.nearest(probe.x, probe.z, 4.2);
     if (v) {
       const t = v.item.type;
       const label = t === 'pine' || t === 'broad' ? 'Fell tree'
@@ -116,7 +116,7 @@ export const InteractionMixin = {
         st.paintGround(item.x, item.z, CH.LUSH, -0.25, 6);
         regrow = 900;
         this.audio.play('chop');
-        this.fx.chop(new THREE.Vector3(item.x, item.y + 2, item.z));
+        this.fx.chop(new THREE.Vector3(item.x, item.y + 3, item.z));
         this.ui.toast(`+${2 + Math.round(item.scale)} wood`);
         // villagers notice heavy logging
         for (const s of st.settlements) {
@@ -129,13 +129,13 @@ export const InteractionMixin = {
       case 'charred': inv.wood += 1; regrow = 4000; this.audio.play('chop'); this.ui.toast('+1 charcoal'); break;
       case 'berry': inv.berry += 2; regrow = 420; this.audio.play('pick'); this.ui.toast('+2 berries'); break;
       case 'fern': case 'bush': inv.herb += 1; regrow = 400; this.audio.play('pick'); this.ui.toast('+1 herb'); break;
-      case 'rock': inv.stone += 2; regrow = 1500; this.audio.play('mine'); this.fx.dust(new THREE.Vector3(item.x, item.y + 1, item.z)); this.ui.toast('+2 stone'); break;
+      case 'rock': inv.stone += 2; regrow = 1500; this.audio.play('mine'); this.fx.dust(new THREE.Vector3(item.x, item.y + 1.5, item.z)); this.ui.toast('+2 stone'); break;
       case 'ore': {
         if (region.ore < 8) { this.ui.toast('This seam is played out.'); return; }
         region.ore -= 8;
         inv.ore += 2; inv.stone += 1; regrow = 2400;
         this.audio.play('mine');
-        this.fx.chop(new THREE.Vector3(item.x, item.y + 1, item.z));
+        this.fx.chop(new THREE.Vector3(item.x, item.y + 1.5, item.z));
         this.ui.toast(region.ore < 25 ? '+2 ore — the seam is thinning' : '+2 ore');
         break;
       }

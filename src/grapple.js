@@ -41,7 +41,7 @@ export class Grapple {
     if (now - this.at < 0.35) return;
     this.at = now;
     p.world.audio.play('grapple');
-    const from = this._a.copy(p.pos); from.y += 1.4;
+    const from = this._a.copy(p.pos); from.y += 1.05;
     camera.getWorldDirection(this._dir);
     // throw toward where the eyes rest, so the hook lands where you look
     const cp = camera.position;
@@ -62,10 +62,10 @@ export class Grapple {
     this._ray.set(from, this._dir);
     const struck = this._ray.intersectObjects(this.colliders(), false)[0];
     if (struck && struck.distance < best) { best = struck.distance; hit.copy(struck.point); }
-    if (best > REACH || best < 2.5) return; // sky, or close enough to touch
+    if (best > REACH || best < 2.2) return; // sky, or close enough to touch
     this.active = true;
     this.point.copy(hit);
-    this.length = Math.max(3, best);
+    this.length = Math.max(2.6, best);
     p.world.audio.play('grappleHit');
     p.world.fx.hitSpark(hit);
   }
@@ -75,8 +75,8 @@ export class Grapple {
     if (this.active) {
       this._a.copy(p.pos).sub(this.point);
       const dist = this._a.length();
-      this.length = Math.max(2.2, this.length - dt * (forward > 0.3 ? 16 : 6));
-      if (dist <= 3.2) this.release();
+      this.length = Math.max(2.0, this.length - dt * (forward > 0.3 ? 16 : 6));
+      if (dist <= 2.8) this.release();
       else {
         if (dist > this.length) {
           // the rope goes taut: swing, never stretch
@@ -99,7 +99,7 @@ export class Grapple {
     this.rope.visible = this.active;
     if (this.active) {
       const rp = this.rope.geometry.attributes.position;
-      rp.setXYZ(0, p.pos.x, p.pos.y + 1.3, p.pos.z);
+      rp.setXYZ(0, p.pos.x, p.pos.y + 1.0, p.pos.z);
       rp.setXYZ(1, this.point.x, this.point.y, this.point.z);
       rp.needsUpdate = true;
     }

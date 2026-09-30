@@ -166,7 +166,7 @@ export class FX {
     // Reuse fixed slots for the nearest visible fires instead of allocating
     // and sorting a fresh candidate list on every rendered frame.
     this.fireCandidates = this.flamePool.map(() => ({ x: 0, z: 0, v: 0, d2: Infinity }));
-    this.fireLight = new THREE.PointLight(0xff9040, 0, 60, 2);
+    this.fireLight = new THREE.PointLight(0xff9040, 0, 90, 2);
     this.scene.add(this.fireLight);
 
     // smoke / ember points
@@ -175,7 +175,7 @@ export class FX {
     for (let i = 0; i < N; i++) pos[i * 3 + 1] = -9999;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    this.smokeMat = new THREE.PointsMaterial({ color: 0x6b6259, size: 2.4, transparent: true, opacity: 0.35, depthWrite: false });
+    this.smokeMat = new THREE.PointsMaterial({ color: 0x6b6259, size: 3.4, transparent: true, opacity: 0.35, depthWrite: false });
     this.smoke = new THREE.Points(g, this.smokeMat);
     this.smoke.frustumCulled = false;
     this.scene.add(this.smoke);
@@ -374,19 +374,19 @@ export class FX {
       m.visible = true;
       const y = heightAt(c.x, c.z);
       const flick = 0.75 + Math.sin(shared.uTime.value * 11 + i * 2.1) * 0.25;
-      m.position.set(c.x + Math.sin(shared.uTime.value + i) * 1.2, y, c.z + Math.cos(shared.uTime.value * 1.2 + i) * 1.2);
-      const s = (2.2 + c.v * 5) * flick;
+      m.position.set(c.x + Math.sin(shared.uTime.value + i) * 1.8, y, c.z + Math.cos(shared.uTime.value * 1.2 + i) * 1.8);
+      const s = (3.3 + c.v * 7.5) * flick;
       m.scale.set(s * 0.7, s, s * 0.7);
       m.material.color.setHSL(lerp(0.02, 0.11, flick), 1.0, lerp(0.45, 0.62, flick));
       m.material.opacity = 0.75 + flick * 0.2;
       // smoke
-      if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 3, c.z);
+      if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 4.5, c.z);
     }
     if (candidateCount) {
       const nearest = candidates[0];
-      this.fireLight.position.set(nearest.x, heightAt(nearest.x, nearest.z) + 4, nearest.z);
+      this.fireLight.position.set(nearest.x, heightAt(nearest.x, nearest.z) + 6, nearest.z);
       this.fireLight.intensity = clamp(6 * nearest.v, 0, 8) * (0.8 + Math.sin(shared.uTime.value * 9) * 0.2);
-      this.fireLight.distance = 70;
+      this.fireLight.distance = 95;
     } else this.fireLight.intensity = lerp(this.fireLight.intensity, 0, dt * 4);
 
     // Particle systems visit live slots only and skip idle GPU uploads.

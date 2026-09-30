@@ -170,8 +170,8 @@ export const LoopMixin = {
     for (const s of this.state.settlements) {
       if (s.abandoned) continue;
       const d = Math.hypot(s.x - p.x, s.z - p.z);
-      if (d > 90) continue;
-      best = Math.max(best, (1 - d / 90) * clamp(0.25 + s.prosperity, 0, 1.25));
+      if (d > 120) continue;
+      best = Math.max(best, (1 - d / 120) * clamp(0.25 + s.prosperity, 0, 1.25));
     }
     return clamp(best, 0, 1);
   },

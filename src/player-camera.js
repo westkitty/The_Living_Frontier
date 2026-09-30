@@ -17,7 +17,7 @@ export class PlayerCamera {
     this._look = new THREE.Vector3();
     this._off = new THREE.Vector3();
     this.bobPhase = 0; this.dip = 0; this.dipV = 0;
-    this.fov = 62; this.fovPunch = 0; this.roll = 0; this.eyeH = 1.62;
+    this.fov = 62; this.fovPunch = 0; this.roll = 0; this.eyeH = 1.22;
     this._t = 0; this._init = false; this._hinted = false;
     this.buildViewmodel();
     this.bindButtons();
@@ -77,10 +77,10 @@ export class PlayerCamera {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c));
       m.position.set(x, y, z); g.add(m);
     };
-    add(0.11, 0.11, 0.30, 0xc9a887, 0, 0, 0);            // hand
-    add(0.13, 0.13, 0.18, 0x4a5b47, 0, 0.01, 0.22);      // sleeve
-    add(0.045, 0.045, 0.52, 0x7b5a34, 0.02, 0.03, -0.28); // haft
-    add(0.07, 0.12, 0.20, 0x8a8f96, 0.02, 0.06, -0.58);   // blade
+    add(0.08, 0.08, 0.23, 0xc9a887, 0, 0, 0);            // hand
+    add(0.10, 0.10, 0.14, 0x4a5b47, 0, 0.01, 0.17);      // sleeve
+    add(0.034, 0.034, 0.39, 0x7b5a34, 0.015, 0.022, -0.21); // haft
+    add(0.05, 0.09, 0.15, 0x8a8f96, 0.015, 0.045, -0.44);   // blade
     g.visible = false;
     this.scene.add(g);
     this.viewmodel = g;
@@ -89,7 +89,7 @@ export class PlayerCamera {
     const g = this.viewmodel;
     g.visible = !!player.firstPerson && !player.dead;
     if (!g.visible) return;
-    this._off.set(0.27 + Math.cos(this.bobPhase) * 0.006, -0.25 + Math.sin(this.bobPhase * 2) * 0.008, -0.5)
+    this._off.set(0.20 + Math.cos(this.bobPhase) * 0.006, -0.19 + Math.sin(this.bobPhase * 2) * 0.008, -0.38)
       .applyQuaternion(camera.quaternion);
     g.position.copy(camera.position).add(this._off);
     g.quaternion.copy(camera.quaternion);
@@ -102,8 +102,8 @@ export class PlayerCamera {
     if (input.zoom) {
       if (player.firstPerson) { if (input.zoom > 0) this.setMode(false); }
       else {
-        player.camDistTarget = clamp(player.camDistTarget + input.zoom, 3.2, 16);
-        if (player.camDistTarget <= 3.2 && input.zoom < 0) this.setMode(true);
+        player.camDistTarget = clamp(player.camDistTarget + input.zoom, 2.6, 14);
+        if (player.camDistTarget <= 2.6 && input.zoom < 0) this.setMode(true);
       }
       input.zoom = 0;
     }
@@ -134,7 +134,7 @@ export class PlayerCamera {
     this.updateViewmodel(camera, player);
   }
   updateThird(dt, player, camera) {
-    const height = 1.55;
+    const height = 1.16;
     player.camDist = damp(player.camDist, player.camDistTarget, 6, dt);
     this.camTarget.set(player.pos.x, player.pos.y + height - this.dip, player.pos.z);
     const cp = Math.cos(player.camPitch), sp2 = Math.sin(player.camPitch);
@@ -150,15 +150,15 @@ export class PlayerCamera {
   }
   updateFirst(dt, player, camera, speed, motionK) {
     const alive = !player.dead, grounded = player.grounded && alive;
-    const bobA = clamp(speed / 6, 0, 1) * 0.05 * motionK * (grounded ? 1 : 0);
+    const bobA = clamp(speed / 6, 0, 1) * 0.04 * motionK * (grounded ? 1 : 0);
     const cp = Math.cos(player.camPitch), sp = Math.sin(player.camPitch);
     const fx = -Math.sin(player.camYaw) * cp, fz = -Math.cos(player.camYaw) * cp;
-    this.eyeH = damp(this.eyeH, alive ? 1.62 : 0.55, 2.5, dt);
+    this.eyeH = damp(this.eyeH, alive ? 1.22 : 0.42, 2.5, dt);
     const side = Math.cos(this.bobPhase) * bobA * 0.7;
     const eyeY = player.pos.y + this.eyeH + Math.sin(this.bobPhase * 2) * bobA - this.dip;
     camera.position.set(player.pos.x - fz * side, eyeY, player.pos.z + fx * side);
     // never let the eyes sink into a slope when landing downhill
-    const floorY = heightAt(camera.position.x, camera.position.z) + 0.5;
+    const floorY = heightAt(camera.position.x, camera.position.z) + 0.4;
     if (camera.position.y < floorY) camera.position.y = floorY;
     this._look.set(camera.position.x + fx, camera.position.y - sp, camera.position.z + fz);
     camera.lookAt(this._look);

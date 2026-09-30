@@ -10,6 +10,7 @@ import { PlayerCamera } from './player-camera.js';
 import { Grapple } from './grapple.js';
 import { attachPlayerVisual } from './assets/actor-visual.js';
 export { Input } from './input.js';
+const PLAYER_SCALE = 0.75;
 
 // ---------------------------------------------------------------------------
 function playerGeo(part) {
@@ -57,8 +58,8 @@ export class Player {
     this.yaw = p.yaw || 0;
     this.camYaw = this.yaw;
     this.camPitch = 0.24;
-    this.camDist = 7.5;
-    this.camDistTarget = 7.5;
+    this.camDist = 6.4;
+    this.camDistTarget = 6.4;
     this.grounded = true; this.jumpBuffer = 0; this.coyote = 0; this.airJumps = 1; this.boost = 0;
     this.hp = p.hp; this.maxHp = p.maxHp;
     this.stamina = p.stamina ?? 100;
@@ -208,7 +209,7 @@ export class Player {
     } else if (this.pos.y > gh + 0.02) this.grounded = false;
 
     // water
-    this.inWater = gh < WORLD.water + 0.4;
+    this.inWater = gh < WORLD.water + 0.3;
     this.speedMul = this.inWater ? 0.55 : 1;
 
     this.group.position.copy(this.pos);
@@ -233,7 +234,7 @@ export class Player {
 
     // --- animation
     const sp = Math.hypot(this.vel.x, this.vel.z);
-    this.phase += dt * (sp * 1.35 + 1.2);
+    this.phase += dt * (sp * 1.8 + 1.2);
     const amp = clamp(sp * 0.10, 0, 0.85);
     const s = Math.sin(this.phase * 1.4);
     this.legL.rotation.x = s * amp;
@@ -246,7 +247,7 @@ export class Player {
     if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
     // leaps stretch the body, landings squash it — the eye reads weight
     this.squash = Math.max(0, this.squash - dt * 5); this.stretch = Math.max(0, this.stretch - dt * 6);
-    this.group.scale.set(1 + this.squash * 0.13 - this.stretch * 0.07, 1 - this.squash * 0.22 + this.stretch * 0.13, 1 + this.squash * 0.13 - this.stretch * 0.07);
+    this.group.scale.set((1 + this.squash * 0.13 - this.stretch * 0.07) * PLAYER_SCALE, (1 - this.squash * 0.22 + this.stretch * 0.13) * PLAYER_SCALE, (1 + this.squash * 0.13 - this.stretch * 0.07) * PLAYER_SCALE);
     this.flip = Math.max(0, this.flip - dt * 2.2);
     this.group.rotation.x = this.flip > 0 ? (1 - this.flip) * 6.283 : 0;
 
@@ -276,7 +277,7 @@ export class Player {
       const d = Math.hypot(s.x - this.pos.x, s.z - this.pos.z);
       if (d < bd) { bd = d; best = s; }
     }
-    const x = best ? best.x + 18 : 0, z = best ? best.z + 18 : 0;
+    const x = best ? best.x + 27 : 0, z = best ? best.z + 27 : 0;
     this.pos.set(x, heightAt(x, z) + 0.2, z);
     this.vel.set(0, 0, 0); this.grapple.release();
     this.hp = this.maxHp * 0.6;

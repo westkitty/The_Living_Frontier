@@ -305,7 +305,7 @@ export function attachAnimalVisual(actor, world) {
     fallbackRoot: actor.fallbackRoot,
     assetManager: world.assets,
     assetId: config.id,
-    localOffsetY: -actor.def.y,
+    localOffsetY: -actor.def.y * 1.5,
     clipMap: config.clips,
     oneShotStates: config.oneShot || [],
     staticDeadTilt: config.staticDeadTilt || 0,
@@ -337,7 +337,7 @@ export function attachHumanVisual(actor, world, {
     fallbackRoot: actor.fallbackRoot,
     assetManager: world.assets,
     assetId,
-    localOffsetY: -actor.def.y,
+    localOffsetY: -actor.def.y * 1.5,
     clipMap: {
       idle: ['Idle'], walk: ['Walk'], run: ['Run'], flee: ['Run'],
       attack: ['SwordSlash', 'Punch'], dead: ['Death'], default: ['Idle'],
