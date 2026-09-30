@@ -12,7 +12,7 @@ export class Input {
     this.jumpPressed = false;
     this.interactPressed = false;
     this.attackPressed = false;
-    this.cameraPressed = false; this.grapplePressed = false;
+    this.cameraPressed = false; this.grapplePressed = false; this.castPressed = false;
     this._touchJump = false;
     this.touch = false;
     this.dom = dom;
@@ -30,7 +30,7 @@ export class Input {
       if (e.code === 'Space') { this.jumpPressed = true; e.preventDefault(); }
       if (e.code === 'KeyE' || e.code === 'Enter') this.interactPressed = true;
       if (e.code === 'KeyF') this.attackPressed = true; if (e.code === 'KeyG') this.grapplePressed = true;
-      if (e.code === 'KeyC') this.cameraPressed = true;
+      if (e.code === 'KeyC') this.cameraPressed = true; if (e.code === 'KeyX') this.castPressed = true;
     });
     addEventListener('keyup', (e) => { this.keys[e.code] = false; });
     addEventListener('blur', () => { this.keys = {}; });
@@ -97,8 +97,8 @@ export class Input {
     return [x, y, !!(k.ShiftLeft || k.ShiftRight)];
   }
   consume() {
-    const r = { jump: this.jumpPressed, interact: this.interactPressed, attack: this.attackPressed, camera: this.cameraPressed, grapple: this.grapplePressed };
-    this.jumpPressed = this.interactPressed = this.attackPressed = this.cameraPressed = this.grapplePressed = false;
+    const r = { jump: this.jumpPressed, interact: this.interactPressed, attack: this.attackPressed, camera: this.cameraPressed, grapple: this.grapplePressed, cast: this.castPressed };
+    this.castPressed = this.jumpPressed = this.interactPressed = this.attackPressed = this.cameraPressed = this.grapplePressed = false;
     return r;
   }
 }

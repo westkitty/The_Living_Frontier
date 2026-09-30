@@ -289,7 +289,7 @@ export class ActorSystem {
           if (d < bd) { bd = d; prey = o; }
         }
         const rep = st.player.rep;
-        const huntPlayer = distToPlayer < 26 && (night || st.regions[regionIndex(a.pos.x, a.pos.z)].prey < 4) && player.hp > 0;
+        const huntPlayer = distToPlayer < 26 && (night || st.regions[regionIndex(a.pos.x, a.pos.z)].prey < 4) && player.hp > 0 && !((a.fearUntil || 0) > st.elapsed) && !((a.calmUntil || 0) > st.elapsed);
         if (huntPlayer && (!prey || distToPlayer < Math.sqrt(bd))) {
           a.state = 'chase'; a.aim = p; targetSpeed = def.speed;
           if (distToPlayer < 3.4 && a.timer <= 0) { player.damage(9, 'a wolf'); a.timer = 1.4; }
@@ -300,7 +300,7 @@ export class ActorSystem {
       } else {
         // prey: flee player and predators
         let threat = null, bd = (def.flee || 20) ** 2;
-        if (distToPlayer * distToPlayer < bd && !player.crouched) threat = p;
+        if ((distToPlayer * distToPlayer < bd || (a.fearUntil || 0) > st.elapsed) && !((a.calmUntil || 0) > st.elapsed) && !player.crouched) threat = p;
         for (const o of this.animals) {
           if (!o.alive || !o.def.pred) continue;
           const d = o.pos.distanceToSquared(a.pos);
@@ -432,7 +432,7 @@ export class ActorSystem {
     }
   }
 
-  moveActor(a, dirX, dirZ, speed, dt) {
+  moveActor(a, dirX, dirZ, speed, dt) { speed *= (a.slowUntil || 0) > this.state.elapsed ? a.slowMul || 0.4 : 1;
     const len = Math.hypot(dirX, dirZ) || 1;
     dirX /= len; dirZ /= len;
     if (speed > 0) {

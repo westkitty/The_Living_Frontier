@@ -8,6 +8,7 @@ import { CH } from './worldstate.js';
 import { Settings } from './settings.js';
 import { PlayerCamera } from './player-camera.js';
 import { Grapple } from './grapple.js';
+import { Magic } from './magic.js';
 import { attachPlayerVisual } from './assets/actor-visual.js';
 export { Input } from './input.js';
 const PLAYER_SCALE = 0.75;
@@ -51,7 +52,7 @@ export class Player {
     this.legR.position.set(-0.16, 0.62, 0);
     for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.fallbackRoot.add(m); }
     scene.add(this.group);
-    this.visual = attachPlayerVisual(this, world); this.cameraRig = new PlayerCamera(this, scene); this.grapple = new Grapple(this, scene);
+    this.visual = attachPlayerVisual(this, world); this.cameraRig = new PlayerCamera(this, scene); this.grapple = new Grapple(this, scene); this.magic = new Magic(this, scene);
     const p = state.player;
     this.pos = new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.1, p.z);
     this.vel = new THREE.Vector3();
@@ -76,6 +77,7 @@ export class Player {
     this.inWater = false;
   }
   damage(amount, source) {
+    amount = this.magic ? this.magic.ward(amount, source) : amount;
     this.addShake(0.2 + Math.min(0.6, amount / 40));
     if (this.dead) return;
     this.hp = clamp(this.hp - amount, 0, this.maxHp);
@@ -142,6 +144,7 @@ export class Player {
     }
     if (this.firstPerson) this.yaw = this.camYaw + Math.PI;
     this.grapple.update(dt, this, input, camera, my);
+    this.magic.update(dt, input, camera);
 
     // stamina
     if (sprinting) this.stamina = clamp(this.stamina - dt * 16, 0, 100);
@@ -173,7 +176,7 @@ export class Player {
     const rising = this.vel.y > 0, nearApex = !this.grounded && Math.abs(this.vel.y) < 2.2;
     this.boost = Math.max(0, this.boost - dt);
     const grav = this.inWater ? 15 : nearApex ? 13 : rising ? (input.jumpHeld || this.boost > 0 ? 27 : 52) : 46;
-    this.vel.y = Math.max(this.vel.y - grav * dt, -38);
+    this.vel.y = Math.max(this.vel.y - grav * dt, this.magic ? this.magic.maxFall() : -38);
 
     // --- integrate with slope resistance
     const stepX = this.vel.x * dt, stepZ = this.vel.z * dt;
@@ -211,6 +214,7 @@ export class Player {
     // water
     this.inWater = gh < WORLD.water + 0.3;
     this.speedMul = this.inWater ? 0.55 : 1;
+    if (this.magic) this.speedMul *= this.magic.speedMul();
 
     this.group.position.copy(this.pos);
     this.group.rotation.y = this.yaw;

@@ -172,7 +172,7 @@ export const InteractionMixin = {
       a.fleeing = 25;
       this.fx.hitSpark(a.pos);
       this.player.addShake(0.3);
-      this.hitStop = 0.05;
+      this.hitStop = Math.max(this.hitStop || 0, 0.05);
       for (const n of this.actors.npcs) if (n.home === s && n.pos.distanceTo(a.pos) < 60) n.fleeing = 25;
       if (a.hp <= 0) {
         a.alive = false; a.deadTime = 0; this.actors.markDead(a);
@@ -194,7 +194,7 @@ export const InteractionMixin = {
       a.hp -= 26 + Math.random() * 14;
       this.fx.hitSpark(a.pos);
       this.player.addShake(0.3);
-      this.hitStop = 0.05;
+      this.hitStop = Math.max(this.hitStop || 0, 0.05);
       if (a.def && a.def.aggressive) a.angry = true;
       if (a.hp <= 0) {
         if (t.type === 'animal') this.actors.killAnimal(a, true);

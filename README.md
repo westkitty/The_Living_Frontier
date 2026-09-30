@@ -278,6 +278,7 @@ src/panels.js       bag, chronicle, world screen and the readable history chart
 src/uikit.js        the shared icon helper and inventory icon table
 src/audio.js        fully procedural WebAudio: state-driven beds and effects
 src/interaction.js  what you are looking at, and what acting on it does
+src/magic.js        mana pool, twenty-four spells, spellbook and casting
 src/dialogue.js     villagers, soldiers and settlement halls
 src/quests.js       quests generated from world state, and their consequences
 src/guidance.js     once-only contextual teaching, backed by settings
