@@ -8,7 +8,7 @@ import { Builder } from './structures.js';
 import { regionIndex, regionCenter, CH, DAY_LENGTH } from './worldstate.js';
 import { attachAnimalVisual, attachHumanVisual } from './assets/actor-visual.js';
 
-const up = new THREE.Vector3(0, 1, 0);
+const up = new THREE.Vector3(0, 1, 0); const ACTOR_SCALE = 1.5;
 
 // ------------------------------------------------------------ creature art
 function bodyGeo(kind) {
@@ -73,6 +73,7 @@ export class Actor {
     this.kind = kind;
     this.def = def;
     this.group = new THREE.Group(); this.fallbackRoot = new THREE.Group(); this.group.add(this.fallbackRoot);
+    this.group.scale.setScalar(ACTOR_SCALE);
     const mat = mats.get(kind);
     this.body = new THREE.Mesh(Actor.geoCache(kind, 'body'), mat);
     this.body.castShadow = true;
@@ -125,7 +126,7 @@ export class ActorSystem {
   }
   spawnAnimal(kind, x, z) {
     const a = new Actor(kind, this.mats);
-    a.setPos(x, heightAt(x, z) + a.def.y, z);
+    a.setPos(x, heightAt(x, z) + a.def.y * ACTOR_SCALE, z);
     a.region = regionIndex(x, z);
     this.scene.add(a.group);
     a.visual = attachAnimalVisual(a, this.world);
@@ -136,9 +137,9 @@ export class ActorSystem {
     const a = new Actor('human', this.mats);
     const mat = this.villagerMat;
     a.body.material = mat; a.legsF.material = mat; a.legsB.material = mat;
-    const ang = Math.random() * 6.28, r = 6 + Math.random() * 14;
+    const ang = Math.random() * 6.28, r = 9 + Math.random() * 18;
     const x = settlement.x + Math.cos(ang) * r, z = settlement.z + Math.sin(ang) * r;
-    a.setPos(x, heightAt(x, z) + 1.0, z);
+    a.setPos(x, heightAt(x, z) + 1.5, z);
     a.home = settlement;
     a.npcIndex = idx;
     a.name = villagerName(settlement.id, idx);
@@ -152,7 +153,7 @@ export class ActorSystem {
     const a = new Actor('human', this.mats);
     const m = this.humanMats[faction];
     a.body.material = m; a.legsF.material = m; a.legsB.material = m;
-    a.setPos(x, heightAt(x, z) + 1.0, z);
+    a.setPos(x, heightAt(x, z) + 1.5, z);
     a.faction = faction;
     a.squad = squad;
     a.hp = a.maxHp = 55 + faction * 10;
@@ -273,11 +274,11 @@ export class ActorSystem {
         if (carcass) {
           a.state = 'feed';
           const d = a.pos.distanceTo(carcass.pos);
-          if (d < 2.2) {
+          if (d < 3.0) {
             this.remove(carcass, this.corpses);
             st.regions[regionIndex(a.pos.x, a.pos.z)].pred += 0.08;
           } else this.moveActor(a, carcass.pos.x - a.pos.x, carcass.pos.z - a.pos.z, def.speed * 0.65, dt);
-          this.animate(a, dt, d < 2.2 ? 0 : def.speed * 0.65);
+          this.animate(a, dt, d < 3.0 ? 0 : def.speed * 0.65);
           continue;
         }
         // hunt nearest prey
@@ -288,18 +289,18 @@ export class ActorSystem {
           if (d < bd) { bd = d; prey = o; }
         }
         const rep = st.player.rep;
-        const huntPlayer = distToPlayer < 26 && (night || st.regions[regionIndex(a.pos.x, a.pos.z)].prey < 4) && player.hp > 0;
+        const huntPlayer = distToPlayer < 26 && (night || st.regions[regionIndex(a.pos.x, a.pos.z)].prey < 4) && player.hp > 0 && !((a.fearUntil || 0) > st.elapsed) && !((a.calmUntil || 0) > st.elapsed);
         if (huntPlayer && (!prey || distToPlayer < Math.sqrt(bd))) {
           a.state = 'chase'; a.aim = p; targetSpeed = def.speed;
-          if (distToPlayer < 2.4 && a.timer <= 0) { player.damage(9, 'a wolf'); a.timer = 1.4; }
+          if (distToPlayer < 3.4 && a.timer <= 0) { player.damage(9, 'a wolf'); a.timer = 1.4; }
         } else if (prey) {
           a.state = 'chase'; a.aim = prey.pos; targetSpeed = def.speed * 0.95;
-          if (Math.sqrt(bd) < 2.0) { this.killAnimal(prey, false); a.timer = 3; }
+          if (Math.sqrt(bd) < 2.8) { this.killAnimal(prey, false); a.timer = 3; }
         } else { a.state = 'wander'; targetSpeed = def.speed * 0.32; }
       } else {
         // prey: flee player and predators
         let threat = null, bd = (def.flee || 20) ** 2;
-        if (distToPlayer * distToPlayer < bd && !player.crouched) threat = p;
+        if ((distToPlayer * distToPlayer < bd || (a.fearUntil || 0) > st.elapsed) && !((a.calmUntil || 0) > st.elapsed) && !player.crouched) threat = p;
         for (const o of this.animals) {
           if (!o.alive || !o.def.pred) continue;
           const d = o.pos.distanceToSquared(a.pos);
@@ -308,10 +309,10 @@ export class ActorSystem {
         if (threat) {
           a.state = 'flee';
           a.fleeFrom = threat;
-          targetSpeed = def.speed * (def.aggressive && threat === p && distToPlayer < 6 ? 0 : 1);
-          if (def.aggressive && threat === p && distToPlayer < 5.5 && a.angry) {
+          targetSpeed = def.speed * (def.aggressive && threat === p && distToPlayer < 8 ? 0 : 1);
+          if (def.aggressive && threat === p && distToPlayer < 7 && a.angry) {
             a.state = 'charge'; a.aim = p; targetSpeed = def.speed;
-            if (distToPlayer < 2.2 && a.timer <= 0) { player.damage(12, 'a boar'); a.timer = 1.8; }
+            if (distToPlayer < 3.2 && a.timer <= 0) { player.damage(12, 'a boar'); a.timer = 1.8; }
           }
         } else { a.state = 'wander'; targetSpeed = def.speed * 0.25; }
       }
@@ -347,19 +348,19 @@ export class ActorSystem {
       const idx = a.npcIndex;
       if (night) {
         const ang = (idx / 7) * 6.283;
-        tx = s.x + Math.cos(ang) * 14; tz = s.z + Math.sin(ang) * 14;
+        tx = s.x + Math.cos(ang) * 18; tz = s.z + Math.sin(ang) * 18;
         speed = 1.4;
       } else if (dayT < 0.45) {
         // morning: fields / forest
-        const ang = idx * 1.35 + 0.6, r = a.job === 'woodcutter' ? 60 : 34;
+        const ang = idx * 1.35 + 0.6, r = a.job === 'woodcutter' ? 60 : 51;
         tx = s.x + Math.cos(ang) * r; tz = s.z + Math.sin(ang) * r;
       } else if (dayT < 0.62) {
-        const ang = idx * 2.1, r = 8 + (idx % 3) * 6;
+        const ang = idx * 2.1, r = 11 + (idx % 3) * 7;
         tx = s.x + Math.cos(ang) * r; tz = s.z + Math.sin(ang) * r;
       } else {
-        tx = s.x + Math.cos(idx) * 4; tz = s.z + Math.sin(idx) * 4;   // evening gathering at fire
+        tx = s.x + Math.cos(idx) * 6; tz = s.z + Math.sin(idx) * 6;   // evening gathering at fire
       }
-      if (s.constructing > 0 && a.job === 'builder') { tx = s.x + 9; tz = s.z - 12; }
+      if (s.constructing > 0 && a.job === 'builder') { tx = s.x + 13.5; tz = s.z - 18; }
       if (st.player.rep[s.banner] < -50 && a.pos.distanceTo(p) < 14) { tx = s.x + (a.pos.x - p.x); tz = s.z + (a.pos.z - p.z); }
       // Hunters carry supplies to the nearest living neighbour, then walk home.
       // This is a journey, not a painted road: every step uses the same steering.
@@ -371,12 +372,12 @@ export class ActorSystem {
         const dest = a.returning ? s : a.destination;
         if (dest) {
           tx = dest.x; tz = dest.z;
-          if (Math.hypot(tx - a.pos.x, tz - a.pos.z) < 4) a.returning = !a.returning;
+          if (Math.hypot(tx - a.pos.x, tz - a.pos.z) < 6) a.returning = !a.returning;
         }
       }
       const dx = tx - a.pos.x, dz = tz - a.pos.z;
       const d = Math.hypot(dx, dz);
-      const moving = d > 2.2;
+      const moving = d > 3;
       this.moveActor(a, dx, dz, moving ? speed * (prosper > 0.6 ? 1.15 : 0.85) : 0, dt);
       this.animate(a, dt, moving ? speed : 0);
       a.working = !moving;
@@ -400,9 +401,9 @@ export class ActorSystem {
       if (enemy) {
         const dx = enemy.pos.x - a.pos.x, dz = enemy.pos.z - a.pos.z;
         const dist = Math.hypot(dx, dz);
-        this.moveActor(a, dx, dz, dist > 2.2 ? 4.2 : 0, dt);
-        this.animate(a, dt, dist > 2.2 ? 4.2 : 0, true);
-        if (dist < 2.6 && a.timer <= 0) {
+        this.moveActor(a, dx, dz, dist > 3.2 ? 4.2 : 0, dt);
+        this.animate(a, dt, dist > 3.2 ? 4.2 : 0, true);
+        if (dist < 3.6 && a.timer <= 0) {
           a.timer = 0.9;
           enemy.hp -= 9 + Math.random() * 7;
           this.skirmish = 1.0;
@@ -413,9 +414,9 @@ export class ActorSystem {
         }
       } else if (hostileToPlayer && dp < 34 && player.hp > 0) {
         const dx = p.x - a.pos.x, dz = p.z - a.pos.z;
-        this.moveActor(a, dx, dz, dp > 2.2 ? 4.0 : 0, dt);
-        this.animate(a, dt, dp > 2.2 ? 4.0 : 0, true);
-        if (dp < 2.6 && a.timer <= 0) { a.timer = 1.1; player.damage(11, FACTIONS[a.faction].name); }
+        this.moveActor(a, dx, dz, dp > 3.2 ? 4.0 : 0, dt);
+        this.animate(a, dt, dp > 3.2 ? 4.0 : 0, true);
+        if (dp < 3.6 && a.timer <= 0) { a.timer = 1.1; player.damage(11, FACTIONS[a.faction].name); }
       } else {
         const t = a.squad.target;
         const dx = t[0] - a.pos.x, dz = t[1] - a.pos.z;
@@ -431,7 +432,7 @@ export class ActorSystem {
     }
   }
 
-  moveActor(a, dirX, dirZ, speed, dt) {
+  moveActor(a, dirX, dirZ, speed, dt) { speed *= (a.slowUntil || 0) > this.state.elapsed ? a.slowMul || 0.4 : 1;
     const len = Math.hypot(dirX, dirZ) || 1;
     dirX /= len; dirZ /= len;
     if (speed > 0) {
@@ -451,7 +452,7 @@ export class ActorSystem {
       const nz = a.pos.z + dirZ * speed * dt;
       if (Math.abs(nx) < WORLD.half - 12 && Math.abs(nz) < WORLD.half - 12) {
         const nh = heightAt(nx, nz);
-        if (nh > 0.4 && Math.abs(nh - (a.pos.y - a.def.y)) < 4.5) {
+        if (nh > 0.4 && Math.abs(nh - (a.pos.y - a.def.y * ACTOR_SCALE)) < 6.5) {
           a.pos.x = nx; a.pos.z = nz;
         } else { a.wanderDir = Math.random() * 6.28; }
       } else { a.wanderDir = Math.random() * 6.28; }
@@ -469,14 +470,14 @@ export class ActorSystem {
       while (diff < -Math.PI) diff += 6.283;
       a.yaw += clamp(diff, -6 * dt, 6 * dt);
     }
-    a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + a.def.y, 10, dt);
+    a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + a.def.y * ACTOR_SCALE, 10, dt);
     a.group.position.copy(a.pos);
     a.group.rotation.y = a.yaw;
   }
 
   animate(a, dt, speed, fighting = false) {
     const moving = speed > 0.2;
-    a.phase += dt * (moving ? speed * 2.1 : 1.4);
+    a.phase += dt * (moving ? speed * 1.4 : 1.4);
     const swing = moving ? Math.sin(a.phase) * clamp(speed * 0.14, 0.15, 0.7) : Math.sin(a.phase * 0.5) * 0.04;
     a.legsF.rotation.x = swing;
     a.legsB.rotation.x = -swing;
@@ -535,7 +536,7 @@ export class ActorSystem {
   decayCorpse(a, dt, list) {
     a.deadTime += dt;
     a.visual?.update(dt, 'dead', 0);
-    a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + a.def.y, 3, dt);
+    a.pos.y = damp(a.pos.y, heightAt(a.pos.x, a.pos.z) + a.def.y * ACTOR_SCALE, 3, dt);
     a.group.position.y = a.pos.y;
     if (a.deadTime > 30) this.remove(a, list);
   }

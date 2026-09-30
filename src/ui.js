@@ -172,7 +172,7 @@ export class UI {
     };
     hold($('#tb-interact'), () => { this.world.input.interactPressed = true; });
     hold($('#tb-attack'), () => { this.world.input.attackPressed = true; });
-    hold($('#tb-jump'), () => { this.world.input.jumpPressed = true; });
+    hold($('#tb-jump'), () => { this.world.input.jumpPressed = true; }); hold($('#tb-grapple'), () => { this.world.input.grapplePressed = true; this.world.input.keys['KeyG'] = true; }, () => { this.world.input.keys['KeyG'] = false; });
     const sprintBtn = $('#tb-sprint');
     sprintBtn.addEventListener('click', () => {
       this.world.input.sprint = !this.world.input.sprint;
@@ -302,7 +302,7 @@ export class UI {
   showHelp() {
     const touch = document.body.classList.contains('touch');
     this.openDialog('How the frontier works', '', [
-      { label: touch ? 'Move · left stick' : 'Move · W A S D', sub: touch ? 'Look · drag anywhere on the right' : 'Look · drag the mouse · Sprint · Shift · Jump · Space', keepOpen: true },
+      { label: touch ? 'Move · left stick' : 'Move · W A S D', sub: touch ? 'Look · drag on the right · ⤒ twice for a double leap · hold the hook to grapple · the eye sees through your own eyes' : 'Look · drag, or click to capture · Sprint · Shift · Jump · Space twice for higher · Hook · hold G · C for first person', keepOpen: true },
       { label: touch ? 'Act · the hand button' : 'Act · E', sub: 'Harvest, talk, trade, enter. A second action sits on F (or the blade button): chop, set alight, attack.', keepOpen: true },
       { label: 'Your map is drawn by walking', sub: 'Country you have never seen stays blank paper. Climb high ground to survey further. Tap the map to plant a waypoint.', keepOpen: true },
       { label: 'The world keeps its memory', sub: 'Trails wear in, fires leave scars, hunted valleys empty out, villages you help build up — and it all keeps running while you are away.', keepOpen: true },

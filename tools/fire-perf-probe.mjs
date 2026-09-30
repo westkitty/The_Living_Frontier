@@ -1,6 +1,9 @@
 // Reproducible paired CPU probe for nearby fire visuals. The reference updater
 // is the pre-optimization full-filter/sort path, retained here only for an
-// apples-to-apples workload comparison against FX.updateFire.
+// apples-to-apples workload comparison against FX.updateFire. Its rendering
+// constants track production (resynced after the world-scale pass: flicker 1.8,
+// flame scale 3.3+v*7.5, light height +6, distance 95); only the selection
+// algorithm differs, which is what the equivalence assertions verify.
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { FX } from '../src/fx.js';
@@ -28,17 +31,17 @@ function legacyUpdateFire(dt, playerPos) {
     m.visible = true;
     const y = heightAt(c.x, c.z);
     const flick = 0.75 + Math.sin(shared.uTime.value * 11 + i * 2.1) * 0.25;
-    m.position.set(c.x + Math.sin(shared.uTime.value + i) * 1.2, y, c.z + Math.cos(shared.uTime.value * 1.2 + i) * 1.2);
-    const s = (2.2 + c.v * 5) * flick;
+    m.position.set(c.x + Math.sin(shared.uTime.value + i) * 1.8, y, c.z + Math.cos(shared.uTime.value * 1.2 + i) * 1.8);
+    const s = (3.3 + c.v * 7.5) * flick;
     m.scale.set(s * 0.7, s, s * 0.7);
     m.material.color.setHSL(lerp(0.02, 0.11, flick), 1, lerp(0.45, 0.62, flick));
     m.material.opacity = 0.75 + flick * 0.2;
-    if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 3, c.z);
+    if (Math.random() < dt * 14) emitSmoke(this, c.x, y + 4.5, c.z);
   }
   if (cells.length) {
-    this.fireLight.position.set(cells[0].x, heightAt(cells[0].x, cells[0].z) + 4, cells[0].z);
+    this.fireLight.position.set(cells[0].x, heightAt(cells[0].x, cells[0].z) + 6, cells[0].z);
     this.fireLight.intensity = clamp(6 * cells[0].v, 0, 8) * (0.8 + Math.sin(shared.uTime.value * 9) * 0.2);
-    this.fireLight.distance = 70;
+    this.fireLight.distance = 95;
   } else this.fireLight.intensity = lerp(this.fireLight.intensity, 0, dt * 4);
   updateSmokeParticles(this, dt);
 }
@@ -112,8 +115,8 @@ function assertSameOutput(optimized, legacy, expected) {
   for (let i = 0; i < live.length; i++) {
     const cell = expected[i];
     const time = shared.uTime.value;
-    const x = cell.x + Math.sin(time + i) * 1.2;
-    const z = cell.z + Math.cos(time * 1.2 + i) * 1.2;
+    const x = cell.x + Math.sin(time + i) * 1.8;
+    const z = cell.z + Math.cos(time * 1.2 + i) * 1.8;
     assert.ok(Math.hypot(live[i].position.x - x, live[i].position.z - z) < 1e-6,
       `flame ${i} should still render the corresponding nearest burning cell`);
   }

@@ -11,7 +11,7 @@ const DEFAULTS = {
   invertY: false,
   hints: true,
   seenHints: {},
-  lastTab: 'map',
+  lastTab: 'map', cameraMode: 'third', // third | first: whose eyes you see through
   mapView: null,          // where the player last had the survey map
 };
 
@@ -31,14 +31,14 @@ export const Settings = {
     } catch (e) { /* corrupt or unavailable storage: fall back to defaults */ }
     // clamp anything a hand-edited/corrupt store could have broken
     const v = this.values;
-    v.seenHints = Object.fromEntries(['night', 'tree', 'fire', 'village', 'banner', 'landmark']
+    v.seenHints = Object.fromEntries(['night', 'tree', 'fire', 'village', 'banner', 'landmark', 'tome']
       .filter(key => v.seenHints && v.seenHints[key] === true).map(key => [key, true]));
     if (!['high', 'medium', 'low'].includes(v.quality)) v.quality = 'high';
     v.sensitivity = Math.min(2, Math.max(0.4, Number(v.sensitivity) || 1));
     v.volume = Math.min(1, Math.max(0, Number(v.volume) >= 0 ? Number(v.volume) : 0.7));
     v.muted = !!v.muted; v.invertY = !!v.invertY; v.hints = v.hints !== false;
     if (v.mapView && !(Number.isFinite(v.mapView.cx) && Number.isFinite(v.mapView.cz) && v.mapView.span > 0)) v.mapView = null;
-    if (!['map', 'bag', 'journal', 'world'].includes(v.lastTab)) v.lastTab = 'map';
+    if (!['map', 'bag', 'journal', 'world'].includes(v.lastTab)) v.lastTab = 'map'; if (!['third', 'first'].includes(v.cameraMode)) v.cameraMode = 'third';
     return this.values;
   },
 

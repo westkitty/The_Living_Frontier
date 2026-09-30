@@ -210,6 +210,7 @@ async function boot() {
     game.input.sensitivity = prefs.sensitivity;
     game.input.invertY = prefs.invertY;
     game.player.shakeScale = Settings.motionReduced ? 0.15 : 1;
+    game.player.setFirstPerson(prefs.cameraMode === 'first');
     game.ui.syncSettingsUI();
 
     $('#boot-status').textContent = 'Drawing the map…';
@@ -243,7 +244,7 @@ async function boot() {
       const touch = document.body.classList.contains('touch');
       const tips = [
         'Everything you do here leaves a mark. Leave, come back, and see.',
-        touch ? 'Hand button acts · blade strikes · » to run.' : 'E acts · F strikes or sets alight · Shift runs · H for help.',
+        touch ? 'Hand button acts · blade strikes · spark casts · » to run.' : 'E acts · F strikes · X casts · T tome · Shift runs · H for help.',
         'Your map is blank until you walk it. Climb high ground to see further.',
       ];
       if (prefs.hints) tips.forEach((t, i) => setTimeout(() => {

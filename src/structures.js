@@ -96,32 +96,32 @@ export function makeStructureMaterial() {
 // ---------------------------------------------------------------- landmarks
 function buildAqueduct(L, b) {
   const baseY = heightAt(L.x, L.z);
-  const span = 26, count = 9;
+  const span = 39, count = 9;
   for (let i = 0; i < count; i++) {
     const px = L.x - (count - 1) * span * 0.5 + i * span;
     const broken = i === 4 || i === 5;
     const gy = heightAt(px, L.z);
-    const pierH = Math.max(12, baseY + 34 - gy);
+    const pierH = Math.max(18, baseY + 51 - gy);
     if (!broken || i === 5) {
-      b.box(7, pierH, 9, px - L.x, gy - baseY + pierH / 2, 0, STONE);
-      b.arch(px - L.x, gy - baseY + pierH - 2, 0, span * 0.62, 6.5, 2.4, STONE_D, 7);
+      b.box(10.5, pierH, 13.5, px - L.x, gy - baseY + pierH / 2, 0, STONE);
+      b.arch(px - L.x, gy - baseY + pierH - 3, 0, span * 0.62, 9.75, 3.6, STONE_D, 7);
     } else {
-      b.box(7, pierH * 0.52, 9, px - L.x, gy - baseY + pierH * 0.26, 0, STONE_D);
-      b.rock(3.2, px - L.x + 4, gy - baseY + 1.5, 6, STONE_D);
-      b.rock(2.4, px - L.x - 5, gy - baseY + 1.2, -5, STONE_D);
+      b.box(10.5, pierH * 0.52, 13.5, px - L.x, gy - baseY + pierH * 0.26, 0, STONE_D);
+      b.rock(4.8, px - L.x + 6, gy - baseY + 2.25, 9, STONE_D);
+      b.rock(3.6, px - L.x - 7.5, gy - baseY + 1.8, -7.5, STONE_D);
     }
     if (!broken) {
-      b.box(span + 1, 4.2, 11, px - L.x, gy - baseY + pierH + 4.6, 0, STONE);
-      b.box(span + 1, 2.0, 1.4, px - L.x, gy - baseY + pierH + 7.6, 4.4, STONE_D);
-      b.box(span + 1, 2.0, 1.4, px - L.x, gy - baseY + pierH + 7.6, -4.4, STONE_D);
+      b.box(span + 1, 6.3, 16.5, px - L.x, gy - baseY + pierH + 6.9, 0, STONE);
+      b.box(span + 1, 3.0, 2.1, px - L.x, gy - baseY + pierH + 11.4, 6.6, STONE_D);
+      b.box(span + 1, 3.0, 2.1, px - L.x, gy - baseY + pierH + 11.4, -6.6, STONE_D);
       // upper tier arches
-      b.arch(px - L.x, gy - baseY + pierH + 7.0, 0, span * 0.48, 3.0, 1.6, STONE, 6);
-      b.box(span + 1, 2.4, 8, px - L.x, gy - baseY + pierH + 15.5, 0, STONE);
+      b.arch(px - L.x, gy - baseY + pierH + 10.5, 0, span * 0.48, 4.5, 2.4, STONE, 6);
+      b.box(span + 1, 3.6, 12, px - L.x, gy - baseY + pierH + 23.25, 0, STONE);
     }
   }
   for (let i = 0; i < 12; i++) {
     const a = i * 1.9;
-    b.rock(1 + (i % 3) * 0.8, Math.cos(a) * (28 + i * 3), 0.4, Math.sin(a) * (22 + i * 2), STONE_D);
+    b.rock(1.5 + (i % 3) * 1.2, Math.cos(a) * (42 + i * 4.5), 0.6, Math.sin(a) * (33 + i * 3), STONE_D);
   }
   return baseY;
 }
@@ -160,17 +160,17 @@ function buildCliff(L, b) {
       const a = (i / n) * Math.PI * 1.5 + t * 0.4;
       const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
       const gy = ty;
-      b.box(6, 4.6, 6, x, gy + 2.3, z, t % 2 ? WOOD : STONE, a);
-      b.cone(5.0, 3.2, 4, x, gy + 6.0, z, THATCH, a + 0.78);
-      b.box(1.0, 3.0, 1.0, x + 3, gy + 1.5, z + 3, WOOD_D);
+      b.box(9, 6.9, 9, x, gy + 3.45, z, t % 2 ? WOOD : STONE, a);
+      b.cone(7.5, 4.8, 4, x, gy + 9.3, z, THATCH, a + 0.78);
+      b.box(1.5, 4.5, 1.5, x + 4.5, gy + 2.25, z + 4.5, WOOD_D);
     }
     // terrace platform
     b.cyl(rad + 5, rad + 5, 1.2, 12, 0, ty, 0, STONE_D);
     // stair
     for (let s = 0; s < 10; s++) b.box(3.4, 1.0, 2.2, rad * 0.5, ty - s * 1.3, -rad * 0.6 - s * 1.6, STONE);
   }
-  b.cyl(3, 3.6, 24, 8, -12, 12, 6, STONE);
-  b.cone(5, 6, 6, -12, 27, 6, STONE_D);
+  b.cyl(4.5, 5.4, 36, 8, -12, 18, 6, STONE);
+  b.cone(7.5, 9, 6, -12, 40.5, 6, STONE_D);
   return baseY;
 }
 
@@ -178,61 +178,61 @@ function buildCrater(L, b) {
   const baseY = heightAt(L.x, L.z);
   const rnd = mulberry32(7);
   for (let i = 0; i < 34; i++) {
-    const a = rnd() * 6.283, r = 60 + rnd() * 95;
+    const a = rnd() * 6.283, r = (60 + rnd() * 95) * 1.5;
     const x = Math.cos(a) * r, z = Math.sin(a) * r;
     const y = heightAt(L.x + x, L.z + z) - baseY;
-    b.rock(2 + rnd() * 5, x, y + 1, z, rnd() < 0.3 ? 0x40383a : STONE_D);
+    b.rock(3 + rnd() * 7.5, x, y + 1.5, z, rnd() < 0.3 ? 0x40383a : STONE_D);
   }
   // meteor shard cluster
   for (let i = 0; i < 7; i++) {
-    const a = i * 0.9, r = i * 2.2;
-    const g = new THREE.OctahedronGeometry(3 + (i % 3) * 2.5, 0);
+    const a = i * 0.9, r = i * 3.3;
+    const g = new THREE.OctahedronGeometry(4.5 + (i % 3) * 3.75, 0);
     g.rotateZ(0.4 + i * 0.2); g.rotateY(a);
-    g.translate(Math.cos(a) * r, 3 + i * 1.4, Math.sin(a) * r);
+    g.translate(Math.cos(a) * r, 4.5 + i * 2.1, Math.sin(a) * r);
     b.add(g, i % 2 ? 0x2b2233 : 0x3a2c44, 0.08);
   }
-  b.cyl(9, 12, 2.4, 9, 0, 0.6, 0, 0x2a2429);
+  b.cyl(13.5, 18, 3.6, 9, 0, 0.9, 0, 0x2a2429);
   for (let i = 0; i < 10; i++) {
     const a = i / 10 * 6.283;
-    b.cyl(0.7, 1.0, 6 + (i % 3) * 2, 5, Math.cos(a) * 20, 3, Math.sin(a) * 20, 0x453b4c, [0.12 * Math.cos(a), 0, 0.12 * Math.sin(a)]);
+    b.cyl(1.05, 1.5, 9 + (i % 3) * 3, 5, Math.cos(a) * 30, 4.5, Math.sin(a) * 30, 0x453b4c, [0.12 * Math.cos(a), 0, 0.12 * Math.sin(a)]);
   }
   return baseY;
 }
 
 function buildFortress(L, b) {
   const baseY = 58;
-  const W = 46;
-  const wallH = 11;
+  const W = 69;
+  const wallH = 16.5;
   for (let s = 0; s < 4; s++) {
     const horiz = s % 2 === 0;
     const sign = s < 2 ? 1 : -1;
     const x = horiz ? 0 : sign * W, z = horiz ? sign * W : 0;
-    const len = W * 2 + 5;
+    const len = W * 2 + 7.5;
     const broken = s === 1;
     if (!broken) {
-      b.box(horiz ? len : 4.5, wallH, horiz ? 4.5 : len, x, wallH / 2, z, STONE);
+      b.box(horiz ? len : 6.75, wallH, horiz ? 6.75 : len, x, wallH / 2, z, STONE);
       const n = 10;
       for (let i = 0; i < n; i++) {
         const t = (i / (n - 1) - 0.5) * len;
-        b.box(2.4, 2.2, 2.4, horiz ? t : x, wallH + 1.1, horiz ? z : t, STONE_D);
+        b.box(3.6, 3.3, 3.6, horiz ? t : x, wallH + 1.65, horiz ? z : t, STONE_D);
       }
     } else {
-      b.box(horiz ? len * 0.35 : 4.5, wallH * 0.6, horiz ? 4.5 : len * 0.35, horiz ? -len * 0.3 : x, wallH * 0.3, horiz ? z : -len * 0.3, STONE_D);
-      for (let i = 0; i < 8; i++) b.rock(1.5 + (i % 3), (horiz ? i * 6 - 10 : x + (i % 3) * 3 - 3), 1, (horiz ? z + (i % 3) * 3 - 3 : i * 6 - 10), STONE_D);
+      b.box(horiz ? len * 0.35 : 6.75, wallH * 0.6, horiz ? 6.75 : len * 0.35, horiz ? -len * 0.3 : x, wallH * 0.3, horiz ? z : -len * 0.3, STONE_D);
+      for (let i = 0; i < 8; i++) b.rock(2.25 + (i % 3) * 1.5, (horiz ? i * 9 - 15 : x + (i % 3) * 4.5 - 4.5), 1.5, (horiz ? z + (i % 3) * 4.5 - 4.5 : i * 9 - 15), STONE_D);
     }
   }
   for (let c = 0; c < 4; c++) {
     const sx = c < 2 ? 1 : -1, sz = c % 2 === 0 ? 1 : -1;
     const tall = c !== 2;
-    b.cyl(5.5, 6.5, tall ? 20 : 9, 8, sx * W, (tall ? 20 : 9) / 2, sz * W, STONE);
-    if (tall) b.cone(7.2, 6, 8, sx * W, 23, sz * W, 0x55402c);
+    b.cyl(8.25, 9.75, tall ? 30 : 13.5, 8, sx * W, (tall ? 30 : 13.5) / 2, sz * W, STONE);
+    if (tall) b.cone(10.8, 9, 8, sx * W, 34.5, sz * W, 0x55402c);
   }
-  b.box(22, 16, 18, 0, 8, 0, STONE);
-  b.box(24, 3, 20, 0, 17, 0, STONE_D);
-  b.box(7, 10, 2, 0, 5, 9.5, DARK);
+  b.box(33, 24, 27, 0, 12, 0, STONE);
+  b.box(36, 4.5, 30, 0, 25.5, 0, STONE_D);
+  b.box(10.5, 15, 3, 0, 7.5, 14.25, DARK);
   for (let i = 0; i < 12; i++) {
     const a = i * 0.52;
-    b.rock(1 + (i % 4) * 0.7, Math.cos(a) * (W + 12 + i), 0.5, Math.sin(a) * (W + 10 + i), STONE_D);
+    b.rock(1.5 + (i % 4) * 1.05, Math.cos(a) * (W + 18 + i * 1.5), 0.75, Math.sin(a) * (W + 15 + i * 1.5), STONE_D);
   }
   return baseY;
 }
@@ -340,7 +340,7 @@ export function buildLandmarks(scene, material) {
     const baseY = LANDMARK_BUILDERS[L.kind](L, b);
     const geo = b.build();
     const mesh = new THREE.Mesh(geo, material);
-    mesh.position.set(L.x, baseY, L.z);
+    mesh.position.set(L.x, baseY, L.z); mesh.scale.setScalar(L.kind === 'deadtree' || L.kind === 'flooded' ? 1.5 : 1);
     mesh.castShadow = true; mesh.receiveShadow = true;
     mesh.matrixAutoUpdate = false; mesh.updateMatrix();
     scene.add(mesh);
@@ -351,15 +351,15 @@ export function buildLandmarks(scene, material) {
 
 // -------------------------------------------------------------- settlements
 function hut(b, x, z, y, r, style, quality) {
-  const w = 5 + (style % 2) * 1.6;
+  const w = (5 + (style % 2) * 1.6) * 1.5;
   const dec = quality < 0.35;
   const wallCol = dec ? 0x5d5348 : (style % 3 === 0 ? WOOD : 0x8c7b5e);
   const roofCol = dec ? 0x6a5c44 : (style % 2 ? THATCH : 0x8a5b3c);
-  b.box(w, 4.2 * (dec ? 0.85 : 1), w, x, y + 2.1, z, wallCol, r);
-  if (quality > 0.15) b.cone(w * 0.92, 3.4, 4, x, y + 5.6, z, roofCol, r + 0.785);
-  else { b.box(w * 0.7, 0.6, w * 0.6, x + 0.6, y + 4.4, z, roofCol, r + 0.2); }
-  b.box(1.4, 2.4, 0.4, x + Math.cos(r) * (w / 2), y + 1.2, z + Math.sin(r) * (w / 2), 0x3b2b1d, r);
-  if (quality > 0.6) b.cyl(0.4, 0.5, 3.2, 5, x + 1.6, y + 5.6, z + 1.4, STONE_D);
+  b.box(w, 6.3 * (dec ? 0.85 : 1), w, x, y + 3.15, z, wallCol, r);
+  if (quality > 0.15) b.cone(w * 0.92, 5.1, 4, x, y + 8.4, z, roofCol, r + 0.785);
+  else { b.box(w * 0.7, 0.9, w * 0.6, x + 0.9, y + 6.6, z, roofCol, r + 0.2); }
+  b.box(2.1, 3.6, 0.6, x + Math.cos(r) * (w / 2), y + 1.8, z + Math.sin(r) * (w / 2), 0x3b2b1d, r);
+  if (quality > 0.6) b.cyl(0.6, 0.75, 4.8, 5, x + 2.4, y + 8.4, z + 2.1, STONE_D);
 }
 
 export function buildSettlementGeometry(s, index) {
@@ -370,67 +370,67 @@ export function buildSettlementGeometry(s, index) {
   const n = Math.max(1, s.buildings);
   for (let i = 0; i < n; i++) {
     const a = (i / n) * 6.283 + index;
-    const r = 13 + (i % 3) * 8 + rnd() * 5;
+    const r = (13 + (i % 3) * 8 + rnd() * 5) * 1.5;
     const x = Math.cos(a) * r, z = Math.sin(a) * r;
     const gy = heightAt(s.x + x, s.z + z) - baseY;
     hut(b, x, z, gy, a + Math.PI, i, s.abandoned ? 0.05 : clamp(q + (rnd() - 0.5) * 0.25, 0, 1));
   }
   // central fire + well
-  b.cyl(2.4, 2.8, 0.8, 9, 0, 0.4, 0, STONE_D);
+  b.cyl(3.6, 4.2, 1.2, 9, 0, 0.6, 0, STONE_D);
   if (!s.abandoned) {
-    for (let i = 0; i < 5; i++) b.cyl(0.18, 0.22, 2.2, 4, Math.cos(i * 1.25) * 0.7, 1.2, Math.sin(i * 1.25) * 0.7, WOOD_D, [0.3 * Math.cos(i), 0, 0.3 * Math.sin(i)]);
+    for (let i = 0; i < 5; i++) b.cyl(0.27, 0.33, 3.3, 4, Math.cos(i * 1.25) * 1.05, 1.8, Math.sin(i * 1.25) * 1.05, WOOD_D, [0.3 * Math.cos(i), 0, 0.3 * Math.sin(i)]);
   } else {
-    b.rock(1.2, 0.5, 0.6, 0.4, 0x333029);
+    b.rock(1.8, 0.75, 0.9, 0.6, 0x333029);
   }
   // fields
   for (let f = 0; f < s.fields; f++) {
-    const a = f * 1.35 + 0.6, r = 34 + (f % 2) * 8;
+    const a = f * 1.35 + 0.6, r = (34 + (f % 2) * 8) * 1.5;
     const x = Math.cos(a) * r, z = Math.sin(a) * r;
     const gy = heightAt(s.x + x, s.z + z) - baseY;
     for (let row = 0; row < 5; row++) {
-      b.box(11, 0.32, 1.1, x, gy + 0.2, z + row * 1.9 - 3.8, s.abandoned ? 0x5a5240 : (q > 0.6 ? 0x7d8f3e : 0x6d6a44), a);
+      b.box(16.5, 0.48, 1.65, x, gy + 0.3, z + row * 2.85 - 5.7, s.abandoned ? 0x5a5240 : (q > 0.6 ? 0x7d8f3e : 0x6d6a44), a);
     }
-    if (q > 0.5 && !s.abandoned) b.box(0.4, 2.2, 0.4, x + 5, gy + 1.1, z - 4, WOOD_D);
+    if (q > 0.5 && !s.abandoned) b.box(0.6, 3.3, 0.6, x + 7.5, gy + 1.65, z - 6, WOOD_D);
   }
   // palisade walls by defense level
   if (s.walls > 0 && !s.abandoned) {
-    const rad = 26 + s.walls * 2;
+    const rad = (26 + s.walls * 2) * 1.5;
     const posts = 26 + s.walls * 8;
     for (let i = 0; i < posts; i++) {
       const a = (i / posts) * 6.283;
       if (a > 1.1 && a < 1.55) continue;   // gate
       const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
       const gy = heightAt(s.x + x, s.z + z) - baseY;
-      const h = 3 + s.walls * 1.1;
-      b.cyl(0.32, 0.42, h, 5, x, gy + h / 2, z, WOOD_D);
-      if (s.walls >= 2 && i % 6 === 0) b.box(1.6, 0.4, 1.6, x, gy + h + 0.2, z, WOOD);
+      const h = (3 + s.walls * 1.1) * 1.5;
+      b.cyl(0.48, 0.63, h, 5, x, gy + h / 2, z, WOOD_D);
+      if (s.walls >= 2 && i % 6 === 0) b.box(2.4, 0.6, 2.4, x, gy + h + 0.3, z, WOOD);
     }
     if (s.walls >= 3) {
       for (let t = 0; t < 2; t++) {
         const a = 2.4 + t * 2.6;
         const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
         const gy = heightAt(s.x + x, s.z + z) - baseY;
-        b.box(4, 8, 4, x, gy + 4, z, WOOD);
-        b.cone(3.4, 2.6, 4, x, gy + 9.2, z, 0x5a4029, 0.78);
+        b.box(6, 12, 6, x, gy + 6, z, WOOD);
+        b.cone(5.1, 3.9, 4, x, gy + 13.8, z, 0x5a4029, 0.78);
       }
     }
   }
   // scaffolding while building
   if (s.constructing > 0) {
-    const x = 9, z = -12;
+    const x = 13.5, z = -18;
     const gy = heightAt(s.x + x, s.z + z) - baseY;
     for (let i = 0; i < 4; i++) {
-      const px = x + (i % 2 ? 3 : -3), pz = z + (i < 2 ? 3 : -3);
-      b.cyl(0.18, 0.2, 6, 4, px, gy + 3, pz, 0xa8874f);
+      const px = x + (i % 2 ? 4.5 : -4.5), pz = z + (i < 2 ? 4.5 : -4.5);
+      b.cyl(0.27, 0.3, 9, 4, px, gy + 4.5, pz, 0xa8874f);
     }
-    b.box(7, 0.4, 7, x, gy + 5.6, z, 0xb08b50);
-    b.box(5, 2.2, 5, x, gy + 1.1, z, 0x7e7060);
+    b.box(10.5, 0.6, 10.5, x, gy + 8.4, z, 0xb08b50);
+    b.box(7.5, 3.3, 7.5, x, gy + 1.65, z, 0x7e7060);
   }
   // rubble for abandoned villages
   if (s.abandoned) {
     for (let i = 0; i < 12; i++) {
-      const a = rnd() * 6.283, r = 8 + rnd() * 26;
-      b.rock(0.8 + rnd() * 1.6, Math.cos(a) * r, 0.4, Math.sin(a) * r, 0x53544b);
+      const a = rnd() * 6.283, r = (8 + rnd() * 26) * 1.5;
+      b.rock(1.2 + rnd() * 2.4, Math.cos(a) * r, 0.6, Math.sin(a) * r, 0x53544b);
     }
   }
   return { geo: b.build(), baseY };

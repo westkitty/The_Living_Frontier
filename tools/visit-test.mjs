@@ -20,7 +20,7 @@ if (process.argv[2] !== '--worker') {
   run('return', first);
   run('salvage', { ...first, save: first.save.replace(/("journal":\[)[\s\S]*?(,"quests":)/, '$1{"text":"torn$2') });
   run('disabled');
-  console.log(' VISIT CHECK PASSED — first visit, no-WebGL, six hints once across two boots, hints disabled');
+  console.log(' VISIT CHECK PASSED — first visit, no-WebGL, seven hints once across two boots, hints disabled');
 } else {
 const dom = new JSDOM(html, { url: 'http://localhost/', pretendToBeVisual: true, runScripts: 'outside-only' });
 const { window } = dom;
@@ -132,6 +132,7 @@ state.note('A banner changed hands.', 'faction');
 const { LANDMARKS } = await import('../src/worldgen.js');
 const landmark = LANDMARKS.find(l => !state.discovered[l.id]);
 game.player.pos.set(landmark.x, 10, landmark.z); tick();
+game.player.magic.tryCast(game.camera); tick();
 for (let i = 0; i < 3; i++) { state.time = 0.5; tick(); state.time = 0.81; tick(); state.note('A banner changed hands.', 'faction'); }
 for (const [id, text] of Object.entries(HINTS)) {
   assert(text.length < 90, `${id} hint is too long`);

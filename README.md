@@ -123,7 +123,9 @@ recovery.
 | Move | WASD / arrows | left stick |
 | Look | drag, or move the mouse | drag the right side |
 | Sprint | Shift | `»` toggle |
-| Jump | Space | `⤒` |
+| Jump | Space, again mid-air to double — hold for higher | `⤒`, again mid-air to double |
+| Grapple | hold G — 50 m rope, Space to slingshot off | hold the hook button |
+| First / third person | C, or scroll all the way in / out | eye button |
 | Interact / harvest carcass hide | E | `E` |
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
@@ -276,6 +278,7 @@ src/panels.js       bag, chronicle, world screen and the readable history chart
 src/uikit.js        the shared icon helper and inventory icon table
 src/audio.js        fully procedural WebAudio: state-driven beds and effects
 src/interaction.js  what you are looking at, and what acting on it does
+src/magic.js        mana pool, twenty-four spells, spellbook and casting
 src/dialogue.js     villagers, soldiers and settlement halls
 src/quests.js       quests generated from world state, and their consequences
 src/guidance.js     once-only contextual teaching, backed by settings
@@ -307,7 +310,7 @@ npm run ui         # wiring & accessibility gate: dangling selectors, missing
 npm run shaders    # assembles every custom shader with Three's chunks and
                    # parses the GLSL to catch syntax errors
 npm run visit      # real fresh/return/salvaged boots, no-WebGL fallback and
-                   # six hints firing only once across independent processes
+                   # seven hints firing only once across independent processes
 npm run smoke      # boots the whole game in jsdom with a stub renderer
 npm run visual     # renders the real map code with a real rasteriser and
                    # writes PNGs to /tmp/lf-visual for inspection

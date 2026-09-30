@@ -118,7 +118,7 @@ export class AudioEngine {
       case 'step-stone': this.noiseBurst(0.07, 900 + Math.random() * 500, 0.09, 'bandpass');
         this.blip(160 + Math.random() * 60, 0.05, 'square', 0.025, -30); break;
       case 'splash': this.noiseBurst(0.22, 1400, 0.13, 'highpass'); break;
-      case 'jump': this.blip(330, 0.14, 'triangle', 0.08, 180); break;
+      case 'jump': this.blip(280, 0.18, 'triangle', 0.11, 300); this.noiseBurst(0.09, 480, 0.07, 'lowpass'); break; case 'land': this.noiseBurst(0.16, 260, 0.17, 'lowpass'); this.blip(95, 0.12, 'sine', 0.08, -25); break; case 'double': this.blip(520, 0.2, 'triangle', 0.1, 420); this.noiseBurst(0.12, 900, 0.06, 'highpass'); break; case 'grapple': this.noiseBurst(0.18, 1800, 0.09, 'highpass'); break; case 'grappleHit': this.noiseBurst(0.1, 700, 0.16); this.blip(140, 0.1, 'square', 0.06, -40); break; case 'cast': this.blip(660, 0.22, 'triangle', 0.1, 320); break; case 'zap': this.noiseBurst(0.14, 2600, 0.16, 'highpass'); this.blip(190, 0.16, 'sawtooth', 0.09, -90); break; case 'heal': this.blip(520, 0.25, 'sine', 0.08, 260); setTimeout(() => this.blip(780, 0.3, 'sine', 0.07, 180), 110); break; case 'thunder': this.noiseBurst(0.6, 160, 0.2, 'lowpass'); this.blip(70, 0.5, 'sine', 0.1, -20); break;
       case 'chop': this.noiseBurst(0.16, 900, 0.22, 'bandpass'); this.blip(120, 0.14, 'square', 0.05, -40); break;
       case 'mine': this.noiseBurst(0.14, 2200, 0.2, 'bandpass'); this.blip(180, 0.1, 'square', 0.05, -80); break;
       case 'pick': this.blip(760, 0.10, 'sine', 0.09, 240); break;

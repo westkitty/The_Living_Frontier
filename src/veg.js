@@ -344,7 +344,7 @@ export class Vegetation {
         const a = arr[i];
         this.dummy.position.set(a.x, a.y, a.z);
         this.dummy.rotation.set(0, a.rot, 0);
-        this.dummy.scale.setScalar(a.scale);
+        this.dummy.scale.setScalar(a.scale * 1.5);
         this.dummy.updateMatrix();
         mesh.setMatrixAt(i, this.dummy.matrix);
       }
@@ -356,7 +356,7 @@ export class Vegetation {
     this.chunks.set(key, { meshes, grassMesh: null, items, ring, rec, authoredPine: null });
     if (ring === 0) this.buildGrass(key);
     const chunk = this.chunks.get(key), item = chunk.items.find((candidate) => candidate.type === 'pine');
-    if (this.assets && !globalThis.__LF_RENDERER && ring <= 1 && item) void acquireStaticWorldAsset(this.assets, this.scene, 'vegetation.pine.phase1', { name: `world-visual:pine:${key}`, position: new THREE.Vector3(item.x, item.y, item.z), rotationY: item.rot, scale: item.scale, isCurrent: () => this.chunks.get(key) === chunk }).then((record) => { if (record) chunk.authoredPine = record; }).catch((error) => console.warn(`[vegetation] authored pine unavailable for ${key}; procedural family retained`, error?.message || error));
+    if (this.assets && !globalThis.__LF_RENDERER && ring <= 1 && item) void acquireStaticWorldAsset(this.assets, this.scene, 'vegetation.pine.phase1', { name: `world-visual:pine:${key}`, position: new THREE.Vector3(item.x, item.y, item.z), rotationY: item.rot, scale: item.scale * 1.5, isCurrent: () => this.chunks.get(key) === chunk }).then((record) => { if (record) chunk.authoredPine = record; }).catch((error) => console.warn(`[vegetation] authored pine unavailable for ${key}; procedural family retained`, error?.message || error));
   }
   buildGrass(key) {
     const c = this.chunks.get(key);
@@ -382,7 +382,7 @@ export class Vegetation {
       const a = tmp[i];
       this.dummy.position.set(a[0], a[1], a[2]);
       this.dummy.rotation.set(0, a[4], 0);
-      this.dummy.scale.set(a[3], a[3] * (0.8 + (i % 5) * 0.12), a[3]);
+      this.dummy.scale.set(a[3] * 1.5, a[3] * (0.8 + (i % 5) * 0.12) * 1.5, a[3] * 1.5);
       this.dummy.updateMatrix();
       mesh.setMatrixAt(i, this.dummy.matrix);
     }

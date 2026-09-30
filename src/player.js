@@ -1,95 +1,17 @@
-// Third-person player: heightfield movement, spring camera, unified input, stamina, damage and animation.
+// Player: heightfield movement, a shaped and forgiving leap, stamina, damage,
+// animation, and eyes of your own — third person until you press C.
 import * as THREE from 'three';
 import { WORLD, heightAt, normalAt } from './worldgen.js';
 import { clamp, lerp, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { CH } from './worldstate.js';
+import { Settings } from './settings.js';
+import { PlayerCamera } from './player-camera.js';
+import { Grapple } from './grapple.js';
+import { Magic } from './magic.js';
 import { attachPlayerVisual } from './assets/actor-visual.js';
-
-export class Input {
-  constructor(dom) {
-    this.keys = {};
-    this.move = new THREE.Vector2();       // -1..1
-    this.look = new THREE.Vector2();       // delta accumulated per frame
-    this.sprint = false;
-    this.jumpPressed = false;
-    this.interactPressed = false;
-    this.attackPressed = false;
-    this.touch = false;
-    this.dom = dom;
-    this.lookScale = 1;
-    this.sensitivity = 1;
-    this.invertY = false;
-    this._bind();
-  }
-  _bind() {
-    addEventListener('keydown', (e) => {
-      if (e.repeat) return;
-      this.keys[e.code] = true;
-      if (e.code === 'Space') { this.jumpPressed = true; e.preventDefault(); }
-      if (e.code === 'KeyE' || e.code === 'Enter') this.interactPressed = true;
-      if (e.code === 'KeyF') this.attackPressed = true;
-    });
-    addEventListener('keyup', (e) => { this.keys[e.code] = false; });
-    addEventListener('blur', () => { this.keys = {}; });
-    // Mouse look (drag or pointer lock)
-    const canvas = this.dom;
-    canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0) { this.dragging = true; this.lastX = e.clientX; this.lastY = e.clientY; }
-      if (e.button === 2) this.attackPressed = true;
-    });
-    addEventListener('mouseup', () => { this.dragging = false; });
-    addEventListener('mousemove', (e) => {
-      if (document.pointerLockElement === canvas) {
-        this.look.x += e.movementX * 0.0022;
-        this.look.y += e.movementY * 0.0022;
-      } else if (this.dragging) {
-        this.look.x += (e.clientX - this.lastX) * 0.004;
-        this.look.y += (e.clientY - this.lastY) * 0.004;
-        this.lastX = e.clientX; this.lastY = e.clientY;
-      }
-    });
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
-    canvas.addEventListener('wheel', (e) => { this.zoom = (this.zoom || 0) + Math.sign(e.deltaY) * 0.6; e.preventDefault(); }, { passive: false });
-    // Touch look on the right half of the screen
-    this.touches = new Map();
-    const startLook = (t) => { this.lookId = t.identifier; this.lastTX = t.clientX; this.lastTY = t.clientY; };
-    canvas.addEventListener('touchstart', (e) => {
-      this.touch = true;
-      for (const t of e.changedTouches) {
-        if (t.clientX > innerWidth * 0.38 && this.lookId === undefined) startLook(t);
-      }
-    }, { passive: true });
-    canvas.addEventListener('touchmove', (e) => {
-      for (const t of e.changedTouches) {
-        if (t.identifier === this.lookId) {
-          this.look.x += (t.clientX - this.lastTX) * 0.006;
-          this.look.y += (t.clientY - this.lastTY) * 0.006;
-          this.lastTX = t.clientX; this.lastTY = t.clientY;
-        }
-      }
-    }, { passive: true });
-    const endTouch = (e) => {
-      for (const t of e.changedTouches) if (t.identifier === this.lookId) this.lookId = undefined;
-    };
-    canvas.addEventListener('touchend', endTouch, { passive: true });
-    canvas.addEventListener('touchcancel', endTouch, { passive: true });
-  }
-  keyboardMove() {
-    const k = this.keys;
-    let x = 0, y = 0;
-    if (k.KeyW || k.ArrowUp) y += 1;
-    if (k.KeyS || k.ArrowDown) y -= 1;
-    if (k.KeyA || k.ArrowLeft) x -= 1;
-    if (k.KeyD || k.ArrowRight) x += 1;
-    return [x, y, !!(k.ShiftLeft || k.ShiftRight)];
-  }
-  consume() {
-    const r = { jump: this.jumpPressed, interact: this.interactPressed, attack: this.attackPressed };
-    this.jumpPressed = this.interactPressed = this.attackPressed = false;
-    return r;
-  }
-}
+export { Input } from './input.js';
+const PLAYER_SCALE = 0.75;
 
 // ---------------------------------------------------------------------------
 function playerGeo(part) {
@@ -130,28 +52,24 @@ export class Player {
     this.legR.position.set(-0.16, 0.62, 0);
     for (const m of [this.body, this.armL, this.armR, this.legL, this.legR]) { m.castShadow = true; this.fallbackRoot.add(m); }
     scene.add(this.group);
-    this.visual = attachPlayerVisual(this, world);
+    this.visual = attachPlayerVisual(this, world); this.cameraRig = new PlayerCamera(this, scene); this.grapple = new Grapple(this, scene); this.magic = new Magic(this, scene);
     const p = state.player;
     this.pos = new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.1, p.z);
     this.vel = new THREE.Vector3();
     this.yaw = p.yaw || 0;
     this.camYaw = this.yaw;
     this.camPitch = 0.24;
-    this.camDist = 7.5;
-    this.camDistTarget = 7.5;
-    this.grounded = true;
+    this.camDist = 6.4;
+    this.camDistTarget = 6.4;
+    this.grounded = true; this.jumpBuffer = 0; this.coyote = 0; this.airJumps = 1; this.boost = 0;
     this.hp = p.hp; this.maxHp = p.maxHp;
     this.stamina = p.stamina ?? 100;
     this.phase = 0;
-    this.swing = 0;
+    this.swing = 0; this.squash = 0; this.stretch = 0; this.flip = 0;
     this.shake = 0;
     this.shakeScale = 1;
-    this.crouched = false;
+    this.crouched = false; this.firstPerson = Settings.get('cameraMode') === 'first';
     this.speedMul = 1;
-    this.camTarget = new THREE.Vector3();
-    this.camPos = new THREE.Vector3();
-    this._camDir = new THREE.Vector3();
-    this._camWant = new THREE.Vector3();
     this.lastTrail = 0;
     this.dead = false;
     this.deathTimer = 0;
@@ -159,6 +77,7 @@ export class Player {
     this.inWater = false;
   }
   damage(amount, source) {
+    amount = this.magic ? this.magic.ward(amount, source) : amount;
     this.addShake(0.2 + Math.min(0.6, amount / 40));
     if (this.dead) return;
     this.hp = clamp(this.hp - amount, 0, this.maxHp);
@@ -185,6 +104,7 @@ export class Player {
     const st = this.state;
     if (this.dead) {
       this.deathTimer += dt;
+      input.jumpPressed = input.cameraPressed = input.grapplePressed = false; this.grapple.release(); input.look.set(0, 0);
       this.group.rotation.z = 0;
       this.fallbackRoot.rotation.z = lerp(this.fallbackRoot.rotation.z, 1.5, dt * 3);
       if (this.deathTimer > 3.2) this.respawn();
@@ -201,38 +121,62 @@ export class Player {
     // --- camera orientation from look input
     const sens = input.sensitivity || 1;
     this.camYaw -= input.look.x * sens;
-    this.camPitch = clamp(this.camPitch + input.look.y * sens * (input.invertY ? -1 : 1), -0.45, 1.15);
+    const pLo = this.firstPerson ? -1.25 : -0.45, pHi = this.firstPerson ? 1.25 : 1.15;
+    this.camPitch = clamp(this.camPitch + input.look.y * sens * (input.invertY ? -1 : 1), pLo, pHi);
     input.look.set(0, 0);
-    if (input.zoom) { this.camDistTarget = clamp(this.camDistTarget + input.zoom, 3.2, 16); input.zoom = 0; }
 
-    // --- movement
+    // --- movement (the air keeps your momentum: it steers, it never grabs)
     const speed = (this.crouched ? 1.9 : sprinting ? 9.2 : 4.6) * this.speedMul;
+    const airK = this.grounded ? 1 : 0.32;
     if (moveLen > 0.05) {
       // forward is away from the camera: camera sits at +(sin(camYaw), cos(camYaw))
       const ang = Math.atan2(mx, -my) + this.camYaw;
       const dirX = Math.sin(ang), dirZ = Math.cos(ang);
-      this.vel.x = damp(this.vel.x, dirX * speed * moveLen, 12, dt);
-      this.vel.z = damp(this.vel.z, dirZ * speed * moveLen, 12, dt);
+      this.vel.x = damp(this.vel.x, dirX * speed * moveLen, 12 * airK, dt);
+      this.vel.z = damp(this.vel.z, dirZ * speed * moveLen, 12 * airK, dt);
       const want = Math.atan2(dirX, dirZ);
       let d = want - this.yaw;
       while (d > Math.PI) d -= 6.283; while (d < -Math.PI) d += 6.283;
       this.yaw += clamp(d, -9 * dt, 9 * dt);
     } else {
-      this.vel.x = damp(this.vel.x, 0, 14, dt);
-      this.vel.z = damp(this.vel.z, 0, 14, dt);
+      this.vel.x = damp(this.vel.x, 0, this.grounded ? 14 : 0.7, dt);
+      this.vel.z = damp(this.vel.z, 0, this.grounded ? 14 : 0.7, dt);
     }
+    if (this.firstPerson) this.yaw = this.camYaw + Math.PI;
+    this.grapple.update(dt, this, input, camera, my);
+    this.magic.update(dt, input, camera);
 
     // stamina
     if (sprinting) this.stamina = clamp(this.stamina - dt * 16, 0, 100);
     else this.stamina = clamp(this.stamina + dt * (moveLen > 0.1 ? 7 : 15), 0, 100);
 
-    // --- vertical
+    // --- vertical: buffered, forgiving, twice-jumpable, and shaped for feel
     const ground = heightAt(this.pos.x, this.pos.z);
-    this.vel.y -= 26 * dt;
-    if (input.jumpPressed && this.grounded) {
-      this.vel.y = 9.2; this.grounded = false; input.jumpPressed = false;
+    if (input.jumpPressed) { this.jumpBuffer = 0.18; input.jumpPressed = false; }
+    else this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
+    this.coyote = this.grounded ? 0.13 : Math.max(0, this.coyote - dt);
+    if (input.jumpHeld && this.grounded) this.jumpBuffer = Math.max(this.jumpBuffer, 0.05);
+    if (this.jumpBuffer > 0 && (this.grounded || this.coyote > 0)) {
+      const sprintBoost = Math.hypot(this.vel.x, this.vel.z) > 6 ? 1.06 : 1;
+      this.vel.y = (this.inWater ? 10 : 15) * sprintBoost;
+      this.grounded = false; this.coyote = 0; this.jumpBuffer = 0;
+      this.stretch = 1; this.cameraRig.kick(-1.0); this.cameraRig.punch(3);
+      this.vel.x *= 1.08; this.vel.z *= 1.08;      // a sprint carries into the leap
       this.world.audio.play('jump');
+      this.world.fx.dust(this.pos);
+    } else if (this.jumpBuffer > 0 && this.airJumps > 0) {
+      this.airJumps -= 1; this.jumpBuffer = 0;
+      this.vel.y = this.inWater ? 8 : 12.5; this.boost = 0.28;
+      this.stretch = 1; this.flip = Settings.motionReduced ? 0 : 1;
+      this.cameraRig.kick(-0.8); this.cameraRig.punch(2.5);
+      this.world.audio.play('double');
+      this.world.fx.emitSpark(this.pos, 0xbfe3ff, 14, 4, 2.5);
     }
+    // held rises float, released rises cut short, falls are fast, the apex hangs
+    const rising = this.vel.y > 0, nearApex = !this.grounded && Math.abs(this.vel.y) < 2.2;
+    this.boost = Math.max(0, this.boost - dt);
+    const grav = this.inWater ? 15 : nearApex ? 13 : rising ? (input.jumpHeld || this.boost > 0 ? 27 : 52) : 46;
+    this.vel.y = Math.max(this.vel.y - grav * dt, this.magic ? this.magic.maxFall() : -38);
 
     // --- integrate with slope resistance
     const stepX = this.vel.x * dt, stepZ = this.vel.z * dt;
@@ -256,16 +200,21 @@ export class Player {
     this.pos.y += this.vel.y * dt;
     const gh = heightAt(this.pos.x, this.pos.z);
     if (this.pos.y <= gh) {
-      if (!this.grounded && this.vel.y < -16) {
-        this.damage(clamp((-this.vel.y - 16) * 2.2, 0, 60), 'the fall');
+      const impact = this.grounded ? 0 : -this.vel.y;
+      if (impact > 7) {
+        this.squash = clamp(impact / 22, 0.25, 1);
+        this.cameraRig.kick(impact * 0.06); this.cameraRig.punch(-impact * 0.1);
         this.world.fx.dust(this.pos);
+        this.world.audio.play(impact > 12 ? 'land' : this.footstepSound(st));
       }
-      this.pos.y = gh; this.vel.y = 0; this.grounded = true;
-    } else if (this.vel.y < -1) this.grounded = false;
+      if (impact > 26) this.damage(clamp((impact - 26) * 2.4, 0, 60), 'the fall');
+      this.pos.y = gh; this.vel.y = 0; this.grounded = true; this.airJumps = 1;
+    } else if (this.pos.y > gh + 0.02) this.grounded = false;
 
     // water
-    this.inWater = gh < WORLD.water + 0.4;
+    this.inWater = gh < WORLD.water + 0.3;
     this.speedMul = this.inWater ? 0.55 : 1;
+    if (this.magic) this.speedMul *= this.magic.speedMul();
 
     this.group.position.copy(this.pos);
     this.group.rotation.y = this.yaw;
@@ -289,7 +238,7 @@ export class Player {
 
     // --- animation
     const sp = Math.hypot(this.vel.x, this.vel.z);
-    this.phase += dt * (sp * 1.35 + 1.2);
+    this.phase += dt * (sp * 1.8 + 1.2);
     const amp = clamp(sp * 0.10, 0, 0.85);
     const s = Math.sin(this.phase * 1.4);
     this.legL.rotation.x = s * amp;
@@ -300,6 +249,11 @@ export class Player {
     this.body.rotation.x = clamp(sp * 0.012, 0, 0.16);
     this.body.position.y = Math.abs(Math.sin(this.phase * 1.4)) * amp * 0.09 - (this.crouched ? 0.25 : 0);
     if (!this.grounded) { this.legL.rotation.x = 0.4; this.legR.rotation.x = -0.25; }
+    // leaps stretch the body, landings squash it — the eye reads weight
+    this.squash = Math.max(0, this.squash - dt * 5); this.stretch = Math.max(0, this.stretch - dt * 6);
+    this.group.scale.set((1 + this.squash * 0.13 - this.stretch * 0.07) * PLAYER_SCALE, (1 - this.squash * 0.22 + this.stretch * 0.13) * PLAYER_SCALE, (1 + this.squash * 0.13 - this.stretch * 0.07) * PLAYER_SCALE);
+    this.flip = Math.max(0, this.flip - dt * 2.2);
+    this.group.rotation.x = this.flip > 0 ? (1 - this.flip) * 6.283 : 0;
 
     const visualState = this.swing > 0 ? 'attack' : !this.grounded ? 'jump' : sp > 6 ? 'run' : sp > 0.2 ? 'walk' : 'idle';
     this.visual?.update(dt, visualState, sp);
@@ -314,6 +268,9 @@ export class Player {
   attack() { this.swing = 1; }
   // Impact kick. Scaled (or silenced) by the reduce-motion preference.
   addShake(amount) { this.shake = Math.min(1.2, this.shake + amount * this.shakeScale); }
+  // Where the hands reach: the body's facing, or the eyes' in first person.
+  get aimYaw() { return this.firstPerson ? this.camYaw + Math.PI : this.yaw; }
+  setFirstPerson(fp) { this.firstPerson = !!fp; this.cameraRig.applyMode(false); }
 
   respawn() {
     const st = this.state;
@@ -324,12 +281,12 @@ export class Player {
       const d = Math.hypot(s.x - this.pos.x, s.z - this.pos.z);
       if (d < bd) { bd = d; best = s; }
     }
-    const x = best ? best.x + 18 : 0, z = best ? best.z + 18 : 0;
+    const x = best ? best.x + 27 : 0, z = best ? best.z + 27 : 0;
     this.pos.set(x, heightAt(x, z) + 0.2, z);
-    this.vel.set(0, 0, 0);
+    this.vel.set(0, 0, 0); this.grapple.release();
     this.hp = this.maxHp * 0.6;
     this.dead = false;
-    this.group.rotation.z = 0;
+    this.group.rotation.z = 0; this.group.rotation.x = 0;
     this.fallbackRoot.rotation.z = 0;
     // you lose some cargo when you fall
     const inv = st.player.inv;
@@ -337,28 +294,5 @@ export class Player {
     this.world.ui.toast(best ? `${best.name} took you in. Some supplies were lost.` : 'You wake in the wilds.');
   }
 
-  updateCamera(dt, camera, input) {
-    const height = 1.55;
-    this.camDist = damp(this.camDist, this.camDistTarget, 6, dt);
-    this.camTarget.set(this.pos.x, this.pos.y + height, this.pos.z);
-    const cp = Math.cos(this.camPitch), sp2 = Math.sin(this.camPitch);
-    const dir = this._camDir.set(Math.sin(this.camYaw) * cp, sp2 + 0.28, Math.cos(this.camYaw) * cp);
-    const want = this._camWant.copy(this.camTarget).addScaledVector(dir, this.camDist);
-    // keep the camera above ground
-    const gh = heightAt(want.x, want.z) + 1.4;
-    if (want.y < gh) want.y = gh;
-    this.camPos.lerp(want, 1 - Math.exp(-9 * dt));
-    if (!this._camInit) { this.camPos.copy(want); this._camInit = true; }
-    camera.position.copy(this.camPos);
-    // impact kick: a short, decaying shove that never fights the look controls
-    if (this.shake > 0.001) {
-      const t = this._shakeT = (this._shakeT || 0) + dt * 34;
-      const k = this.shake * this.shake * 0.55;
-      camera.position.x += Math.sin(t * 1.7) * k;
-      camera.position.y += Math.sin(t * 2.3 + 1.1) * k * 0.8;
-      camera.position.z += Math.cos(t * 1.9 + 0.4) * k;
-      this.shake = Math.max(0, this.shake - dt * 4.2);
-    }
-    camera.lookAt(this.camTarget);
-  }
+  updateCamera(dt, camera, input) { this.cameraRig.update(dt, this, camera, input); }
 }
