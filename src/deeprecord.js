@@ -9,6 +9,7 @@
 // Reading is the interaction: scrub for a year, zoom to change what a pixel
 // means, and the readout tells you what the column is made of at that depth.
 import { $ } from './uikit.js';
+import { fitCanvas, PAPER, typeface } from './surface.js';
 import { clamp } from './rng.js';
 import { SETTLEMENTS } from './worldgen.js';
 import {
@@ -135,7 +136,7 @@ export const RecordMixin = {
     const cv = $('#rec-canvas');
     if (!cv) return;
     const st = this.state;
-    const { w: W, h: H, dpr } = this.fitCanvas(cv, 360, 620);
+    const { w: W, h: H, dpr } = fitCanvas(cv, 360, 620);
     const ctx = cv.getContext('2d');
     const s = dpr;
     const now = presentYear(st);
@@ -144,7 +145,7 @@ export const RecordMixin = {
     const toY = (year) => ((year - win.top) / win.span) * H;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#07090a';
+    ctx.fillStyle = PAPER.core;
     ctx.fillRect(0, 0, W, H);
 
     const colX = W * 0.30, colW = W * 0.30, rightLabelX = colX + colW + 17 * s, rightLabelWidth = Math.max(1, W - rightLabelX - 8 * s);
@@ -153,9 +154,7 @@ export const RecordMixin = {
 
     // rock: the ground the record is cut out of
     const rock = ctx.createLinearGradient(colX, 0, colX + colW, 0);
-    rock.addColorStop(0, '#191a19');
-    rock.addColorStop(0.5, '#23241f');
-    rock.addColorStop(1, '#141513');
+    for (const [at, col] of [[0, '#191a19'], [0.5, '#23241f'], [1, '#141513']]) rock.addColorStop(at, col);
     ctx.fillStyle = rock;
     ctx.fillRect(colX, 0, colW, H);
 
@@ -200,7 +199,7 @@ export const RecordMixin = {
     ctx.beginPath(); ctx.moveTo(colX - 7 * s, ly1); ctx.lineTo(colX + colW + 7 * s, ly1); ctx.stroke();
     // You are down here. At the widest reading this band is thinner than the
     // line that points at it, which is the honest way to show the proportion.
-    ctx.font = `${9.5 * s}px 'Iowan Old Style',Palatino,Georgia,serif`;
+    ctx.font = typeface(9.5 * s);
     ctx.textAlign = 'left';
     if (ly1 > -20 && ly0 < H + 20) {
       const py0 = clamp(ly0, 6 * s, H - 14 * s);
@@ -220,7 +219,7 @@ export const RecordMixin = {
 
     // ---- close reading: at a lifetime or less, name what you are inside of
     if (win.span <= 40) {
-      ctx.font = `${10 * s}px 'Iowan Old Style',Palatino,Georgia,serif`;
+      ctx.font = typeface(10 * s);
       ctx.textAlign = 'left';
       const rows = [];
       for (const t of ten) {
@@ -256,7 +255,7 @@ export const RecordMixin = {
 
     // ---- the spine: named events, sealed until you have stood there
     const events = deepEvents(st);
-    ctx.font = `${10.5 * s}px 'Iowan Old Style',Palatino,Georgia,serif`;
+    ctx.font = typeface(10.5 * s);
     const taken = [];                       // label rows already used, so two
     const rowFor = (y) => {                 // events in the same year stay readable
       let ly = clamp(y, 9 * s, H - 5 * s);
@@ -304,7 +303,7 @@ export const RecordMixin = {
     }
 
     // ---- which lane is which
-    ctx.font = `${8.5 * s}px system-ui,sans-serif`;
+    ctx.font = typeface(8.5 * s);
     ctx.textAlign = 'center';
     for (let i = 0; i < lanes; i++) {
       const s2 = st.settlements[i];

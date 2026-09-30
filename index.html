@@ -92,10 +92,10 @@
 <!-- ------------------------------------------------------------- HUD ---- -->
 <div id="hud" class="hidden">
 
-  <div id="compass">
-    <div id="compass-strip"></div>
-    <div id="compass-pips"></div>
-    <div class="compass-needle"></div>
+  <div id="compass" role="img" aria-label="Compass">
+    <div id="compass-strip" aria-hidden="true"></div>
+    <div id="compass-pips" aria-hidden="true"></div>
+    <div class="compass-needle" aria-hidden="true"></div>
   </div>
 
   <div id="top-left" class="glass">
@@ -184,6 +184,33 @@
           <span><i style="background:#86704a"></i>Your trails</span>
           <span><i class="unknown"></i>Unsurveyed</span>
         </div>
+        <details class="map-key-full">
+          <summary>What every mark on this map means</summary>
+          <ul class="mk">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><path d="M12 3.4 19 18 12 14.6 5 18z"/></svg>
+              <b>Village</b> — a ring around the settlement mark. The bigger the
+              ring, the better it is doing. Ruins are marked <i>(ruined)</i>.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6"/></svg>
+              <b>Landmark</b> — a ring you have surveyed. Once you have stood in
+              front of the stone it is named; after that it is a filled mark.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><path d="M12 2.6 20 12 12 21.4 4 12z"/></svg>
+              <b>Your waypoint</b> — the crosshair you planted. It rides the
+              compass until you reach it; tap it again to lift it.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><circle cx="12" cy="12" r="7.4" fill="none" stroke-dasharray="3 3"/></svg>
+              <b>Task</b> — a dashed ring around somewhere you have been asked to
+              go. Gold when it is a place, plain when it is a thing to do.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><path d="M12 21c0-6 1-10 3-13M12 15l4-3-4-3"/></svg>
+              <b>You</b> — the arrow, always turned to face where you are looking.
+              The dashed circle around it is how far you can survey from where
+              you stand: higher ground draws further.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico solid"><circle cx="12" cy="12" r="3.4"/></svg>
+              <b>Fire</b> — burning ground, pulsing while it is alight. It leaves
+              a burn scar that takes many days to green over.</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true" class="mk-ico"><path d="M5 19h14M12 19V7M8.6 10.4 12 7l3.4 3.4"/></svg>
+              <b>Standing line</b> — the bar in the corner is real distance;
+              the percentage is how much of the whole frontier you have walked.</li>
+          </ul>
+        </details>
       </section>
       <section data-view="bag" class="view" id="view-bag" role="tabpanel" tabindex="-1">
         <div id="bag-grid"></div>

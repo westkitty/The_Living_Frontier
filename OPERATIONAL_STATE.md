@@ -71,3 +71,39 @@ visual acceptance.
 - merge verified branch to `main`
 - confirm GitHub Pages deployment from merged `main`
 - record the migration COMPLETE only after those release gates pass
+
+## Quality pass — 2026-09-30
+
+A separate pass over the whole project, with no change to the asset pipeline,
+the gameplay authority boundaries above, or the save format.
+
+Repaired, each with a regression assertion in `tools/smoke-test.mjs`:
+
+- the world screen was rebuilt wholesale every two seconds, which destroyed the
+  chart canvas, threw keyboard focus to `<body>` mid-sentence, and re-attached
+  the Long Record button's handler on every pass. The shell is now built once
+  and only the readings are rewritten;
+- the chronicle chart drew into a 720x240 backing store shown in a 120-pixel
+  box, so its axis labels rendered at 6–7 px, and its pointer mapping mixed
+  backing-store pixels with CSS pixels. It is now sized to its box at device
+  resolution like every other drawn surface (`src/surface.js`);
+- a panel asked to close and then reopened inside its closing animation was
+  hidden by the first request afterwards, leaving the game holding an invisible
+  panel that blocked every input;
+- the bag's only action was a `div` with a click handler, and every rebuild took
+  the keyboard with it. Slots are buttons with names, and an empty slot stands
+  down;
+- the compass pips carried a label nothing could reach; the strip now says what
+  it points at, and one unusable coordinate no longer poisons every bearing;
+- sweeping the chart rewrote an `aria-live` region on every pointer move.
+
+Added: the survey map can be opened into a full key naming every mark it draws;
+a single click on a legend line now reads that line alone, which is what the
+copy has always claimed; and the day selected on the chart now governs the
+whole world screen rather than sitting beside numbers from today.
+
+Not done, and still outstanding: Playwright browser journeys. Chromium cannot
+be downloaded in this environment (`cdn.playwright.dev` and both fallbacks
+refuse the connection), so no WebGL pixel or real-audio evidence was gathered.
+Runtime QA here is jsdom plus the `@napi-rs/canvas` rasteriser, which exercises
+the real drawing code but not the GPU.

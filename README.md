@@ -129,6 +129,7 @@ recovery.
 | Mend yourself | Q | tap an item in the bag |
 | Map / Bag / Journal / World | M / I / J / V | HUD icons |
 | The Long Record | R; focus a sealed readout and press Enter/Space to set its waypoint | world screen → Read the Long Record; tap a sealed readout to set its waypoint |
+| Read any day | drag the chart, or focus it and use ← → , Page Up/Down, Home, End | drag the chart; a day heading in the journal opens that day |
 | Help | H | Menu → Controls |
 | Menu | Esc | ☰ |
 
@@ -160,18 +161,32 @@ the save (a few hundred bytes). The world screen draws them as a chronicle:
 five lines, each normalised against its own range, so an over-hunted herd
 crashing or a burn scar spreading is visible as a shape rather than a number.
 The chart carries a plain-language summary as its accessible label, generated
-from the same rows it draws. Isolate one series using the legend and three
-y-axis gridlines show its real minimum, midpoint and maximum; the readout names
-the unit. Multiple visible lines explicitly report that they are normalised.
-Both chart canvases reserve touch drags for scrubbing instead of page scrolling.
+from the same rows it draws. One click on a line in the legend reads that line
+alone — three y-axis gridlines then show its real minimum, midpoint and maximum
+and the readout names the unit; a second click puts the others back. With more
+than one line up, a note on the chart itself says they are each on their own
+range, so the normalisation is never something you have to take on trust. Both
+chart canvases reserve touch drags for scrubbing instead of page scrolling.
 
 It can be read, not just looked at. Drag across it — or focus it and use the
-arrow keys, Home and End — and a cursor lands on a day, reports that day's
-numbers, and lists what the chronicle recorded then. Days you have entries for
-are ticked along the axis, so the chart doubles as an index into the journal;
-and every day heading in the chronicle is a button that opens the chart on
-that day. The accessible label updates with the selected day, so the readout
-is available without seeing the drawing.
+arrow keys, Page Up and Page Down, Home and End — and a cursor lands on a day,
+reports that day's numbers, and lists what the chronicle recorded then. Days
+you have entries for are ticked along the axis, so the chart doubles as an
+index into the journal; and every day heading in the chronicle is a button
+that opens the chart on that day. The accessible label updates with the
+selected day, so the readout is available without seeing the drawing. Sweeping
+the chart is one journey rather than one announcement per day: the drawing
+follows your finger on every move, and the spoken reading is given when you
+settle.
+
+**And the day you land on takes the screen with it.** The world screen is not a
+chart beside a set of counters reporting today; the counters are the same day
+the chart is on. Ecology, faction land and the standing of the villages are all
+read back from that day's own measurement, and a landmark you had not yet found
+by then is shown as you would have met it — undiscovered. The things that only
+exist right now, the standing of each village and your waypoint, are labelled
+as what they are rather than back-dated into a reading they were not part of.
+Return to the last day and the whole screen stands down to the present.
 
 ## Heraldry, and never colour alone
 
@@ -188,7 +203,11 @@ well as a colour — the Pact round, the Legion square, the Kin triangular — u
 for both settlements and patrols. Territory has a second non-colour cue:
 solid-light Pact land, diagonal-hatched Legion land and dotted Kin land, all
 below 20% fill opacity. The key beneath the survey map names both marker and
-land patterns. A greyscale screenshot still distinguishes the factions.
+land patterns, and can be opened into a full reading of every mark the sheet
+draws: the village ring that grows with prosperity, landmarks before and after
+you have stood in front of them, the waypoint crosshair, task rings, the arrow
+that is always you, and the dashed circle showing how far you can survey from
+where you are standing. A greyscale screenshot still distinguishes the factions.
 
 The survey map describes itself too: its aria-label reports how wide the view
 is, how much of the frontier you have surveyed, the settlements inside the
@@ -271,8 +290,12 @@ src/structures.js   landmarks, villages, caves, camps, banners (merged meshes)
 src/entities.js     wildlife, villager routines, faction patrols and combat
 src/player.js       controller, spring camera, unified keyboard/touch input
 src/fx.js           sky, lights, weather, fire, smoke, sparks, birds
-src/ui.js           HUD, minimap, world map, panel shell, dialogue, touch stick
-src/panels.js       bag, chronicle, world screen and the readable history chart
+src/ui.js           HUD, minimap, panel shell, dialogue, compass and settings
+src/panels.js       the bag and the chronicle, and the door between them
+src/worldscreen.js  the world screen: a reading of one day, and the chart
+src/chart.js        the chronicle chart — its geometry, scale and ink
+src/surface.js      how every drawn surface is sized and coloured
+src/touch-controls.js  the thumb stick and the on-screen action buttons
 src/uikit.js        the shared icon helper and inventory icon table
 src/audio.js        fully procedural WebAudio: state-driven beds and effects
 src/interaction.js  what you are looking at, and what acting on it does
@@ -324,7 +347,14 @@ that a save which cannot be written reports failure after retrying with a
 slimmer payload, that the daily history matches the live simulation and stays
 bounded, that scrubbing the chart reports the selected day honestly and clamps
 at both ends, that the chart legend reports each line's true value and range
-and can isolate it, that the survey map's description matches what it draws
+and reads one line alone in a single click and puts the others back on the
+second, that the chart is drawn at the density of the box it is shown in and
+that the whole world screen reports the selected day rather than today, that
+refreshing an open panel leaves the reader's keyboard where it was, that a panel
+reopened inside its own closing animation stays open, that sweeping the chart
+narrates once rather than once per day, that every item in the bag is a
+keyboard-reachable control that really consumes and mends, that the compass
+names what its pips point at, and that the survey map's description matches what it draws
 and never names an unsurveyed place, that no two factions share a map
 silhouette, that the touch stick moves the player and releasing it stops them,
 that the touch look drag turns the camera and each on-screen action button

@@ -13,7 +13,6 @@ on:
   push:
     branches:
       - main
-      - arena/01a0e92f-the-living-frontier
     paths-ignore:
       - 'README.md'
       - 'tools/**'

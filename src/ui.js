@@ -6,6 +6,8 @@ import { Settings } from './settings.js';
 import { PanelsMixin } from './panels.js';
 import { MapMixin } from './map-ui.js';
 import { RecordMixin } from './deeprecord.js';
+import { WorldScreenMixin } from './worldscreen.js';
+import { TouchMixin } from './touch-controls.js';
 import { $, icon, ITEM_ICONS, crest } from './uikit.js';
 
 export { icon, ITEM_ICONS } from './uikit.js';
@@ -132,53 +134,7 @@ export class UI {
       if (e.code === 'KeyR') { if (this.recordOpen) this.closeRecord(); else { this.closePanel(); this.openRecord(); } }
     });
 
-    // touch joystick
-    const zone = $('#touch-left'), base = $('#stick-base'), knob = $('#stick-knob');
-    let id = null, cx = 0, cy = 0;
-    const R = 52;
-    const set = (dx, dy) => {
-      const d = Math.hypot(dx, dy);
-      const k = d > R ? R / d : 1;
-      knob.style.transform = `translate(${dx * k}px,${dy * k}px)`;
-      this.world.input.move.set(clamp(dx / R, -1, 1), clamp(-dy / R, -1, 1));
-    };
-    zone.addEventListener('touchstart', (e) => {
-      const t = e.changedTouches[0];
-      id = t.identifier;
-      const r = zone.getBoundingClientRect();
-      cx = r.left + r.width / 2; cy = r.top + r.height / 2;
-      base.classList.add('active');
-      set(t.clientX - cx, t.clientY - cy);
-      e.preventDefault();
-    }, { passive: false });
-    zone.addEventListener('touchmove', (e) => {
-      for (const t of e.changedTouches) if (t.identifier === id) set(t.clientX - cx, t.clientY - cy);
-      e.preventDefault();
-    }, { passive: false });
-    const end = (e) => {
-      for (const t of e.changedTouches) if (t.identifier === id) {
-        id = null; knob.style.transform = 'translate(0,0)';
-        base.classList.remove('active'); this.world.input.move.set(0, 0);
-      }
-    };
-    zone.addEventListener('touchend', end);
-    zone.addEventListener('touchcancel', end);
-
-    const hold = (el, down, up) => {
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); down(); }, { passive: false });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); up && up(); }, { passive: false });
-      el.addEventListener('mousedown', (e) => { e.preventDefault(); down(); });
-      el.addEventListener('mouseup', () => up && up());
-    };
-    hold($('#tb-interact'), () => { this.world.input.interactPressed = true; });
-    hold($('#tb-attack'), () => { this.world.input.attackPressed = true; });
-    hold($('#tb-jump'), () => { this.world.input.jumpPressed = true; });
-    const sprintBtn = $('#tb-sprint');
-    sprintBtn.addEventListener('click', () => {
-      this.world.input.sprint = !this.world.input.sprint;
-      sprintBtn.classList.toggle('on', this.world.input.sprint);
-      sprintBtn.setAttribute('aria-pressed', this.world.input.sprint ? 'true' : 'false');
-    });
+    this.bindTouch();
 
     this.bindMap();
     if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) document.body.classList.add('touch');
@@ -312,8 +268,14 @@ export class UI {
   }
 
   // Generic modal sheet handling with focus management.
+  // A sheet that was asked to close and then reopened inside the closing
+  // animation must not have the first request land afterwards: that used to
+  // leave the game holding an invisible panel, which blocks every key and
+  // button with nothing on screen to explain why.
   openSheet(sel) {
     const el = $(sel);
+    clearTimeout(this._sheetTimers && this._sheetTimers[sel]);
+    el.classList.remove('closing');
     this._lastFocus = document.activeElement;
     el.classList.remove('hidden');
     const focusable = el.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -321,8 +283,12 @@ export class UI {
   }
   closeSheet(sel) {
     const el = $(sel);
+    if (!this._sheetTimers) this._sheetTimers = {};
+    clearTimeout(this._sheetTimers[sel]);
     el.classList.add('closing');
-    setTimeout(() => { el.classList.add('hidden'); el.classList.remove('closing'); }, 200);
+    this._sheetTimers[sel] = setTimeout(() => {
+      el.classList.add('hidden'); el.classList.remove('closing');
+    }, 200);
     if (this._lastFocus && this._lastFocus.focus) this._lastFocus.focus();
   }
 
@@ -526,7 +492,13 @@ export class UI {
         box.appendChild(el);
       }
     }
-    if (this.panelOpen === 'world' && (this._wsT = (this._wsT || 0) + dt) > 2) { this._wsT = 0; this.renderWorldState(); }
+    // whatever panel is open keeps itself current, without being re-made
+    if (this.panelOpen && (this._panelT = (this._panelT || 0) + dt) > 2) {
+      this._panelT = 0;
+      if (this.panelOpen === 'world') this.renderWorldState();
+      else if (this.panelOpen === 'bag') this.updateBag();
+      else if (this.panelOpen === 'journal') this.renderJournal();
+    }
   }
   // Bearing in the same frame the compass strip uses (see updateCompassPips).
   bearingTo(dx, dz) {
@@ -537,6 +509,7 @@ export class UI {
   // instead of by opening a map.
   updateCompassPips(player) {
     const box = $('#compass-pips');
+    const strip = $('#compass');
     if (!box) return;
     const targets = [];
     if (this.waypoint) targets.push({ x: this.waypoint.x, z: this.waypoint.z, cls: 'way', label: this.waypoint.name || 'Waypoint' });
@@ -546,22 +519,26 @@ export class UI {
       const d = Math.hypot(s.x - player.pos.x, s.z - player.pos.z);
       if (d < 420) targets.push({ x: s.x, z: s.z, cls: 'place', label: s.name });
     }
-    const key = targets.map(t => t.cls + t.x + t.z).join('|');
+    // one unusable coordinate would otherwise poison every bearing on the strip
+    const good = targets.filter((t) => Number.isFinite(t.x) && Number.isFinite(t.z));
+    const key = good.map(t => t.cls + t.x + t.z).join('|');
     if (key !== this._pipKey) {
       this._pipKey = key;
       box.innerHTML = '';
-      this._pips = targets.map(t => {
+      this._pips = good.map(t => {
         const el = document.createElement('i');
         el.className = 'pip ' + t.cls;
-        el.dataset.label = t.label;
+        // the pip used to carry a label nobody could reach; it is a tooltip now
+        el.title = t.label;
         box.appendChild(el);
         return { el, t };
       });
     }
     if (!this._pips) return;
-    const W = $('#compass').clientWidth || 260;
+    const W = strip.clientWidth || 260;
     const heading = ((-player.camYaw + Math.PI) % 6.283185 + 6.283185) % 6.283185;
     const pxPerRad = (48 * 40) / 6.283185;
+    const spoken = [];
     for (const { el, t } of this._pips) {
       const dx = t.x - player.pos.x, dz = t.z - player.pos.z;
       let delta = this.bearingTo(dx, dz) - heading;
@@ -573,7 +550,16 @@ export class UI {
       el.style.display = '';
       el.style.transform = `translateX(${x}px)`;
       el.style.opacity = String(clamp(1 - Math.abs(delta) / 1.4, 0.35, 1));
+      const away = dist > 999 ? (dist / 1000).toFixed(1) + ' kilometres' : dist + ' metres';
       el.dataset.dist = dist > 999 ? (dist / 1000).toFixed(1) + 'km' : dist + 'm';
+      spoken.push(`${t.label}, ${away} ${t.cls === 'quest' || t.cls === 'way' ? 'ahead' : 'off'}`);
+    }
+    // the pips are shapes; say what they point at
+    const cardinal = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+    const facing = cardinal[Math.round(heading / (Math.PI / 4)) % 8];
+    if (strip) {
+      strip.setAttribute('aria-label',
+        `Compass, facing ${facing}.` + (spoken.length ? ' Marked: ' + spoken.join('; ') + '.' : ' Nothing is marked ahead.'));
     }
   }
 
@@ -605,4 +591,4 @@ export class UI {
   }
 }
 
-Object.assign(UI.prototype, PanelsMixin, RecordMixin, MapMixin);
+Object.assign(UI.prototype, PanelsMixin, WorldScreenMixin, RecordMixin, MapMixin, TouchMixin);

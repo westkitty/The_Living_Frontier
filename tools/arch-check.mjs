@@ -90,10 +90,12 @@ else ok('no import cycles');
 // Lower layers must not know about higher ones. The numbers are the only
 // place this ordering is written down, so keep them honest.
 const LAYER = {
-  'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
+  'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1, 'surface.js': 1,
   'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'world-recovery.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
   'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'fx-particles.js': 3, 'audio.js': 3,
-  'guidance.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'ui.js': 5,
+  'guidance.js': 3, 'player.js': 4, 'chart.js': 4,
+  'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'ui.js': 5, 'worldscreen.js': 5, 'touch-controls.js': 5,
+  'boot.js': 7,
   'loop.js': 6, 'streaming.js': 6, 'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };

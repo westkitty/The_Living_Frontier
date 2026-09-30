@@ -3,6 +3,7 @@ import { WORLD, LANDMARKS, FACTIONS } from './worldgen.js';
 import { clamp } from './rng.js';
 import { Settings } from './settings.js';
 import { $ } from './uikit.js';
+import { fitCanvas, PAPER, typeface } from './surface.js';
 
 export const MapMixin = {
   // --------------------------------------------------------- map interaction
@@ -152,7 +153,7 @@ export const MapMixin = {
   // ---------------------------------------------------------------- minimap
   drawMinimap(player) {
     const c = $('#minimap');
-    const { w: W, h: H, dpr } = this.fitCanvas(c, 150, 150);
+    const { w: W, h: H, dpr } = fitCanvas(c, 150, 150);
     const ctx = c.getContext('2d');
     const span = this.minimapSpan || 320;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -163,7 +164,7 @@ export const MapMixin = {
     const win = { cx: player.pos.x, cz: player.pos.z, span };
     this.carto.updateLocal(player.pos.x, player.pos.z, (w, h) => this._mk(w, h));
     if (this.carto.atlas) this.carto.drawSurvey(ctx, W, H, win, (w, h) => this._mk(w, h), { paperGrid: false });
-    else { ctx.fillStyle = '#12160f'; ctx.fillRect(0, 0, W, H); }
+    else { ctx.fillStyle = PAPER.ground; ctx.fillRect(0, 0, W, H); }
 
     const toXY = (x, z) => [((x - player.pos.x) / span + 0.5) * W, ((z - player.pos.z) / span + 0.5) * H];
     const st = this.state;
@@ -217,7 +218,7 @@ export const MapMixin = {
     ctx.beginPath(); ctx.arc(W / 2, H / 2, W / 2 - dpr, 0, 6.283); ctx.stroke();
     const na = -player.camYaw + Math.PI;
     ctx.fillStyle = '#e0b661';
-    ctx.font = `${9 * s}px 'Iowan Old Style',Palatino,Georgia,serif`;
+    ctx.font = typeface(9 * s);
     ctx.textAlign = 'center';
     ctx.fillText('N', W / 2 + Math.sin(na) * (W / 2 - 10 * s), H / 2 - Math.cos(na) * (H / 2 - 10 * s) + 3 * s);
   },
@@ -270,7 +271,7 @@ export const MapMixin = {
   drawBigMap() {
     const c = $('#bigmap');
     this._saveViewT = (this._saveViewT || 0);
-    const { w: W, h: H, dpr } = this.fitCanvas(c, 512, 512);
+    const { w: W, h: H, dpr } = fitCanvas(c, 512, 512);
     const ctx = c.getContext('2d');
     const st = this.state;
     const p = this.world.player;
@@ -302,8 +303,7 @@ export const MapMixin = {
       if (!st.discovered[L.id] && !seen) continue;
       const [x, y] = toXY(L.x, L.z);
       this.carto.landmarkGlyph(ctx, L, x, y, !!st.discovered[L.id], s);
-      if (st.discovered[L.id] && span < WORLD.size * 0.95) this.carto.label(ctx, L.name, x, y - 9 * s, '#f0ddb0', 11 * s);
-      else if (st.discovered[L.id]) this.carto.label(ctx, L.name, x, y - 9 * s, '#f0ddb0', 10 * s);
+      if (st.discovered[L.id]) this.carto.label(ctx, L.name, x, y - 9 * s, '#f0ddb0', (span < WORLD.size * 0.95 ? 11 : 10) * s);
     }
     // settlements
     for (const set of st.settlements) {
@@ -341,7 +341,7 @@ export const MapMixin = {
     // surveyed fraction — the map as a record of your own travels
     const frac = this._exFrac === undefined || (this._exFracT || 0) < st.elapsed ? (this._exFracT = st.elapsed + 8, this._exFrac = st.exploredFraction()) : this._exFrac;
     ctx.textAlign = 'right';
-    ctx.font = `${10 * s}px 'Iowan Old Style',Palatino,Georgia,serif`;
+    ctx.font = typeface(10 * s);
     ctx.fillStyle = 'rgba(230,217,184,.72)';
     ctx.fillText(`${Math.round(frac * 100)}% surveyed`, W - 14 * s, H - 14 * s);
 

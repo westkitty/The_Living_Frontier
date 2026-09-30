@@ -451,3 +451,45 @@ button.rec-line:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
 #fire-risk{border:1px solid currentColor;border-radius:4px;padding:1px 4px;font-size:10px;text-transform:uppercase}
 #fire-risk[data-risk="damp"]{color:#a8c6d6}
 #fire-risk[data-risk="tinder"]{color:#ffc07c}
+
+/* ---- the survey map's full key: every mark it draws, named --------------- */
+.map-key-full{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.map-key-full summary{font-size:12px;letter-spacing:.08em;color:var(--amber-2);cursor:pointer;
+  list-style:none;display:flex;align-items:center;gap:7px;min-height:32px;padding:2px 0;
+  transition:color .18s}
+.map-key-full summary::-webkit-details-marker{display:none}
+.map-key-full summary::before{content:'+';font-size:15px;color:var(--amber);width:11px;
+  text-align:center;transition:transform .2s cubic-bezier(.2,.9,.2,1)}
+.map-key-full[open] summary::before{transform:rotate(45deg)}
+.map-key-full summary:hover{color:var(--amber)}
+.map-key-full summary:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+.mk{list-style:none;margin:8px 0 2px;padding:0;display:grid;gap:2px}
+.mk li{display:grid;grid-template-columns:26px 1fr;align-items:start;gap:9px;
+  font-size:11.5px;line-height:1.55;color:var(--dim);padding:5px 8px;border-radius:8px;
+  background:rgba(255,255,255,.022)}
+.mk li:nth-child(odd){background:rgba(255,255,255,.04)}
+.mk li b{color:var(--ink);font-weight:500}
+.mk li i{font-style:italic}
+.mk-ico{width:24px;height:24px;fill:none;stroke:var(--amber-2);stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round;opacity:.9;margin-top:1px}
+.mk-ico.solid{fill:#ff8c3a;stroke:none}
+
+/* ---- the world screen: which day you are reading ------------------------- */
+.ws-block h4 .ws-asof{color:var(--amber);letter-spacing:.06em}
+.ws-block h4 .ws-now-tag{color:var(--dim);letter-spacing:.06em;font-size:11px}
+.ws-time{margin:0;font-size:12px;line-height:1.5;color:var(--amber-2);
+  border-left:2px solid var(--amber);padding:6px 11px;border-radius:0 8px 8px 0;
+  background:rgba(224,182,97,.09)}
+.ws-now .nm{opacity:.78;font-style:italic}
+.frow .vv{font-variant-numeric:tabular-nums}
+.frow .nm,.frow .vv{white-space:nowrap}
+.ws-block canvas{width:100%;height:clamp(118px,17vh,164px)}
+@media (max-width:560px){.ws-block canvas{height:clamp(112px,15vh,140px)}}
+
+/* ---- the bag's slots are buttons, and say when there is nothing to use ---- */
+button.slot{font:inherit;color:inherit;text-align:center;width:100%;appearance:none}
+button.slot:focus-visible{outline:2px solid var(--amber-2);outline-offset:3px}
+button.slot:disabled{cursor:default;opacity:.42;transform:none;background:rgba(255,255,255,.02)}
+button.slot:disabled:hover{transform:none;background:rgba(255,255,255,.02)}
+.slot.empty .use{opacity:.5}
+.slot.empty .use::after{content:' — none'}

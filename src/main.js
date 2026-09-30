@@ -17,6 +17,7 @@ import { LoopMixin } from './loop.js';
 import { StreamingMixin } from './streaming.js';
 import { QuestMixin } from './quests.js';
 import { createActorAssetManager } from './assets/actor-visual.js';
+import { describeSave, fatal, reportFailure } from './boot.js';
 const $ = (s) => document.querySelector(s);
 
 class Game {
@@ -117,28 +118,6 @@ class Game {
 // ---------------------------------------------------------------------------
 Object.assign(Game.prototype, InteractionMixin, DialogueMixin, QuestMixin, LoopMixin, StreamingMixin);
 
-function describeSave(obj) {
-  if (!obj) return null;
-  try {
-    const away = Math.max(0, (Date.now() - obj.savedAt) / 1000);
-    const hrs = away / 3600;
-    const set = obj.settlements || [];
-    const alive = set.filter(s => !s.abandoned).length;
-    const best = set.slice().sort((a, b) => b.prosperity - a.prosperity)[0];
-    return `<b>Day ${obj.day}</b> · ${Object.keys(obj.discovered || {}).length} landmarks found · ${alive}/${set.length} villages standing<br>
-      ${best ? `${best.name} is ${best.abandoned ? 'abandoned' : best.status}.` : ''}
-      ${hrs > 0.05 ? `<br><span style="color:var(--amber)">The frontier moved on for ${hrs < 1 ? Math.round(away / 60) + ' minutes' : hrs.toFixed(1) + ' hours'} without you.</span>` : ''}`;
-  } catch (e) { return null; }
-}
-
-function fatal(msg, detail) {
-  const el = document.getElementById('boot-status');
-  if (el) { el.style.color = '#ef8a74'; el.textContent = msg; }
-  const s = document.getElementById('save-summary');
-  if (s) s.innerHTML = `<b>${msg}</b><br><span style="font-size:11px;opacity:.7">${detail || ''}</span>`;
-  console.error(msg, detail);
-}
-
 function webglAvailable() {
   try {
     const c = document.createElement('canvas');
@@ -148,8 +127,10 @@ function webglAvailable() {
 
 async function boot() {
   const status = $('#boot-status');
-  addEventListener('error', (e) => {
-    if (window.GAME && window.GAME.ui) window.GAME.ui.toast('⚠ ' + (e.message || 'error'));
+  addEventListener('error', (e) => reportFailure('The frontier hit a fault', e.message || 'unknown error'));
+  addEventListener('unhandledrejection', (e) => {
+    const r = e && e.reason;
+    reportFailure('The frontier hit a fault', (r && (r.stack || r.message)) || 'unhandled rejection');
   });
   let raw = null, savedText = null, recoveryReport = '';
   try {

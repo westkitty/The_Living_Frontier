@@ -367,6 +367,43 @@ game.ui.closeDialog();
   p.hp = p.maxHp; p.stamina = 100;
 }
 
+// ---- the bag can be used without a mouse, and survives being re-read ------
+{
+  const ui = game.ui, inv = st.player.inv;
+  inv.berry = 3;
+  p.hp = 30;
+  ui.openPanel('bag');
+  const grid = document.querySelector('#bag-grid');
+  const berry = [...grid.querySelectorAll('button.slot')].find((b) => (b.getAttribute('aria-label') || '').startsWith('berry'));
+  const realButton = !!berry && berry.tagName === 'BUTTON';
+  const named = realButton && /3 carried/.test(berry.getAttribute('aria-label'));
+  log(`the bag is reachable from the keyboard: ${realButton ? 'a real button' : 'a div with a click handler'} ${named ? '✓' : '✗'}`);
+  if (!realButton || !named) errors.push('the bag\'s only action is not a keyboard-reachable control');
+  // using it must actually consume and heal, not just look like it did
+  const hp0 = p.hp, had = inv.berry;
+  berry.click();
+  const okUse = inv.berry === had - 1 && p.hp > hp0;
+  log(`  using a berry from the bag: ${had} -> ${inv.berry}, health ${hp0} -> ${Math.round(p.hp)} ${okUse ? '✓' : '✗'}`);
+  if (!okUse) errors.push('using an item from the bag does not consume it or mend you');
+  // an empty slot is not a control that silently does nothing
+  inv.berry = 0;
+  ui.updateBag();
+  const off = [...grid.querySelectorAll('button.slot')].find((b) => (b.getAttribute('aria-label') || '').startsWith('berry'));
+  log(`  an empty slot stands down: ${off.disabled ? 'disabled and named ✓' : '✗'}`);
+  if (!off.disabled || !/none left/.test(off.getAttribute('aria-label'))) errors.push('an empty bag slot still presents itself as usable');
+  // the grid is read, not rebuilt, so the keyboard stays where the reader left it
+  inv.herb = 2;
+  ui.updateBag();
+  const first = [...grid.querySelectorAll('button.slot')].find((b) => !b.disabled);
+  first.focus();
+  for (let i = 0; i < 3; i++) ui.updateBag();
+  const held = document.activeElement === first;
+  log(`  the bag keeps its place through three refreshes: ${held ? '✓' : '✗'}`);
+  if (!held) errors.push('refreshing the bag steals keyboard focus');
+  ui.closePanel();
+  p.hp = p.maxHp;
+}
+
 // ---- the world keeps its own biography ------------------------------------
 {
   const d0 = st.day, n0 = st.history.length;
@@ -431,10 +468,24 @@ game.ui.closeDialog();
   }
   // and a pointer drag picks a different day than the keyboard left it on
   cv.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 240, right: 720, bottom: 240 });
-  cv.dispatchEvent(new window.MouseEvent('pointerdown', { clientX: 20, bubbles: true }));
+  // just inside the left margin, which is where the plot's own edge is
+  const leftEdge = Math.max(0, game.ui._chartResult.plot.left - 2);
+  cv.dispatchEvent(new window.MouseEvent('pointerdown', { clientX: leftEdge, bubbles: true }));
   const dragged = game.ui.chartIndex(h);
   log(`pointer at the left edge selects sample ${dragged} (day ${h[dragged][0]})`);
   if (dragged !== 0) errors.push('dragging the chart does not select the day under the pointer');
+  // the far end of the record, and a point a third of the way across it: a
+  // pointer map that only ever reaches the first few days is a broken control
+  const edge = Math.round((h.length - 1) * 0.99);
+  cv.dispatchEvent(new window.MouseEvent('pointermove', { clientX: 719, bubbles: true }));
+  const right = game.ui.chartIndex(h);
+  const third = Math.round((h.length - 1) * 0.34);
+  cv.dispatchEvent(new window.MouseEvent('pointermove', { clientX: Math.round(720 * 0.34), bubbles: true }));
+  const mid = game.ui.chartIndex(h);
+  const spread = Math.abs(right - edge) <= 1 && Math.abs(mid - third) <= 1;
+  log(`pointer at the right edge -> ${right} (want ~${edge}); a third across -> ${mid} (want ~${third}): ${spread ? '✓' : '✗'}`);
+  if (!spread) errors.push('the chart pointer only reaches the start of the record');
+  cv.dispatchEvent(new window.MouseEvent('pointerup', { clientX: 720, bubbles: true }));
   // the panel refreshing must not throw the reader off their day
   const held = game.ui.chartDay;
   game.ui.renderWorldState();
@@ -451,17 +502,161 @@ game.ui.closeDialog();
     const okScale = shownVal === String(hh[ci][1]) && shownRange === `${lo}–${hi}`;
     log(`legend scale: herds ${shownVal} of range ${shownRange} ${okScale ? '✓' : '✗'}`);
     if (!okScale) errors.push('chart legend does not report the real value and range');
+    // one click reads a line alone against real values, a second puts the rest back
     first.click();
-    const hiddenNow = game.ui.chartHiddenSet().has(1)
-      && document.querySelector('#ws-legend .leg').getAttribute('aria-pressed') === 'false';
-    log('  isolating a line:', hiddenNow ? 'hidden and announced ✓' : '✗');
-    if (!hiddenNow) errors.push('toggling a chart series does not hide it');
+    const soloed = [...game.ui.chartHiddenSet()].sort().join() === '2,3,4,8'
+      && first.getAttribute('aria-pressed') === 'true'
+      && /only line shown/.test(first.getAttribute('aria-label') || '');
+    log('  one click reads a line alone:', soloed ? '✓' : '✗');
+    if (!soloed) errors.push('clicking a chart line does not read it alone');
+    first.click();
+    const restored = game.ui.chartHiddenSet().size === 0
+      && [...document.querySelectorAll('#ws-legend .leg')].every(b => b.getAttribute('aria-pressed') === 'true');
+    log('  a second click puts the others back:', restored ? '✓' : '✗');
+    if (!restored) errors.push('clicking an isolated line does not restore the others');
     // hiding everything must not break the drawing
     for (const s2 of game.ui.chartSeries()) game.ui.chartHiddenSet().add(s2.k);
     game.ui.drawHistoryChart(st);
     log('  all five lines hidden: chart still renders ✓');
     game.ui.chartHiddenSet().clear();
     game.ui.drawHistoryChart(st);
+  }
+
+  // the chart is sized to the box it is shown in, not to the numbers its markup
+  // happens to declare: a backing store smaller than its CSS box is how real
+  // axis labels turn into an unreadable smear
+  {
+    cv.getBoundingClientRect = () => ({ left: 0, top: 0, width: 666, height: 132, right: 666, bottom: 132 });
+    Object.defineProperty(cv, 'clientWidth', { get: () => 666, configurable: true });
+    Object.defineProperty(cv, 'clientHeight', { get: () => 132, configurable: true });
+    globalThis.devicePixelRatio = 2;
+    game.ui.drawHistoryChart(st);
+    const want = [666 * 2, 132 * 2];
+    const okSize = cv.width === want[0] && cv.height === want[1];
+    log(`  chart backing store ${cv.width}x${cv.height} for a ${cv.clientWidth}x${cv.clientHeight} box at dpr 2: ${okSize ? '✓' : '✗'}`);
+    if (!okSize) errors.push('the chart is not sized to its CSS box at device resolution');
+    // and the plot the chart reports must describe that box, not the old one
+    const plot = game.ui._chartResult.plot, box = game.ui._chartResult.box;
+    const okPlot = plot.left + plot.w + plot.right === box.cw && plot.bot < box.ch;
+    log(`  plot rect ${Math.round(plot.w)}x${Math.round(plot.h)} inside the box: ${okPlot ? '✓' : '✗'}`);
+    if (!okPlot) errors.push('the chart reports a plot rectangle that does not fit its box');
+    globalThis.devicePixelRatio = 1;
+  }
+
+  // the whole world screen describes the day the reader scrubbed to, not today
+  {
+    const hh = st.history;
+    const early = hh[2][0];
+    game.ui.chartDay = early;
+    game.ui.renderWorldState();
+    const say = document.querySelector('#ws-read').textContent;
+    const banner = document.querySelector('#ws-time');
+    const eco = document.querySelector('#ws-v-prey').textContent;
+    const bannerShown = banner && !banner.classList.contains('hidden');
+    const okDay = say.includes(`Day ${early}`) && eco === String(hh[2][1])
+      && bannerShown && banner.textContent.includes(`day ${early}`);
+    log(`day ${early} takes the whole screen: readout ✓ numbers ${hh[2][1]} ✓ banner ${bannerShown ? '✓' : '✗'}`);
+    if (!okDay) errors.push('the world screen does not report the selected day throughout');
+    // discoveries are day-stamped, so a past day may honestly say which were known
+    game.ui.chartDay = st.day;
+    game.ui.renderWorldState();
+    const gone = document.querySelector('#ws-time').classList.contains('hidden');
+    log('  back to today: the reading banner stands down:', gone ? '✓' : '✗');
+    if (!gone) errors.push('the world screen still claims to be reading an old day');
+  }
+
+  // refreshing the world screen must not take the reader's keyboard away
+  {
+    game.ui.chartDay = st.history[Math.floor(st.history.length / 2)][0];
+    game.ui.renderWorldState();
+    const chart = document.querySelector('#ws-chart');
+    chart.focus();
+    const focused = document.activeElement === chart;
+    for (let i = 0; i < 4; i++) game.ui.renderWorldState();
+    const stillFocused = document.activeElement === document.querySelector('#ws-chart');
+    const sameNode = chart === document.querySelector('#ws-chart');
+    log(`  keyboard focus on the chart survives four refreshes: ${focused && stillFocused && sameNode ? '✓' : '✗'}`);
+    if (!focused || !stillFocused || !sameNode) errors.push('refreshing the world screen steals focus from the chart');
+    // and the shell is not rebuilt: the legend buttons are the same elements
+    const leg = document.querySelector('#ws-legend .leg');
+    game.ui.renderWorldState();
+    if (leg !== document.querySelector('#ws-legend .leg')) errors.push('the world screen rebuilds its controls on every refresh');
+  }
+
+  // sweeping the chart is one journey, not one announcement per day
+  {
+    const say = document.querySelector('#ws-say');
+    let writes = 0, last = say.textContent;
+    Object.defineProperty(say, 'textContent', {
+      get: () => last,
+      set: (v) => { writes++; last = v; },
+      configurable: true,
+    });
+    cv.getBoundingClientRect = () => ({ left: 0, top: 0, width: 666, height: 132, right: 666, bottom: 132 });
+    const hh = st.history;
+    cv.dispatchEvent(new window.MouseEvent('pointerdown', { clientX: 30, bubbles: true }));
+    const crossed = new Set();
+    for (let i = 0; i <= 30; i++) {
+      cv.dispatchEvent(new window.MouseEvent('pointermove', { clientX: 20 + i * 22, bubbles: true }));
+      crossed.add(game.ui.chartDay);
+    }
+    const duringDrag = writes;
+    const read = document.querySelector('#ws-read').textContent;
+    cv.dispatchEvent(new window.MouseEvent('pointerup', { clientX: 666, bubbles: true }));
+    const afterSettle = writes;
+    // the drawn readout must still follow the pointer on every single move
+    const follows = read.includes(`Day ${game.ui.chartDay}`);
+    const quiet = crossed.size >= 20 && duringDrag <= 4 && afterSettle === duringDrag + 1 && follows;
+    log(`  31 moves across ${crossed.size} days -> ${duringDrag} announcement(s) mid-sweep, 1 on settling, drawing still live: ${quiet ? '✓' : '✗'}`);
+    if (!quiet) errors.push('sweeping the chronicle chart does not narrate once per journey');
+    delete say.textContent;
+    Object.defineProperty(say, 'textContent', { value: last, writable: true, configurable: true });
+  }
+
+  // a sheet asked to close and then reopened inside the closing animation must
+  // stay open: otherwise the game keeps blocking input behind a panel nobody
+  // can see
+  {
+    game.ui.openPanel('bag');
+    game.ui.closePanel();
+    game.ui.openPanel('bag');
+    await new Promise(r => setTimeout(r, 260));
+    const panel = document.querySelector('#panel');
+    const open = !panel.classList.contains('hidden') && game.ui.panelOpen === 'bag';
+    log(`  panel reopened inside its own close animation stays open: ${open ? '✓' : '✗'}`);
+    if (!open) errors.push('reopening a panel inside its close animation leaves the game blocked behind nothing');
+    game.ui.closePanel();
+    await new Promise(r => setTimeout(r, 260));
+    if (!document.querySelector('#panel').classList.contains('hidden')) errors.push('a closed panel stays on screen');
+  }
+
+  // the compass is shapes; it has to say what they point at
+  {
+    // place the task dead ahead, inverting the same bearing the pips themselves use
+    const face = ((-game.player.camYaw + Math.PI) % 6.283185 + 6.283185) % 6.283185;
+    const yaw = Math.PI - face, R = 180;
+    st.quests.push({
+      id: 'q_probe', kind: 'explore', title: 'Reach the high ridge',
+      x: game.player.pos.x - R * Math.sin(yaw), z: game.player.pos.z - R * Math.cos(yaw),
+      progress: 0, expires: 0, done: false,
+    });
+    game.ui._pipKey = null;
+    game.ui.updateCompassPips(game.player);
+    const strip = document.querySelector('#compass');
+    const pips = [...document.querySelectorAll('#compass-pips i')].filter((p) => p.style.display !== 'none');
+    const said = strip.getAttribute('aria-label') || '';
+    const labelled = /facing (north|south|east|west)/.test(said) && /Reach the high ridge, 180 metres/.test(said);
+    log(`  compass names what it marks (${pips.length} pips on the strip): ${labelled ? '✓' : '✗'}`);
+    if (!labelled) errors.push('the compass does not name the things it points at: ' + said);
+    if (!pips.length || !pips[0].getAttribute('title')) errors.push('compass pips carry no name for a pointer to find');
+    // a coordinate that cannot be a place must not poison the whole strip
+    game.ui.waypoint = { x: NaN, z: 0, name: 'Nowhere' };
+    game.ui._pipKey = null;
+    game.ui.updateCompassPips(game.player);
+    if (/NaN/.test(strip.getAttribute('aria-label') || '')) errors.push('an unusable waypoint coordinate reaches the compass');
+    game.ui.waypoint = null;
+    game.ui._pipKey = null;
+    st.quests.pop();
   }
 
   // the survey map says what it is showing
@@ -509,11 +704,16 @@ game.ui.closeDialog();
 
   // every faction cue carries its name, not just a colour
   {
-    const crests = document.querySelectorAll('#world-state .crest');
-    const names = [...document.querySelectorAll('#world-state .sr-only')].map(e => e.textContent);
-    const named = names.some(t => /flies the banner of .+/.test(t)) && names.some(t => /Verdant Pact/.test(t));
-    log(`heraldry: ${crests.length} crests drawn, ${names.length} carry a readable name`, named ? '✓' : '✗');
-    if (!crests.length || crests.length !== names.length) errors.push('faction crests are not paired with text alternatives');
+    // every crest is immediately followed by the name that replaces it
+    const crests = [...document.querySelectorAll('#world-state .crest')];
+    const named = crests.every((c) => {
+      const sib = c.nextElementSibling;
+      return sib && sib.classList.contains('sr-only') && sib.textContent.trim().length > 1;
+    });
+    const names = crests.map((c) => (c.nextElementSibling || {}).textContent || '');
+    const saysBanner = names.some((t) => /flies the banner of .+/.test(t)) && names.some((t) => /Verdant Pact/.test(t));
+    log(`heraldry: ${crests.length} crests drawn, ${named ? 'all named' : 'SOME UNNAMED'}${saysBanner ? ', banner in words ✓' : ''}`, named && saysBanner ? '✓' : '✗');
+    if (!crests.length || !named || !saysBanner) errors.push('faction crests are not paired with text alternatives');
     if (!named) errors.push('banner ownership is still conveyed by colour alone');
   }
 

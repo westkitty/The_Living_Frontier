@@ -7,13 +7,12 @@
 import { WORLD, FACTIONS, heightAt, moistureAt } from './worldgen.js';
 import { clamp, lerp, hash2i } from './rng.js';
 import { rleDecode } from './worldstate.js';
+import { typeface, PAPER } from './surface.js';
 
 const XR = WORLD.exploreRes;
 
 // --- palette (shared by every map surface so they read as one document) -----
 export const MAP = {
-  paper: '#171b18',
-  paperInk: 'rgba(226,208,164,.055)',
   deep: [26, 46, 58],
   shallow: [46, 78, 86],
   shore: [116, 108, 80],
@@ -24,8 +23,6 @@ export const MAP = {
   high: [150, 146, 138],
   snow: [226, 230, 236],
   contour: 'rgba(24,30,26,.34)',
-  ink: '#e6d9b8',
-  inkDim: 'rgba(230,217,184,.45)',
 };
 
 function terrainColor(h, m, out) {
@@ -241,10 +238,10 @@ export class Cartographer {
     const vh = spanY / WORLD.size;
 
     // 1. unsurveyed paper
-    ctx.fillStyle = MAP.paper;
+    ctx.fillStyle = PAPER.ground;
     ctx.fillRect(0, 0, w, h);
     if (opts.paperGrid !== false) {
-      ctx.strokeStyle = MAP.paperInk;
+      ctx.strokeStyle = PAPER.paperInk;
       ctx.lineWidth = 1;
       const gm = span > 1400 ? 400 : span > 600 ? 200 : 100;   // grid in metres
       const gStep = (gm / span) * w;
@@ -349,8 +346,8 @@ export class Cartographer {
   }
 
   // --------------------------------------------------------------- markers
-  label(ctx, text, x, y, color = MAP.ink, size = 11) {
-    ctx.font = `${size}px 'Iowan Old Style',Palatino,Georgia,serif`;
+  label(ctx, text, x, y, color = PAPER.ink, size = 11) {
+    ctx.font = typeface(size);
     ctx.textAlign = 'center';
     ctx.lineJoin = 'round';
     ctx.lineWidth = 3;
@@ -446,15 +443,15 @@ export class Cartographer {
     ctx.save();
     ctx.strokeStyle = 'rgba(8,10,9,.8)'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + px, y); ctx.stroke();
-    ctx.strokeStyle = MAP.ink; ctx.lineWidth = 1.4;
+    ctx.strokeStyle = PAPER.ink; ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4);
     ctx.moveTo(x, y); ctx.lineTo(x + px, y);
     ctx.moveTo(x + px, y - 4); ctx.lineTo(x + px, y + 4);
     ctx.stroke();
-    ctx.font = "10px 'Iowan Old Style',Palatino,Georgia,serif";
+    ctx.font = typeface(10);
     ctx.textAlign = 'left';
-    ctx.fillStyle = MAP.ink;
+    ctx.fillStyle = PAPER.ink;
     ctx.strokeStyle = 'rgba(8,10,9,.85)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
     ctx.strokeText(metres + ' m', x, y - 7);
     ctx.fillText(metres + ' m', x, y - 7);

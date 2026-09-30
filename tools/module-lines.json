@@ -5,9 +5,9 @@
   },
   "modules": {
     "audio.js": 137,
-    "cartography.js": 537,
+    "cartography.js": 534,
     "chronology.js": 193,
-    "deeprecord.js": 423,
+    "deeprecord.js": 422,
     "dialogue.js": 130,
     "entities.js": 574,
     "fx.js": 398,
@@ -16,9 +16,9 @@
     "history.js": 94,
     "interaction.js": 217,
     "loop.js": 187,
-    "main.js": 268,
+    "main.js": 250,
     "map-ui.js": 357,
-    "panels.js": 394,
+    "panels.js": 200,
     "persistence.js": 188,
     "player.js": 365,
     "quests.js": 45,
@@ -28,11 +28,16 @@
     "streaming.js": 183,
     "structures.js": 472,
     "terrain.js": 261,
-    "ui.js": 608,
+    "ui.js": 596,
     "uikit.js": 24,
     "veg.js": 460,
     "worldgen.js": 321,
     "world-recovery.js": 52,
-    "worldstate.js": 680
+    "worldstate.js": 680,
+    "surface.js": 50,
+    "chart.js": 166,
+    "worldscreen.js": 390,
+    "touch-controls.js": 63,
+    "boot.js": 52
   }
 }

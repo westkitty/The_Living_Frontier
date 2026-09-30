@@ -152,11 +152,22 @@ if (state.history.length > 4) {
 
 const chart = document.querySelector('#ws-chart');
 if (chart) {
+  // Give the chart the CSS box it really occupies in the world panel, at the
+  // density of the display it will be read on, so this PNG is a picture of the
+  // chart rather than a picture of its markup attributes.
+  const BOX_W = 666, BOX_H = 136, DPR = 2;
+  Object.defineProperty(chart, 'clientWidth', { get: () => BOX_W, configurable: true });
+  Object.defineProperty(chart, 'clientHeight', { get: () => BOX_H, configurable: true });
+  globalThis.devicePixelRatio = DPR;
+  game.ui.drawHistoryChart(state);
+  console.log(`  chart drawn at ${chart.width}x${chart.height} for a ${BOX_W}x${BOX_H} box at dpr ${DPR}`
+    + ` — 11px labels render at 11px, not ${(11 * BOX_H / 240).toFixed(1)}px`);
   png(chart, 'ws-chart.png');
   for (const series of game.ui.chartSeries()) if (series.k !== 1) game.ui.chartHiddenSet().add(series.k);
   game.ui.drawHistoryChart(state);
   png(chart, 'ws-chart-herds.png');
   game.ui.chartHiddenSet().clear();
+  globalThis.devicePixelRatio = 1;
 } else console.log('  (no chronicle chart rendered)');
 
 // the title-screen portrait of this saved world, from the save itself
