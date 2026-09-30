@@ -1,7 +1,7 @@
 // Quiet, inspectable marks for the Long Record's fixed historical spine.
 // Sealed events intentionally share one mark; their kind stays hidden.
 export function drawRecordMark(ctx, event, x, y, scale) {
-  const s = scale;
+  const s = scale, state = [ctx.strokeStyle, ctx.lineWidth, ctx.lineCap, ctx.lineJoin]; ctx.save();
   ctx.strokeStyle = event.sealed ? 'rgba(150,140,120,.6)' : 'rgba(226,208,164,.9)';
   ctx.lineWidth = 0.85 * s;
   ctx.lineCap = 'round';
@@ -34,5 +34,5 @@ export function drawRecordMark(ctx, event, x, y, scale) {
     ctx.moveTo(x - 3 * s, y - 3 * s); ctx.lineTo(x + 3 * s, y + 3 * s);
     ctx.moveTo(x + 3 * s, y - 3 * s); ctx.lineTo(x - 3 * s, y + 3 * s);
   }
-  ctx.stroke();
+  ctx.stroke(); ctx.restore(); [ctx.strokeStyle, ctx.lineWidth, ctx.lineCap, ctx.lineJoin] = state;
 }

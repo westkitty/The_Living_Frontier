@@ -7,6 +7,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { drawRecordMark } from '../src/record-ink.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const out = resolve(process.argv[2] || '/tmp/lf-visual');
@@ -67,6 +68,16 @@ global.btoa = (s) => Buffer.from(s, 'binary').toString('base64');
 global.atob = (s) => Buffer.from(s, 'base64').toString('binary');
 global.confirm = () => false;
 window.devicePixelRatio = 1;
+
+// Record marks must not leak their diagnostic line style into the surrounding drawing.
+{
+  const ctx = createCanvas(16, 16).getContext('2d');
+  const before = [ctx.lineCap, ctx.lineJoin, ctx.strokeStyle, ctx.lineWidth];
+  drawRecordMark(ctx, { id: 'aqueduct_cut', kind: 'break', sealed: false }, 8, 8, 1);
+  const after = [ctx.lineCap, ctx.lineJoin, ctx.strokeStyle, ctx.lineWidth];
+  if (before.some((value, i) => value !== after[i])) throw new Error('Long Record marks leak canvas drawing state');
+  console.log('record glyph restores canvas state ✓');
+}
 
 class FakeRenderer {
   constructor() { this.shadowMap = {}; this.domElement = window.document.querySelector('#gl'); this.info = { render: {} }; }

@@ -25,7 +25,7 @@
     "@shaderfrog/glsl-parser": "^7.0.1",
     "jsdom": "^24.1.0",
     "three": "0.160.1",
-    "playwright": "1.55.0",
+    "playwright": "1.55.1",
     "gltf-validator": "2.0.0-dev.3.10"
   }
 }
