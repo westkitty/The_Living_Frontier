@@ -71,8 +71,8 @@ export const LoopMixin = {
     st.update(dt * this.timeScale);
 
     if (!blocking) {
+      this.player.update(dtRaw, this.input, this.camera); // first: it drinks jumpPressed before consume() clears it
       const consumed = this.input.consume();
-      this.player.update(dtRaw, this.input, this.camera);
       if (consumed.interact) this.interact();
       if (consumed.attack) this.strike();
     } else {

@@ -11,7 +11,7 @@ const DEFAULTS = {
   invertY: false,
   hints: true,
   seenHints: {},
-  lastTab: 'map',
+  lastTab: 'map', cameraMode: 'third', // third | first: whose eyes you see through
   mapView: null,          // where the player last had the survey map
 };
 
@@ -38,7 +38,7 @@ export const Settings = {
     v.volume = Math.min(1, Math.max(0, Number(v.volume) >= 0 ? Number(v.volume) : 0.7));
     v.muted = !!v.muted; v.invertY = !!v.invertY; v.hints = v.hints !== false;
     if (v.mapView && !(Number.isFinite(v.mapView.cx) && Number.isFinite(v.mapView.cz) && v.mapView.span > 0)) v.mapView = null;
-    if (!['map', 'bag', 'journal', 'world'].includes(v.lastTab)) v.lastTab = 'map';
+    if (!['map', 'bag', 'journal', 'world'].includes(v.lastTab)) v.lastTab = 'map'; if (!['third', 'first'].includes(v.cameraMode)) v.cameraMode = 'third';
     return this.values;
   },
 

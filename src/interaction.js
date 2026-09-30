@@ -8,7 +8,7 @@ import { CH, regionIndex } from './worldstate.js';
 export const InteractionMixin = {
   findTarget() {
     const p = this.player.pos;
-    const forward = new THREE.Vector3(Math.sin(this.player.yaw), 0, Math.cos(this.player.yaw));
+    const aimY = this.player.firstPerson ? this.player.camYaw + Math.PI : this.player.yaw, forward = new THREE.Vector3(Math.sin(aimY), 0, Math.cos(aimY));
     const probe = p.clone().addScaledVector(forward, 1.1);
 
     // settlement centre

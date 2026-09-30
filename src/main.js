@@ -210,6 +210,7 @@ async function boot() {
     game.input.sensitivity = prefs.sensitivity;
     game.input.invertY = prefs.invertY;
     game.player.shakeScale = Settings.motionReduced ? 0.15 : 1;
+    game.player.setFirstPerson(prefs.cameraMode === 'first');
     game.ui.syncSettingsUI();
 
     $('#boot-status').textContent = 'Drawing the map…';

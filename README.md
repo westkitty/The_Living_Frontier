@@ -123,7 +123,9 @@ recovery.
 | Move | WASD / arrows | left stick |
 | Look | drag, or move the mouse | drag the right side |
 | Sprint | Shift | `»` toggle |
-| Jump | Space | `⤒` |
+| Jump | Space, again mid-air to double — hold for higher | `⤒`, again mid-air to double |
+| Grapple | hold G — 50 m rope, Space to slingshot off | hold the hook button |
+| First / third person | C, or scroll all the way in / out | eye button |
 | Interact / harvest carcass hide | E | `E` |
 | Strike / set fire | F or right-click | `✦` |
 | Mend yourself | Q | tap an item in the bag |
