@@ -11,6 +11,8 @@
 import { $ } from './uikit.js';
 import { fitCanvas, PAPER, typeface } from './surface.js';
 import { clamp } from './rng.js';
+import { Settings } from './settings.js';
+import { drawRecordMark } from './record-ink.js';
 import { SETTLEMENTS } from './worldgen.js';
 import {
   tenancies, deepEvents, livingBand, describeTenancy, weight, factionAge,
@@ -24,19 +26,18 @@ const SCALES = [
   { id: 'life', span: 34, label: 'a lifetime' },
   { id: 'season', span: 3, label: 'a few seasons' },
 ];
-
 export const RecordMixin = {
   openRecord() {
     if (this.recordOpen) return;
     this.recordOpen = true;
     this.recordScale = this.recordScale || 0;
     const st = this.state;
-    this.recordYear = presentYear(st);
+    this.recordYear = presentYear(st); this.recordTargetYear = null;
     // The crossing: the record opens on your own days, filling the screen, and
     // then pulls back until they are a hairline. Nothing is faked — it is the
     // same column at every moment of the pull, only the scale changes.
-    this.recordEnter = this.reducedMotion ? 1 : 0;
-    this.recordScale = this.reducedMotion ? 0 : SCALES.length - 1;
+    this.recordEnter = Settings.motionReduced ? 1 : 0;
+    this.recordScale = Settings.motionReduced ? 0 : SCALES.length - 1;
     this.openSheet('#record');
     this.bindRecord();
     this.drawRecord();
@@ -282,6 +283,7 @@ export const RecordMixin = {
         ctx.lineTo(colX + colW + 15 * s, ly);
         ctx.stroke();
       }
+      drawRecordMark(ctx, e, rightLabelX - 8 * s, ly, s);
       ctx.textAlign = 'left';
       ctx.fillStyle = e.sealed ? 'rgba(150,140,120,.6)' : '#e2d0a4';
       ctx.fillText(e.sealed ? 'SEALED' : e.title, rightLabelX, ly + 3.5 * s, rightLabelWidth);
@@ -367,7 +369,6 @@ export const RecordMixin = {
     $('#rec-share').textContent =
       `Your tenancy: ${st.day} days — ${share < 0.1 ? 'less than a tenth of one per cent' : share.toFixed(2) + ' per cent'} of the record.`;
   },
-
   // Everything true at one year, gathered from the same data the column draws.
   recordAt(st, year) {
     const out = [];
@@ -412,11 +413,10 @@ export const RecordMixin = {
       + `${Math.round(win.top)} to ${Math.round(win.top + win.span)}. Reading year ${year}. ${lines}`;
   },
 
-  // called from the frame loop while the record is open
   tickRecord(dt) {
     if (!this.recordOpen || this.recordEnter >= 1) return;
     this.recordEnter = Math.min(1, this.recordEnter + dt * 0.62);
-    if (this.recordEnter >= 1) this.recordScale = 0;         // settle at the whole record
+    if (this.recordEnter >= 1) { this.recordScale = 0; if (Number.isFinite(this.recordTargetYear)) { this.recordYear = this.recordTargetYear; this.recordTargetYear = null; } }
     this.drawRecord();
   },
 };

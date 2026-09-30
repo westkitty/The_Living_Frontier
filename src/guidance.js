@@ -7,7 +7,7 @@ export const HINTS = {
   fire: 'Fire follows the wind. Rain slows it; blackened ground remembers it.',
   village: 'Speak at the village hall. Gifts of timber can become real homes.',
   banner: 'A banner has changed. The compass and survey map now show the new owner.',
-  landmark: 'This stone unseals part of the Long Record. Press R to read what stood here.',
+  landmark: 'This stone unseals the Long Record. Find its relic; press E again to read.'
 };
 
 export class Guidance {

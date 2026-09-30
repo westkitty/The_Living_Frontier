@@ -882,6 +882,59 @@ game.ui.closeDialog();
   if (!hidden) errors.push('the record sheet stays on screen after closing');
 }
 
+// ---- a found relic becomes a physical route into its unsealed history ------
+{
+  const landmark = (await import('../src/worldgen.js')).LANDMARKS.find((l) => l.id === 'aqueduct');
+  const savedPos = p.pos.clone();
+  const priorRelic = st.player.relic_aqueduct;
+  const wasDiscovered = st.discovered.aqueduct;
+  const nearestActor = game.actors.nearestInteractable;
+  const nearestVeg = game.veg.nearest;
+  game.actors.nearestInteractable = () => null;
+  game.veg.nearest = () => null;
+  p.pos.set(landmark.x, p.pos.y, landmark.z);
+  delete st.discovered.aqueduct;
+  delete st.player.relic_aqueduct;
+  game.interactTarget = game.findTarget();
+  const firstVisit = game.interactTarget?.type === 'relic';
+  game.interact();
+  const noPrematureRead = game.findTarget()?.type !== 'record';
+  st.discovered.aqueduct = true;
+  game.interactTarget = game.findTarget();
+  const event = (await import('../src/chronology.js')).deepEvents(st)
+    .filter((e) => e.landmark === 'aqueduct').sort((a, b) => b.at - a.at)[0];
+  const foundRecord = game.interactTarget?.type === 'record' && game.interactTarget.event.id === event.id;
+  game.interact();
+  const beganAtPresent = game.ui.recordOpen && game.ui.recordYear !== event.at && game.ui.recordTargetYear === event.at;
+  for (let i = 0; i < 40; i++) game.ui.tickRecord(0.05);
+  const focused = beganAtPresent && game.ui.recordYear === event.at && game.ui.recordScale === 0 &&
+    document.querySelector('#rec-year').textContent.includes(String(event.at));
+  log('  relic -> discovered stone -> exact historical layer:',
+    firstVisit && noPrematureRead && foundRecord && focused ? '✓' : '✗');
+  if (!firstVisit) errors.push('landmark relic remains unavailable on first approach');
+  if (!noPrematureRead) errors.push('landmark history became readable before discovery');
+  if (!foundRecord) errors.push('recovered relic does not expose the correct unsealed event');
+  if (!focused) errors.push('reading from the stone does not focus its exact year in the Long Record');
+  game.ui.closeRecord();
+  await new Promise((r) => setTimeout(r, 260));
+  const { Settings } = await import('../src/settings.js');
+  const priorMotion = Settings.get('reducedMotion');
+  Settings.set('reducedMotion', true);
+  game.interactTarget = { type: 'record', event };
+  game.interact();
+  const reducedMotionFocus = game.ui.recordOpen && game.ui.recordYear === event.at && game.ui.recordTargetYear === null;
+  log('  reduced motion lands on the same historical year without the crossing:', reducedMotionFocus ? '✓' : '✗');
+  if (!reducedMotionFocus) errors.push('reduced-motion record navigation does not land on its selected event');
+  game.ui.closeRecord();
+  await new Promise((r) => setTimeout(r, 260));
+  Settings.set('reducedMotion', priorMotion);
+  p.pos.copy(savedPos);
+  game.actors.nearestInteractable = nearestActor;
+  game.veg.nearest = nearestVeg;
+  if (priorRelic === undefined) delete st.player.relic_aqueduct; else st.player.relic_aqueduct = priorRelic;
+  if (wasDiscovered === undefined) delete st.discovered.aqueduct; else st.discovered.aqueduct = wasDiscovered;
+}
+
 // ---- streaming does not leak ----------------------------------------------
 // Walking a long way and coming back must leave the scene the size it was:
 // chunk churn is the one thing in this game that runs thousands of times.

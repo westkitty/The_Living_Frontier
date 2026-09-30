@@ -22,6 +22,7 @@
     "persistence.js": 188,
     "player.js": 365,
     "quests.js": 45,
+    "record-ink.js": 38,
     "rng.js": 65,
     "save-recovery.js": 111,
     "settings.js": 64,

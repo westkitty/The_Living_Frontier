@@ -4,21 +4,19 @@ import * as THREE from 'three';
 import { WORLD, LANDMARKS, FACTIONS, heightAt } from './worldgen.js';
 import { clamp } from './rng.js';
 import { CH, regionIndex } from './worldstate.js';
+import { deepEvents } from './chronology.js';
 
 export const InteractionMixin = {
   findTarget() {
     const p = this.player.pos;
     const forward = new THREE.Vector3(Math.sin(this.player.yaw), 0, Math.cos(this.player.yaw));
     const probe = p.clone().addScaledVector(forward, 1.1);
-
-    // settlement centre
     for (let i = 0; i < this.state.settlements.length; i++) {
       const s = this.state.settlements[i];
       if (Math.hypot(s.x - p.x, s.z - p.z) < 7.5) {
         return { type: 'settlement', s, i, label: s.abandoned ? `Search the ruins of ${s.name}` : `Speak with ${s.name}`, alt: null };
       }
     }
-    // actors
     const act = this.actors.nearestInteractable(probe, 3.6);
     if (act) {
       const a = act.actor;
@@ -27,10 +25,15 @@ export const InteractionMixin = {
       if (!a.alive) return { type: 'carcass', actor: a, label: 'Harvest hide', alt: null };
       return { type: 'animal', actor: a, label: a.def.pred ? 'Wolf — dangerous' : 'Approach quietly', alt: 'Strike' };
     }
-    // relics at landmarks
     for (const L of LANDMARKS) {
       const d = Math.hypot(L.x - p.x, L.z - p.z);
-      if (d < 12 && !this.state.player['relic_' + L.id]) return { type: 'relic', L, label: `Take relic of ${L.name}`, alt: null };
+      if (d >= 12) continue;
+      if (!this.state.player['relic_' + L.id]) {
+        return { type: 'relic', L, label: `Take relic of ${L.name}`, alt: null };
+      }
+      let event;
+      for (const e of deepEvents(this.state)) if (e.landmark === L.id && !e.sealed && (!event || e.at > event.at)) event = e;
+      if (event) return { type: 'record', event, label: `Read the record at ${L.name}`, alt: null };
     }
     // vegetation
     const v = this.veg.nearest(probe.x, probe.z, 3.2);
@@ -46,7 +49,6 @@ export const InteractionMixin = {
       const alt = canIgnite ? (this.state.fireConditions().risk === 'tinder' ? 'Set alight — tinder risk' : 'Set alight') : null;
       return { type: 'veg', veg: v, label, alt, canIgnite };
     }
-    // plant sapling on bare ground
     if (this.state.player.inv.wood >= 1 && heightAt(p.x, p.z) > 1.5) {
       return { type: 'plant', label: 'Plant a sapling (1 wood)', alt: null };
     }
@@ -76,6 +78,7 @@ export const InteractionMixin = {
         st.note(`You recovered a relic from ${t.L.name}.`, 'discovery');
         break;
       }
+      case 'record': this.ui.openRecord(); this.ui.recordTargetYear = t.event.at; if (this.ui.recordEnter >= 1) { this.ui.recordYear = t.event.at; this.ui.recordTargetYear = null; this.ui.drawRecord(); } break;
       case 'plant': {
         inv.wood -= 1;
         st.plantings.push({ id: Math.floor(Math.random() * 1e9), x: this.player.pos.x, z: this.player.pos.z, t: st.elapsed, r: Math.random() * 6.28, kind: Math.random() < 0.5 ? 'pine' : 'broad' });
@@ -102,7 +105,6 @@ export const InteractionMixin = {
   chunkKeyAt(x, z) {
     return Math.floor(x / WORLD.chunk) + ',' + Math.floor(z / WORLD.chunk);
   },
-
   harvest(v) {
     const st = this.state, inv = st.player.inv;
     const { key, item } = v;
@@ -118,7 +120,6 @@ export const InteractionMixin = {
         this.audio.play('chop');
         this.fx.chop(new THREE.Vector3(item.x, item.y + 2, item.z));
         this.ui.toast(`+${2 + Math.round(item.scale)} wood`);
-        // villagers notice heavy logging
         for (const s of st.settlements) {
           if (!s.abandoned && Math.hypot(s.x - item.x, s.z - item.z) < 90 && region.trees < 0.55) {
             s.rep -= 1; st.addRep(s.banner, -0.5);
@@ -211,7 +212,6 @@ export const InteractionMixin = {
       }
       return;
     }
-    // swing at empty air also disturbs nearby animals
     for (const a of this.actors.animals) if (a.alive && a.pos.distanceTo(p) < 12) a.timer = 0;
   },
 };

@@ -237,9 +237,12 @@ outside. Entries stay **SEALED** until you have stood in front of the stone
 that carries them, so the archive is unlocked by walking, not by reading.
 Scrub to a sealed year and its readout offers a native button: activate it to
 mark that stone on your compass, write a journal reminder and close the record.
-Discovery replaces that control with the unsealed account. The living band's
-war ending measures banner changes recorded during your tenancy, not the
-territory factions already held when you arrived.
+Discovery replaces that control with the unsealed account. At a discovered
+stone, recover its relic; interact once more and the same crossing begins in
+your years, then pulls the column back and lands on that place's latest
+recorded event. The archive is not just a menu: the physical site is its index.
+The living band's war ending measures banner changes recorded during your
+tenancy, not the territory factions already held when you arrived.
 
 At the closest reading, each hair in your own band is a day you wrote something
 on. At the widest, the readout does the arithmetic you were avoiding:
