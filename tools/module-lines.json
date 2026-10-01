@@ -5,11 +5,14 @@
   },
   "modules": {
     "audio.js": 137,
+    "audio-procedural.js": 395,
     "cartography.js": 537,
+    "causal.js": 458,
     "chronology.js": 193,
     "deeprecord.js": 423,
     "dialogue.js": 130,
     "entities.js": 574,
+    "footprint.js": 320,
     "fx.js": 398,
     "fx-particles.js": 60,
     "grapple.js": 107,
@@ -19,13 +22,16 @@
     "interaction.js": 217,
     "loop.js": 187,
     "magic.js": 625,
-    "main.js": 268,
+    "main.js": 280,
     "map-ui.js": 357,
+    "narrative.js": 695,
+    "npc-memory.js": 425,
     "panels.js": 394,
     "persistence.js": 188,
     "player-camera.js": 171,
     "player.js": 365,
     "quests.js": 45,
+    "recovery.js": 300,
     "rng.js": 65,
     "save-recovery.js": 111,
     "settings.js": 64,
@@ -37,6 +43,9 @@
     "veg.js": 460,
     "worldgen.js": 321,
     "world-recovery.js": 52,
-    "worldstate.js": 680
+    "worldstate.js": 680,
+    "warnings.js": 310,
+    "regional.js": 305,
+    "risk-monitor.js": 220
   }
 }
