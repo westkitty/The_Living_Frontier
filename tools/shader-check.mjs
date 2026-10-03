@@ -100,13 +100,13 @@ capture(applyGroundShader(new THREE.MeshLambertMaterial({ vertexColors: true }))
 capture(makeFoliageMaterial(1.0), 'foliage (trees)');
 capture(makeFoliageMaterial(2.6), 'foliage (grass)');
 
-// water material
-const waterMat = new THREE.MeshLambertMaterial({ color: 0x2f5a63, transparent: true });
-const mod = await import('../src/terrain.js');
-// re-create the water shader hook by calling makeWater against a stub scene
-const stubScene = { add() { } };
-const water = mod.makeWater(stubScene);
-capture(water.material, 'water');
+// water surface: the real material, built against a stub scene
+const { WaterSurface } = await import('../src/water-surface.js');
+const { waterQualityFor } = await import('../src/water-quality.js');
+const stubScene = { add() { }, remove() { } };
+const surface = new WaterSurface(stubScene, waterQualityFor('high'));
+capture(surface.mesh.material, 'water surface');
+surface.dispose();
 
 console.log('\n GLSL syntax check\n');
 let ok = true;

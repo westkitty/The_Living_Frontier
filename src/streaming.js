@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { LANDMARKS, FACTIONS, CAMPS, heightAt, caveFloor, placeOnLand } from './worldgen.js';
 import { regionIndex } from './worldstate.js';
-import { ChunkManager, makeWater, makeGroundTexture, shared } from './terrain.js';
+import { ChunkManager, makeGroundTexture, shared } from './terrain.js';
 import { Vegetation } from './veg.js';
 import { acquireStaticWorldAsset, releaseStaticWorldAsset } from './assets/actor-visual.js';
 import { buildLandmarks, buildSettlementGeometry, makeStructureMaterial, makeBanner, buildCaveGlow, buildCampGeometry } from './structures.js';
@@ -16,7 +16,7 @@ export const StreamingMixin = {
     this.chunks.onChunkBuild = (k, rec, ring) => this.veg.buildChunk(k, rec, ring);
     this.chunks.onChunkRemove = (k) => this.veg.removeChunk(k);
     this.chunks.onRingChange = (k, rec, ring) => this.veg.setRing(k, ring);
-    this.water = makeWater(this.scene);
+    this.water = this.waterSys.surface.mesh;
 
     this.structMat = makeStructureMaterial();
     this.landmarks = buildLandmarks(this.scene, this.structMat);

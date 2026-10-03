@@ -9,6 +9,7 @@ import { Settings } from './settings.js';
 import { ActorSystem } from './entities.js';
 import { Player, Input } from './player.js';
 import { FX } from './fx.js';
+import { WaterSystem } from './water-system.js';
 import { UI } from './ui.js';
 import { AudioEngine } from './audio.js';
 import { InteractionMixin } from './interaction.js';
@@ -42,6 +43,7 @@ class Game {
     this.fx = new FX(this.scene, this.renderer, state);
     this.ui = new UI(state, this);
     this.assets = createActorAssetManager();
+    this.waterSys = new WaterSystem(this);
     this.initStreaming();
     this.player = new Player(this.scene, state, this);
     this.actors = new ActorSystem(this.scene, state, this);
@@ -50,9 +52,7 @@ class Game {
     this.clock = new THREE.Clock();
     this.saveTimer = 25;
     this.groundTexTimer = 0;
-    this.interactTarget = null;
-    this.timeScale = 1;
-    this.frameTimes = [];
+    this.interactTarget = null; this.timeScale = 1; this.frameTimes = [];
 
     this.guidance = new Guidance(state, this.ui);
     state.onNote = (e) => {
@@ -100,6 +100,7 @@ class Game {
       this.renderer.setPixelRatio(1);
       this.renderer.shadowMap.enabled = false; this.chunks.radius = 2; this.actors.maxAnimals = 8;
     }
+    if (this.waterSys) this.waterSys.setQuality(this.quality);
     this.scene.traverse(o => { if (o.material) o.material.needsUpdate = true; });
     this.chunks.center = { i: 9999, j: 9999 };
     return this.quality;
@@ -107,9 +108,6 @@ class Game {
 
   // interaction, dialogue and quest behaviour live in their own modules
   // and are mixed onto this prototype at the bottom of the file.
-
-
-
 }
 
 // ---------------------------------------------------------------------------

@@ -1078,6 +1078,114 @@ const { LANDMARKS } = await import('../src/worldgen.js');
 for (const L of LANDMARKS) { p.pos.set(L.x, 0, L.z); game.checkDiscoveries(); }
 log('landmarks discoverable:', Object.keys(st.discovered).length, '/', LANDMARKS.length);
 
+// ---- water: the whole subsystem, inside the real game ----------------------
+{
+  const ws = game.waterSys;
+  const { WORLD: WW, heightAt: hAt } = await import('../src/worldgen.js');
+  const { WaterSystem } = await import('../src/water-system.js');
+  const DEEP = { x: -896.37, z: -181.58 };        // ~5.9 m of river water
+  if (!ws) errors.push('the game never built a WaterSystem');
+  else {
+    for (const part of ['surface', 'fx', 'underwater', 'buoyancy', 'events'])
+      if (!ws[part]) errors.push(`WaterSystem is missing its ${part}`);
+
+    // the surface is one mesh, in the scene, sitting on the water level
+    if (!game.scene.children.includes(ws.surface.mesh)) errors.push('the water surface is not in the scene');
+    if (Math.abs(ws.surface.mesh.position.y - (WW.water - 0.05)) > 1e-6) errors.push('the water surface is off the water level');
+
+    // the depth field really was generated, and the world is not all dry
+    const field = ws.surface.uniforms.uWaterField.value;
+    if (!field || !field.image || !field.image.data) errors.push('the water surface has no depth field');
+    else {
+      const d = field.image.data; let wet = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i] > 0) wet++;
+      if (wet < 100) errors.push('the water depth field reports the entire world as dry');
+      log(`water field ${field.image.width}x${field.image.height}: ${wet.toLocaleString()} wet cells`, wet > 100 ? '\u2713' : '\u2717');
+    }
+
+    // event -> subscriber -> pooled effect, end to end. The point must be near
+    // the camera: effects are distance-culled on purpose, so probing the far
+    // side of the world would only prove the cull works.
+    // Park the camera over the deep-water fixture for the duration. The player
+    // camera is re-derived from the player every frame, so this costs nothing.
+    const cam = game.camera.position;
+    const camWas = { x: cam.x, y: cam.y, z: cam.z };
+    cam.set(DEEP.x, WW.water + 1, DEEP.z);
+    {
+      const wet = { x: DEEP.x, z: DEEP.z };
+      const heard = [];
+      const offs = ['enter', 'impact', 'wake', 'band', 'exit'].map(k => ws.events.on(k, () => heard.push(k)));
+      ws.events.probe('smoke-probe', wet.x, 6, wet.z, -14, 4, 0.016);       // arriving fast
+      for (let i = 0; i < 8; i++) ws.events.probe('smoke-probe', wet.x + i * 1.8, 0, wet.z, 0, 5, 0.016);
+      ws.events.probe('smoke-probe', 120, 40, 60, 0, 0, 0.016);                 // out onto dry land
+      for (const off of offs) off();
+      for (const want of ['enter', 'impact', 'wake', 'band', 'exit'])
+        if (!heard.includes(want)) errors.push(`water never emitted a ${want} event`);
+      if (ws.fx.activeRipples <= 0) errors.push('water events produced no ripples');
+      if (ws.fx.activeDrops <= 0) errors.push('an impact produced no splash droplets');
+      log('water events fired:', [...new Set(heard)].join(','),
+        '| ripples', ws.fx.activeRipples, '| drops', ws.fx.activeDrops,
+        ws.fx.activeRipples > 0 && ws.fx.activeDrops > 0 ? '\u2713' : '\u2717');
+      // and the cull still holds for the far side of the world
+      const before = ws.fx.activeRipples;
+      ws.events.probe('smoke-far', DEEP.x + 900, 6, DEEP.z + 900, -14, 4, 0.016);
+      if (ws.fx.activeRipples !== before) errors.push('an impact 1,200 m away spawned a visible ripple');
+    }
+    cam.set(camWas.x, camWas.y, camWas.z);
+
+    // pools are bounded no matter how hard they are hit
+    for (let i = 0; i < 4000; i++) ws.fx.ripple(DEEP.x + (i % 60), DEEP.z, 1);
+    for (let i = 0; i < 4000; i++) ws.fx.splash(DEEP.x, WW.water, DEEP.z, 1);
+    if (ws.fx.activeRipples > ws.quality.ripples) errors.push('the ripple pool grew past its bound');
+    if (ws.fx.activeDrops > ws.quality.splash) errors.push('the splash pool grew past its bound');
+    log(`pools bounded under 8,000 impacts: ${ws.fx.activeRipples}/${ws.quality.ripples} ripples, ${ws.fx.activeDrops}/${ws.quality.splash} drops \u2713`);
+
+    // quality cycling resizes pools and leaks nothing
+    const kidsBefore = game.scene.children.length;
+    for (const q of ['low', 'medium', 'high', 'low', 'high']) {
+      ws.setQuality(q);
+      game.setQuality(q);
+    }
+    if (ws.quality.ripples !== 96 || ws.fx.ripples.length !== 96) errors.push('quality did not resize the ripple pool back up');
+    if (game.scene.children.length !== kidsBefore) errors.push(`quality cycling leaked ${game.scene.children.length - kidsBefore} scene objects`);
+    game.setQuality('high');
+    log('quality cycling: pools follow the tier, scene child count unchanged', '\u2713');
+
+    // the camera can cross the waterline and come back
+    const dryFar = game.scene.fog.far;
+    for (let i = 0; i < 90; i++) ws.underwater.update(1 / 60, WW.water - 3, st.weather);
+    const under = ws.underwater.amount;
+    if (under < 0.9) errors.push(`the camera 3 m under the surface only reached ${under.toFixed(2)} submersion`);
+    if (game.scene.fog.far >= dryFar) errors.push('underwater fog did not close in');
+    for (let i = 0; i < 160; i++) ws.underwater.update(1 / 60, WW.water + 4, st.weather);
+    if (ws.underwater.amount > 0.02) errors.push('the camera stayed submerged after surfacing');
+    log(`underwater crossing: ${(under * 100).toFixed(0)}% under, fog ${dryFar.toFixed(0)} -> ${game.scene.fog.far.toFixed(0)} -> recovered \u2713`);
+
+    // deep water holds the player up instead of letting them walk the bed
+    const bed = hAt(DEEP.x, DEEP.z);
+    const wasPos = { x: p.pos.x, y: p.pos.y, z: p.pos.z };
+    p.pos.set(DEEP.x, WW.water + 1, DEEP.z); p.vel.set(0, 0, 0);
+    let peak = -999;
+    for (let i = 0; i < 150; i++) { step(1); if (p.pos.y > peak) peak = p.pos.y; }
+    const rode = p.pos.y;
+    if (rode < WW.water - 0.9) errors.push(`the player sank to ${rode.toFixed(2)} in deep water instead of floating`);
+    if (peak > WW.water + 3) errors.push(`buoyancy launched the player to ${peak.toFixed(2)}`);
+    log(`buoyancy: bed ${bed.toFixed(1)}, came to rest at ${rode.toFixed(2)} (peak ${peak.toFixed(2)})`,
+      rode > WW.water - 0.9 && peak < WW.water + 3 ? '\u2713 floats, never launched' : '\u2717');
+    p.pos.set(wasPos.x, wasPos.y, wasPos.z); p.vel.set(0, 0, 0);
+
+    // teardown gives every object back
+    const kids = game.scene.children.length;
+    ws.dispose();
+    const removed = kids - game.scene.children.length;
+    if (removed !== 4) errors.push(`dispose() removed ${removed} scene objects, expected 4`);
+    if (ws.events.size !== 0) errors.push('dispose() left tracked bodies behind');
+    game.waterSys = new WaterSystem(game);
+    if (game.scene.children.length !== kids) errors.push('a rebuilt WaterSystem does not own the same number of objects');
+    log(`lifecycle: dispose() returned ${removed} objects, rebuild matched`, '\u2713');
+  }
+}
+
 await import('./refinement-test.mjs');
 
 step(30);
