@@ -91,9 +91,11 @@ else ok('no import cycles');
 // place this ordering is written down, so keep them honest.
 const LAYER = {
   'rng.js': 0, 'worldgen.js': 1, 'settings.js': 1, 'uikit.js': 1,
-  'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'world-recovery.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'cartography.js': 3,
+  'history.js': 2, 'persistence.js': 2, 'save-recovery.js': 2, 'world-recovery.js': 2, 'worldstate.js': 2, 'chronology.js': 2, 'water.js': 2, 'water-quality.js': 2, 'water-field.js': 2, 'cartography.js': 3,
+  'water-events.js': 3, 'water-fx.js': 3, 'water-surface.js': 3, 'water-underwater.js': 3, 'water-buoyancy.js': 3,
   'terrain.js': 3, 'veg.js': 3, 'structures.js': 3, 'entities.js': 3, 'fx.js': 3, 'fx-particles.js': 3, 'audio.js': 3,
   'grapple.js': 3, 'guidance.js': 3, 'input.js': 3, 'magic.js': 3, 'player-camera.js': 3, 'player.js': 4, 'panels.js': 5, 'deeprecord.js': 5, 'map-ui.js': 5, 'ui.js': 5,
+  'water-system.js': 4,
   'loop.js': 6, 'streaming.js': 6, 'interaction.js': 6, 'dialogue.js': 6, 'quests.js': 6,
   'main.js': 7,
 };
@@ -111,7 +113,7 @@ if (!problems.some(p => p.includes('upward'))) ok('every import points down the 
 // --- the simulation stays headless -----------------------------------------
 // worldstate/worldgen/rng must run with no DOM at all: that is what makes the
 // headless smoke test, the offline fast-forward and the save format testable.
-const HEADLESS = ['history.js', 'persistence.js', 'save-recovery.js', 'rng.js', 'worldgen.js', 'world-recovery.js', 'worldstate.js', 'chronology.js'];
+const HEADLESS = ['history.js', 'persistence.js', 'save-recovery.js', 'rng.js', 'worldgen.js', 'world-recovery.js', 'worldstate.js', 'chronology.js', 'water.js', 'water-quality.js', 'water-field.js', 'water-events.js', 'water-buoyancy.js'];
 for (const f of HEADLESS) {
   for (const d of graph.get(f) || []) {
     if (!HEADLESS.includes(d)) problems.push(`${f} must stay headless but imports ${d}`);

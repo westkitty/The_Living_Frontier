@@ -1,5 +1,6 @@
 // Frame scheduling, discovery and ambient state. Mixed onto Game.prototype.
-import { WORLD, LANDMARKS, heightAt } from './worldgen.js';
+import { LANDMARKS, heightAt } from './worldgen.js';
+import { WaterQuery } from './water.js';
 import { clamp } from './rng.js';
 
 export const LoopMixin = {
@@ -84,6 +85,7 @@ export const LoopMixin = {
     this.streamChunks(blocking);
     this.actors.update(dt, this.player);
     this.fx.update(dtRaw, this.camera, this.player.pos);
+    if (this.waterSys) this.waterSys.update(dtRaw);
     this.ui.tickRecord(dtRaw);
     this.syncStructures(dt);
     this.checkDiscoveries();
@@ -93,8 +95,7 @@ export const LoopMixin = {
     this.updateGroundMemory(dtRaw);
 
     // Audio ambience
-    const w = st.weather;
-    this.audio.ambience({
+    const w = st.weather; this.audio.ambience({
       wind: w.windSpeed,
       rain: (w.type === 'rain' || w.type === 'storm') ? w.intensity : 0,
       fire: clamp(st.burningCount() * 0.25, 0, 1) * (1 - clamp(Math.abs(this.nearestFireDist() / 90), 0, 1)),
@@ -152,13 +153,12 @@ export const LoopMixin = {
   // how close the player is to moving water: the shoreline, or a river bed
   waterNearness() {
     const p = this.player.pos;
-    const depth = WORLD.water - heightAt(p.x, p.z);          // >0 means underwater
+    const depth = WaterQuery.depthAt(p.x, p.z);             // >0 means underwater
     if (depth > -1.5) return clamp(1 - Math.max(0, depth) * 0.12, 0.35, 1);
     let near = 0;
     for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      const h = heightAt(p.x + Math.cos(a) * 14, p.z + Math.sin(a) * 14);
-      if (h < WORLD.water + 0.6) near = Math.max(near, 1 - Math.abs(h - WORLD.water) * 0.5);
+      const a = (i / 8) * Math.PI * 2, d = WaterQuery.depthAt(p.x + Math.cos(a) * 14, p.z + Math.sin(a) * 14);
+      if (d > -0.6) near = Math.max(near, 1 - Math.abs(d) * 0.5);
     }
     return clamp(near * 0.8, 0, 1);
   },

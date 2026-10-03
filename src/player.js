@@ -2,6 +2,7 @@
 // animation, and eyes of your own — third person until you press C.
 import * as THREE from 'three';
 import { WORLD, heightAt, normalAt } from './worldgen.js';
+import { WaterQuery } from './water.js';
 import { clamp, lerp, damp } from './rng.js';
 import { Builder } from './structures.js';
 import { CH } from './worldstate.js';
@@ -75,6 +76,10 @@ export class Player {
     this.deathTimer = 0;
     this.footTimer = 0;
     this.inWater = false;
+    this.waterDepth = 0;             // metres of water over the ground here
+    this.waterSample = {};           // scratch reused by WaterQuery each frame
+    this.buoySample = {};            // scratch reused by the buoyancy sampler
+    this.speedNow = 0;               // horizontal speed, for wake strength
   }
   damage(amount, source) {
     amount = this.magic ? this.magic.ward(amount, source) : amount;
@@ -199,7 +204,23 @@ export class Player {
 
     this.pos.y += this.vel.y * dt;
     const gh = heightAt(this.pos.x, this.pos.z);
-    if (this.pos.y <= gh) {
+    // Water is asked before the ground gets a vote: deep water holds you up
+    // instead of letting you walk the river bed. inWater stays the historical
+    // predicate, and gh is handed over so this costs no extra heightAt().
+    const water = WaterQuery.sampleInto(this.waterSample, this.pos.x, this.pos.z, gh);
+    this.inWater = water.inWater;
+    this.waterDepth = water.depth;      // >0: how deep the surface is over ground
+    this.speedNow = Math.hypot(this.vel.x, this.vel.z);
+    const buoy = this.world.waterSys ? this.world.waterSys.buoyancy : null;
+    if (water.swimmable && buoy) {
+      // Swimming: a damped spring toward the riding height. You bob on the
+      // surface; you neither sink to the bed nor get launched out of it.
+      const s = buoy.support(this.pos.x, this.pos.z, this.pos.y, 0.7, this.buoySample);
+      this.vel.y = clamp(this.vel.y + buoy.verticalAccel(this.pos.y, this.vel.y, Math.max(s.lift, 0.4)) * dt, -12, 12);
+      this.pos.y += this.vel.y * dt;
+      if (this.pos.y < gh + 0.4) { this.pos.y = gh + 0.4; this.vel.y = Math.max(0, this.vel.y); }
+      this.grounded = false;
+    } else if (this.pos.y <= gh) {
       const impact = this.grounded ? 0 : -this.vel.y;
       if (impact > 7) {
         this.squash = clamp(impact / 22, 0.25, 1);
@@ -211,8 +232,11 @@ export class Player {
       this.pos.y = gh; this.vel.y = 0; this.grounded = true; this.airJumps = 1;
     } else if (this.pos.y > gh + 0.02) this.grounded = false;
 
-    // water
-    this.inWater = gh < WORLD.water + 0.3;
+    // Rivers carry you. The flow came from the same query, so the current you
+    // feel and the current the surface drifts along are the same vector.
+    if (water.inWater && (water.flowX !== 0 || water.flowZ !== 0)) {
+      this.pos.x += water.flowX * dt * 0.4; this.pos.z += water.flowZ * dt * 0.4;
+    }
     this.speedMul = this.inWater ? 0.55 : 1;
     if (this.magic) this.speedMul *= this.magic.speedMul();
 

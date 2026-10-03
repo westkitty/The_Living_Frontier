@@ -12,6 +12,8 @@ export const shared = {
   uWorldHalf: { value: WORLD.half },
   uSnow: { value: 0 },
   uWet: { value: 0 },
+  uWaterLevel: { value: WORLD.water },
+  uCaustics: { value: 0 },
 };
 
 export function makeGroundTexture(state) {
@@ -33,7 +35,24 @@ const GROUND_FRAG_HEAD = /* glsl */`
   uniform float uWorldHalf;
   uniform float uWet;
   uniform float uSnow;
+  uniform float uTime;
+  uniform float uWaterLevel, uCaustics;
   varying vec3 vWPos;
+  // Cheap procedural caustics: an interference pattern, not a light transport
+  // solve. It only has to convince the eye that this floor is under water.
+  float lfCaustic(vec2 p, float t) {
+    vec2 i = p;
+    float c = 1.0;
+    const float inten = 0.0045;
+    for (int n = 0; n < 3; n++) {
+      float tt = t * (1.0 - (3.0 / float(n + 1)));
+      i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+      c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / inten), p.y / (cos(i.y + tt) / inten)) + 1e-4);
+    }
+    c /= 3.0;
+    c = 1.17 - pow(c, 1.4);
+    return clamp(pow(abs(c), 8.0), 0.0, 1.0);
+  }
 `;
 
 const GROUND_FRAG_BODY = /* glsl */`
@@ -48,6 +67,13 @@ const GROUND_FRAG_BODY = /* glsl */`
   col = mix(col, col * 0.72, uWet * 0.55);
   float snowMask = smoothstep(0.55, 1.0, uSnow) * smoothstep(60.0, 120.0, vWPos.y) * (1.0 - burn);
   col = mix(col, vec3(0.92, 0.94, 0.99), snowMask * 0.85);
+  if (uCaustics > 0.0) {
+    float sub = smoothstep(-0.15, 0.45, uWaterLevel - vWPos.y);
+    if (sub > 0.01) {
+      float atten = 1.0 - smoothstep(0.0, 9.0, uWaterLevel - vWPos.y);
+      col += vec3(0.40, 0.60, 0.58) * lfCaustic(vWPos.xz * 0.055, uTime * 0.55) * sub * atten * uCaustics * 0.55;
+    }
+  }
   diffuseColor.rgb = col;
 `;
 
@@ -57,6 +83,9 @@ export function applyGroundShader(mat) {
     sh.uniforms.uWorldHalf = shared.uWorldHalf;
     sh.uniforms.uWet = shared.uWet;
     sh.uniforms.uSnow = shared.uSnow;
+    sh.uniforms.uTime = shared.uTime;
+    sh.uniforms.uWaterLevel = shared.uWaterLevel;
+    sh.uniforms.uCaustics = shared.uCaustics;
     sh.vertexShader = 'varying vec3 vWPos;\n' + sh.vertexShader.replace(
       '#include <begin_vertex>', '#include <begin_vertex>\n' + GROUND_CHUNK_VERT);
     sh.fragmentShader = GROUND_FRAG_HEAD + sh.fragmentShader.replace(
@@ -229,33 +258,4 @@ export class ChunkManager {
     this.chunks.set(this.keyOf(ci, cj), rec);
     if (this.onChunkBuild) this.onChunkBuild(this.keyOf(ci, cj), rec, ring);
   }
-}
-
-// --------------------------------------------------------------------------
-export function makeWater(scene) {
-  const geo = new THREE.PlaneGeometry(WORLD.size * 1.6, WORLD.size * 1.6, 48, 48);
-  geo.rotateX(-Math.PI / 2);
-  const mat = new THREE.MeshLambertMaterial({
-    color: 0x2f5a63, transparent: true, opacity: 0.82, depthWrite: true,
-  });
-  mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = shared.uTime;
-    sh.vertexShader = 'uniform float uTime;\nvarying vec3 vWP;\n' + sh.vertexShader.replace(
-      '#include <begin_vertex>',
-      `#include <begin_vertex>
-       vec3 wp = (modelMatrix * vec4(transformed,1.0)).xyz;
-       transformed.y += sin(wp.x * 0.06 + uTime * 1.1) * 0.22 + sin(wp.z * 0.045 - uTime * 0.8) * 0.20;
-       vWP = wp;`);
-    sh.fragmentShader = 'varying vec3 vWP;\nuniform float uTime;\n' + sh.fragmentShader.replace(
-      '#include <color_fragment>',
-      `#include <color_fragment>
-       float ripple = sin(vWP.x*0.55 + uTime*1.7) * sin(vWP.z*0.5 - uTime*1.3);
-       diffuseColor.rgb += ripple * 0.035;
-       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.62,0.80,0.83), smoothstep(0.75,1.0,ripple)*0.35);`);
-  };
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.y = WORLD.water - 0.05;
-  mesh.renderOrder = 1;
-  scene.add(mesh);
-  return mesh;
 }
